@@ -1,0 +1,1404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://PaIn22152.github.io</id>
+    <title>Gridea</title>
+    <updated>2021-02-21T03:01:21.685Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://PaIn22152.github.io"/>
+    <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://PaIn22152.github.io/images/avatar.png</logo>
+    <icon>https://PaIn22152.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2021, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[LeetCode分类学习，链表操作]]></title>
+        <id>https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-lian-biao-cao-zuo/</id>
+        <link href="https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-lian-biao-cao-zuo/">
+        </link>
+        <updated>2021-02-19T01:39:38.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="q206_反转链表"><a href="https://leetcode-cn.com/problems/reverse-linked-list/">q206_反转链表</a></h2>
+<h3 id="思路1双指针法或者叫迭代法">思路1，双指针法，或者叫迭代法</h3>
+<p><a href="https://leetcode-cn.com/problems/reverse-linked-list/solution/dong-hua-yan-shi-206-fan-zhuan-lian-biao-a7rx/">动画题解</a><br>
+代码</p>
+<pre><code class="language-java">public ListNode reverseList(ListNode head) {
+        ListNode pre = null;
+        ListNode cur = head;
+        while (cur != null) {
+            ListNode next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+        return pre;
+    }
+</code></pre>
+<p>复杂度分析<br>
+时间复杂度：O(n)，假设 n 是列表的长度，时间复杂度是 O(n)。<br>
+空间复杂度：O(1)。</p>
+<h3 id="思路2递归法">思路2，递归法</h3>
+<p><a href="https://leetcode-cn.com/problems/reverse-linked-list/solution/yi-bu-yi-bu-jiao-ni-ru-he-yong-di-gui-si-67c3/">图解</a><br>
+代码</p>
+<pre><code class="language-java">    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode listNode = reverseList(head.next);
+        head.next.next = head;
+        head.next = null;
+        return listNode;
+    }
+</code></pre>
+<p>递归代码中，最不好理解的是</p>
+<pre><code class="language-java"> head.next.next = head;
+</code></pre>
+<p>查看以上的图解过程，当 1（head） 后面的表完成反转后，2 同时被 1 和 3指向，这是要做的是把2指向1，把1指向null。结合图解，多看几遍，还是比较容易理解的。</p>
+<p>复杂度分析<br>
+时间复杂度：O(n)，假设 n 是列表的长度，那么时间复杂度为 O(n)。<br>
+空间复杂度：O(n)，由于使用递归，将会使用隐式栈空间。递归深度可能会达到 n 层。</p>
+<h2 id="q2_两数相加"><a href="https://leetcode-cn.com/problems/add-two-numbers/">q2_两数相加</a></h2>
+<h3 id="思路1递归">思路1，递归</h3>
+<p>从链表第一位开始相加，并增加一个boolean参数，表示是否加1。当两个链表都为空时，结束递归。<br>
+代码</p>
+<pre><code class="language-java">public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        return addTwoNumbers2(l1, l2, false);
+    }
+
+    public ListNode addTwoNumbers2(ListNode l1, ListNode l2, boolean add1) {
+        int val;
+        if (l1 == null &amp;&amp; l2 == null) {
+            if (add1) {
+                return new ListNode(1);
+            } else {
+                return null;
+            }
+        } else if (l1 == null) {
+            val = l2.val + (add1 ? 1 : 0);
+        } else if (l2 == null) {
+            val = l1.val + (add1 ? 1 : 0);
+        } else {
+            val = l1.val + l2.val + (add1 ? 1 : 0);
+        }
+        add1 = val &gt;= 10;
+        val = val % 10;
+        ListNode res = new ListNode(val);
+        res.next = addTwoNumbers2(l1 == null ? null : l1.next, l2 == null ? null : l2.next, add1);
+        return res;
+    }
+</code></pre>
+<p>执行结果<br>
+<img src="https://PaIn22152.github.io/post-images/1613793913485.png" alt="" loading="lazy"></p>
+<h3 id="思路2">思路2</h3>
+<p>迭代，预先指针<br>
+<a href="https://leetcode-cn.com/problems/add-two-numbers/solution/hua-jie-suan-fa-2-liang-shu-xiang-jia-by-guanpengc/">过程和图解</a><br>
+小技巧：对于链表问题，返回结果为头结点时，通常需要先初始化一个预先指针 pre，该指针的下一个节点指向真正的头结点head。使用预先指针的目的在于链表初始化时无可用节点值，而且链表构造过程需要指针移动，进而会导致头指针丢失，无法返回结果。<br>
+代码</p>
+<pre><code class="language-java">    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode pre = new ListNode(0);
+        ListNode tem = pre;
+        int tag = 0;
+        while (l1 != null || l2 != null) {
+            int a = l1 == null ? 0 : l1.val;
+            int b = l2 == null ? 0 : l2.val;
+            int sum = a + b + tag;
+            tag = sum / 10;
+            sum %= 10;
+
+            tem.next = new ListNode(sum);
+            tem = tem.next;
+
+            if (l1 != null)
+                l1 = l1.next;
+            if (l2 != null)
+                l2 = l2.next;
+        }
+        if (tag &gt; 0) {
+            tem.next = new ListNode(tag);
+        }
+        return pre.next;
+    }
+</code></pre>
+<h2 id="q148_排序链表"><a href="https://leetcode-cn.com/problems/sort-list/">q148_排序链表</a></h2>
+<h2 id="q19_删除链表的倒数第n个节点"><a href="https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/">q19_删除链表的倒数第N个节点</a></h2>
+<h3 id="思路1">思路1</h3>
+<p>双指针，预先指针<br>
+代码</p>
+<pre><code class="language-java">    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode pre = new ListNode(0);
+        pre.next = head;
+        ListNode right = pre;
+        ListNode left = pre;
+        for (int i = 0; i &lt;= n; i++) {
+            right = right.next;
+        }
+        while (right != null) {
+            right = right.next;
+            left = left.next;
+        }
+        left.next = left.next.next;
+        return pre.next;
+    }
+</code></pre>
+<h2 id="q61_旋转链表"><a href="https://leetcode-cn.com/problems/rotate-list/">q61_旋转链表</a></h2>
+<h3 id="思路">思路</h3>
+<p>把单链表转成环，然后再在合适的地方解环<br>
+代码</p>
+<pre><code class="language-java">public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null || k == 0) {
+            return head;
+        }
+
+        ListNode t = head;
+        int len = 1;
+        while (t.next != null) {
+            t = t.next;
+            len++;
+        }
+        t.next = head;
+
+        k = len - k % len;
+        ListNode t2 = head;//新的链尾，t2的next才是新的head，所以要-1
+        for (int i = 0; i &lt; k - 1; i++) {
+            t2 = t2.next;
+        }
+        ListNode ans = t2.next;
+        t2.next = null;
+        return ans;
+    }
+</code></pre>
+<p>需要注意的是解环的位置，应该是长度len减去 k%len</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[LeetCode分类学习，Hash相关]]></title>
+        <id>https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-hash-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-hash-xiang-guan/">
+        </link>
+        <updated>2021-02-18T08:11:05.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="写在前面">写在前面</h2>
+<p>把LeetCode上的题目分类后，系统学习算法，<a href="https://github.com/yuanguangxin/LeetCode">分类来源</a></p>
+<h2 id="q1_两数之和"><a href="https://leetcode-cn.com/problems/two-sum/">q1_两数之和</a></h2>
+<h3 id="思路1">思路1</h3>
+<p>直接遍历两遍，找到答案直接返回。o(n²)<br>
+代码</p>
+<pre><code class="language-java">public int[] twoSum(int[] nums, int target) {
+        for (int i = 0; i &lt; nums.length; i++) {
+            for (int j = i + 1; j &lt; nums.length; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return null;
+    }
+</code></pre>
+<h3 id="思路2">思路2</h3>
+<p>利用hash的特性，少一次遍历。o(n)<br>
+代码</p>
+<pre><code class="language-java"> public int[] twoSum(int[] nums, int target) {
+        Map&lt;Integer, Integer&gt; map = new HashMap&lt;&gt;();
+        for (int i = 0; i &lt; nums.length; i++) {
+            if (map.containsKey(target - nums[i])) {
+                return new int[]{map.get(target - nums[i]), i};
+            } else {
+                map.put(nums[i], i);
+            }
+        }
+        return null;
+    }
+</code></pre>
+<h2 id="q387_字符串中的第一个唯一字符"><a href="https://leetcode-cn.com/problems/first-unique-character-in-a-string/">q387_字符串中的第一个唯一字符</a></h2>
+<h2 id="思路">思路</h2>
+<p>先遍历一遍s，把string转成存放char和其对应数量的map，然后在遍历s，找到第一个数量为1的char，如果没有返回-1。o(n)<br>
+代码</p>
+<pre><code class="language-java">  public int firstUniqChar(String s) {
+        Map&lt;Character, Integer&gt; map = new HashMap&lt;&gt;();
+        char[] chars = s.toCharArray();
+        for (char c : chars) {
+            if (map.containsKey(c)) {
+                map.put(c, map.get(c) + 1);
+            } else {
+                map.put(c, 1);
+            }
+        }
+        for (int i = 0; i &lt; chars.length; i++) {
+            if (map.get(chars[i]) == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+</code></pre>
+<p>上述代码，可以做如下优化</p>
+<pre><code class="language-java">            if (map.containsKey(c)) {
+                map.put(c, map.get(c) + 1);
+            } else {
+                map.put(c, 1);
+            }
+
+            //优化为
+             map.put(c, map.getOrDefault(c, 0) + 1);
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[flutter，SystemChrome全解析]]></title>
+        <id>https://PaIn22152.github.io/post/fluttersystemchrome-quan-jie-xi/</id>
+        <link href="https://PaIn22152.github.io/post/fluttersystemchrome-quan-jie-xi/">
+        </link>
+        <updated>2021-01-26T07:43:05.000Z</updated>
+        <content type="html"><![CDATA[<p>SystemChrome<br>
+<a href="https://api.flutter.dev/flutter/services/SystemChrome-class.html">官方类文档</a><br>
+官方对这个类的描述是</p>
+<blockquote>
+<p>Controls specific aspects of the operating system's graphical interface and how it interacts with the application.</p>
+</blockquote>
+<p>翻译一下</p>
+<blockquote>
+<p>控制操作系统图形界面的特定方面，以及它如何与应用程序交互。</p>
+</blockquote>
+<p>那么这个类具体是控制哪些东西呢？接下来我们一步一步的看。</p>
+<h2 id="方法和参数">方法和参数</h2>
+<p>先看下类提供的方法有如下5个static方法<br>
+1.setPreferredOrientations(List<DeviceOrientation> orientations) → Future<void><br>
+设置应用程序界面的方向集合。</p>
+<p>2.setApplicationSwitcherDescription(ApplicationSwitcherDescription description) → Future<void><br>
+设置应用在最近任务栏的显示信息。</p>
+<p>3.setEnabledSystemUIOverlays(List<SystemUiOverlay> overlays) → Future<void><br>
+设置系统状态栏和导航栏是否显示</p>
+<p>4.restoreSystemUIOverlays() → Future<void><br>
+将状态栏和导航栏还原到通过setEnabledSystemUIOverlays提供的最后设置 。当平台强制启用/禁用UI元素时可以使用。</p>
+<p>5.setSystemUIOverlayStyle(SystemUiOverlayStyle style) → void<br>
+设置系统状态栏和导航栏（如果有）的样式。</p>
+<p>以及一个参数<br>
+latestStyle，表示最近通过setSystemUIOverlayStyle方法设置的样式，作用是每次调用setSystemUIOverlayStyle方法时，先判断新设置的样式和上一次的样式是否一样，如果一样就直接返回，不一样才执行设置逻辑。</p>
+<h2 id="可以实现的功能">可以实现的功能</h2>
+<h3 id="1强制应用为竖屏当系统开启了自动旋转功能时手机横屏放置应用依然保持竖屏">1.强制应用为竖屏（当系统开启了自动旋转功能时，手机横屏放置，应用依然保持竖屏）</h3>
+<p>代码使用</p>
+<pre><code class="language-dart"> //禁用横屏，强制竖屏
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+</code></pre>
+<p>原理分析<br>
+方法setPreferredOrientations可以设置的方向有4个，分别是<br>
+竖直上 DeviceOrientation.portraitUp<br>
+竖直下 DeviceOrientation.portraitDown<br>
+水平左 DeviceOrientation.landscapeLeft<br>
+水平右 DeviceOrientation.landscapeRight<br>
+其中portraitUp是手机正常方向；landscapeLeft是手持手机正常方向，逆时针旋转90°；landscapeRight是手持手机正常方向，顺时针旋转90°；portraitDown是正常方向旋转180°；应用运行效果图如下<br>
+<img src="https://PaIn22152.github.io/post-images/1611713156986.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<blockquote>
+<p>portraitUp，手机正常方向</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1611713165997.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>portraitDown，将正常手机旋转180°。</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://PaIn22152.github.io/post-images/1611713176163.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>landscapeLeft，将正常手机方向逆时针旋转90°。</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="https://PaIn22152.github.io/post-images/1611713184720.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>landscapeRight，将正常手机方向顺时针旋转90°。</p>
+</blockquote>
+<p>当应用方向被设置为portraitUp和portraitDown，应用就只有竖直方向，同理可以设置应用为横屏。</p>
+<h3 id="2设置应用在最近任务栏的显示信息">2设置应用在最近任务栏的显示信息</h3>
+<p>代码使用</p>
+<pre><code class="language-dart">SystemChrome.setApplicationSwitcherDescription(
+        const ApplicationSwitcherDescription(
+          label: 'history',
+          primaryColor: 0x0000ff00,
+        ));
+</code></pre>
+<p>其中label是显示在最近任务栏最上方的title，primaryColor是title的背景色（部分android手机没有效果，ios未实测）<br>
+<img src="https://PaIn22152.github.io/post-images/1611715453328.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<h3 id="3设置全屏">3设置全屏</h3>
+<p>使用setEnabledSystemUIOverlays方法隐藏掉系统上方的状态栏和下方的导航栏，代码如下</p>
+<pre><code class="language-dart">SystemChrome.setEnabledSystemUIOverlays([]);
+</code></pre>
+<p>使用android手机实测时发现：<br>
+1.如果使用SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);<br>
+只显示状态栏，不显示导航栏，用户点击应用后，会立即出现导航栏，且不再隐藏<br>
+2.如果使用SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);<br>
+只显示导航栏，不显示状态栏，但是但用户手动拉出状态栏后，状态栏不再隐藏<br>
+3.如果使用SystemChrome.setEnabledSystemUIOverlays([]);<br>
+状态栏和导航栏都会隐藏，用户可以手动拉出状态栏和导航栏，在大约三秒后，系统又会隐藏掉状态栏和导航栏，以此实现全屏效果，不过在刘海屏和水滴屏上，状态栏会整个不显示，如图最上方的黑色部分（红色块设置的位置是在top left）<br>
+<img src="https://PaIn22152.github.io/post-images/1611714809247.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<h3 id="4设置状态栏和导航栏的背景色">4.设置状态栏和导航栏的背景色</h3>
+<p>代码如下</p>
+<pre><code class="language-dart">SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.red,
+          systemNavigationBarColor: Colors.blue,
+        ));
+</code></pre>
+<p>其中statusBarColor是状态栏，systemNavigationBarColor是导航栏，效果如图<br>
+<img src="https://PaIn22152.github.io/post-images/1611715246624.jpg" alt="" width="330" height="640" loading="lazy"><br>
+SystemUiOverlayStyle还有其他几个参数，但是在用android机实测时，未发现有什么用</p>
+<p>至此，SystemChrome相关的功能全部说完😃🤓</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[开发你的第一个flutter插件]]></title>
+        <id>https://PaIn22152.github.io/post/flutter-he-yuan-sheng-tong-xin/</id>
+        <link href="https://PaIn22152.github.io/post/flutter-he-yuan-sheng-tong-xin/">
+        </link>
+        <updated>2021-01-18T09:54:40.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="whats-flutter插件">What's flutter插件？</h2>
+<p>flutter作为一个ui绘制工具，是不能直接调用一些原生功能的，比如相机，传感器，屏幕亮度等等，所以需要原生实现，然后再用flutter和原生通信，这就是flutter插件。</p>
+<h2 id="how">How？</h2>
+<p>那么flutter怎么和原生通信呢，<a href="https://flutter.cn/docs/development/platform-integration/platform-channels?tab=ios-channel-objective-c-tab">flutter官网</a>有如下的图<br>
+<img src="https://PaIn22152.github.io/post-images/1611309136106.png" alt="" loading="lazy"><br>
+可以看到，flutter是通过Platform Channels（官方翻译为平台通道）和原生通信的，图中的MethodChannel就是PlatformChannel中的一种，另外还有EventChannel。</p>
+<h2 id="demo">Demo</h2>
+<p>官网有一个<a href="https://flutterchina.club/platform-channels/">获取设备电池状态的demo</a>，接下来我会写一个获取设备屏幕亮度的demo，包括实际开发flutter plugin的具体流程细节和一些可能会遇到的坑。</p>
+<h3 id="1新建module">1.新建module</h3>
+<p>选择Flutter Plugin，在location那一栏，选择到当前flutter项目下的plugins文件夹（没有就新建），就会生成一个如图的flutter项目<br>
+<img src="https://PaIn22152.github.io/post-images/1612145659686.png" alt="" loading="lazy"></p>
+<h3 id="2配置gradle">2.配置gradle</h3>
+<p>android端，build.gradle下添加如下</p>
+<pre><code class="language-gradle">//获取local.properties配置文件
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader -&gt;
+        localProperties.load(reader)
+    }
+}
+//获取flutter的sdk路径
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException(&quot;Flutter SDK not found. Define location with flutter.sdk in the local.properties file.&quot;)
+}
+
+dependencies {
+    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version&quot;
+    compileOnly files(&quot;$flutterRoot/bin/cache/artifacts/engine/android-arm/flutter.jar&quot;)
+    compileOnly 'androidx.annotation:annotation:1.1.0'
+}
+</code></pre>
+<p>在local.properties文件下增加android sdk和flutter sdk的路径（如果没有），如下</p>
+<pre><code class="language-java">sdk.dir=D:\\as\\sdk
+flutter.sdk=F:\\flutter\\flutter
+</code></pre>
+<p>然后使用androidStudio打开screen_light下的android项目，编译运行，如果这一步没有问题的话，ScreenLightPlugin这个类可以正常编译通过，不会报错。</p>
+<h3 id="3-flutter传值到platform">3. flutter传值到platform</h3>
+<p>在lib文件夹下编写flutter代码<br>
+3.1 创建MethodChannel对象</p>
+<pre><code class="language-dart">final MethodChannel _channel = const MethodChannel(_channel_name);
+</code></pre>
+<p>其中的_channel_name参数，需要保证在flutter、android、ios各端都是同一个值。<br>
+3.2 调用invokeMethod方法</p>
+<pre><code class="language-dart">///调用platform方法，并返回bool
+  Future&lt;bool&gt; _invokeBooleanMethod(String method, [dynamic arguments]) async {
+    final bool result = await _channel.invokeMethod&lt;bool&gt;(
+      method,
+      arguments,
+    );
+    return result;
+  }
+</code></pre>
+<p>通过调用_channel的invokeMethod方法，可以把flutter的参数传到原生端<br>
+3.3 android端接受参数<br>
+在android目录下，ScreenLightPlugin类实现FlutterPlugin、ActivityAware和MethodChannel.MethodCallHandler<br>
+插件加载后，会执行onAttachedToEngine方法，可以做一些初始化操作；</p>
+<pre><code class="language-kotlin">override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        context = flutterPluginBinding.applicationContext
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, _channelName)
+        channel.setMethodCallHandler(this)
+    }
+</code></pre>
+<p>插件卸载执行onDetachedFromEngine方法；</p>
+<pre><code class="language-kotlin"> override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
+</code></pre>
+<p>还有onAttachedToActivity可以获取到activity；</p>
+<pre><code class="language-kotlin"> override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+</code></pre>
+<p>另外一个最重要的方法是onMethodCall，当flutter通过_channel.invokeMethod调用方法后，会执行此方法，并且可以通过MethodCall参数获取到flutter传的参数</p>
+<pre><code class="language-kotlin">override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        when (call.method) {
+            _getSysScreenLight -&gt; callGetSysScreenLight(call, result)
+            _setAppScreenLight -&gt; callSetAppScreenLight(call, result)
+            _getAppScreenLight -&gt; callGetAppScreenLight(call, result)
+            _listenSysScreenLight -&gt; callListenSysScreenLight(call, result)
+            _unlistenSysScreenLight -&gt; callUnlistenSysScreenLight(call, result)
+        }
+    }
+
+    //参数获取flutter传的参数
+ val light: Int? = call.argument&lt;Int&gt;(_argLight)
+</code></pre>
+<p>3.4 platform处理后，返回值到flutter<br>
+通过onMethodCall下的Result参数，可以返回相应的值到flutter</p>
+<pre><code class="language-kotlin">result.success(true)
+</code></pre>
+<p>以上的流程可以总结为，在flutter端，通过MethodChannel对象，调用invokeMethod方法，传值到原生端，原生端处理后，通过Result参数返回值到flutter端<br>
+有一个问题，是flutter和android端的ScreenLightPlugin类怎么关联在一起的，其实是在插件的pubspec.yaml文件里面配置的</p>
+<pre><code class="language-yaml">flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.perdev.screen_light
+        pluginClass: ScreenLightPlugin
+      ios:
+        pluginClass: ScreenLightPlugin
+</code></pre>
+<h3 id="4-回调方法原生传值到flutter">4. 回调方法（原生传值到flutter）</h3>
+<p>和flutter传值到原生一样，也是先在原生端获得MethodChannel对象，然后调用invokeMethod方法，然后就会走到flutter的这个地方</p>
+<pre><code class="language-dart"> _channel.setMethodCallHandler((call) =&gt; _handleMethod(call));
+
+  ///回调，platform主动调用channel.invokeMethod方法后，会走到此处
+  Future&lt;dynamic&gt; _handleMethod(MethodCall call) {
+    switch (call.method) {
+      case _callbackSysScreenLightChanged:
+        final map = call.arguments as Map&lt;dynamic, dynamic&gt;;
+        final light = map[_argLight] as int;
+        final selfChange = map[_argSelfChange] as bool;
+        _list.forEach((v) {
+          v(light, selfChange);
+        });
+        break;
+    }
+    return Future&lt;dynamic&gt;.value(null);
+  }
+</code></pre>
+<h3 id="5-待续ios平台实现代码">5. 待续，ios平台实现代码</h3>
+<h3 id="6-发布插件">6. 发布插件</h3>
+<p>当插件开发完成后，可以把插件发布到<a href="https://pub.dev/">pub.dev</a>，供其他人使用，发布流程比较简单的，看一下<a href="https://flutterchina.club/developing-packages/#publish">这个文档</a>就会了。</p>
+<h2 id="最后">最后</h2>
+<p>至此，你已经完成了你的第一个flutter插件开发<br>
+<a href="https://pub.dev/packages/screen_light">插件pub地址</a><br>
+<a href="https://github.com/PaIn22152/Bing-flutter/tree/master/plugins/screen_light">源码地址</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[flutter-plugin源码爱恨情仇 | 二、flutter_screenutil]]></title>
+        <id>https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-er-flutter_screenutil/</id>
+        <link href="https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-er-flutter_screenutil/">
+        </link>
+        <updated>2021-01-15T08:22:08.000Z</updated>
+        <content type="html"><![CDATA[<p>flutter-plugin源码爱恨情仇第二篇，屏幕适配----<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a>(^3.2.0)。</p>
+<h3 id="前言">前言</h3>
+<p>上篇和马老师一起看了sp在flutter端的实现，主要功能是原生平台代码实现的，今天看一个不使用任何原生代码的插件flutter_screenutil，插件实现了在不同设备上的屏幕适配。接下来就让我们耗子尾汁。</p>
+<h3 id="适配原理">适配原理</h3>
+<p>先说一下适配原理，根据UI设计时的手机尺寸，计算出实际设备与UI设计的比例，然后每次给控件赋值时都通过这个比例，计算实际尺寸。举个栗子，UI设计尺寸是360x640（单位像素，下同），测试机实际尺寸是720x1280，那么比例就是2，某一个控件在标注稿上，是100x100，那么在测试机上的实际尺寸就是在此基础上在乘比例2，为200x200，这样的效果就是，100的宽，在设计稿上占了屏幕的1/3（大概），实际设备上，使用200的宽，也是占用屏幕1/3，达到相同的显示效果。</p>
+<h3 id="注意点">注意点</h3>
+<p>手机的宽高比不是都一样，有的手机会矮一点，有的手机会高一点，实际项目中，一般处理方案是根据宽的比例适配。至于高度部分，如果在部分手机上，会有超过整个屏幕的情况，高度会做成可滚动的，从上往下布局，这样的效果是在高屏幕手机上，下面会有空白，在矮屏幕手机上，显示不完的部分滚动显示。如果不会有超过屏幕的情况，那垂直方向可以相对布局，把多余的空白部分均分，这样的效果是，在高屏手机上，控件间距离大一点，显得空旷一点，在矮屏手机上，控件间距离小一点，显得紧凑一点，但是不同手机的整体效果都是比较一致的。</p>
+<h3 id="源码">源码</h3>
+<p>这时候可能有朋友就要说了，你这扯了这么多有的没的废话，源码呢？我说我这个有用，他说没用，我说有用，他说没用，我说年轻人要讲武德，现在就开始淦源码。<br>
+初始化代码：</p>
+<pre><code class="language-dart">ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+</code></pre>
+<p>传入的参数分别为，上下文对象，UI设计的尺寸，是否根据系统的字体大小进行缩放，其中后两个参数的默认值分别是1080 x 1920 和false，源码如下：</p>
+<pre><code class="language-dart">static void init(
+    BuildContext context, {
+    Size designSize = defaultSize,
+    bool allowFontScaling = false,
+  })
+  static const Size defaultSize = Size(1080, 1920);
+</code></pre>
+<p>完整的初始化源码如下：</p>
+<pre><code class="language-dart">ScreenUtil._();
+
+  factory ScreenUtil() {
+    assert(
+      _instance != null,
+      '\nEnsure to initialize ScreenUtil before accessing it.\nPlease execute the init method : ScreenUtil.init()',
+    );
+    return _instance;
+  }
+
+  static void init(
+    BuildContext context, {
+    Size designSize = defaultSize,
+    bool allowFontScaling = false,
+  }) {
+    _instance ??= ScreenUtil._();
+    _instance
+      ..uiSize = designSize
+      ..allowFontScaling = allowFontScaling;
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+    _pixelRatio = mediaQuery.devicePixelRatio;
+    _screenWidth = mediaQuery.size.width;
+    _screenHeight = mediaQuery.size.height;
+    _statusBarHeight = mediaQuery.padding.top;
+    _bottomBarHeight = mediaQuery.padding.bottom;
+    _textScaleFactor = mediaQuery.textScaleFactor;
+  }
+</code></pre>
+<p>和sp插件一样，也是一来就就是单例模式，区别是sp每次调用获取单例的方法getInstance时，都会判断有没有初始化，如果没有就先初始化，而screenutil则是必须先手动调用一次初始化方法init后，才会生成单例对象，然后才可以通过ScreenUtil()方法获取到单例对象，导致这一差异的原因，是screenutil的初始化需要传值。<br>
+上诉代码中，用到的dart语法糖有<br>
+1.判空赋值 a??= b，只有当a为null时，b赋值给a；<br>
+2.级联运算符 a..i=1 ..s='s'，使用级联运算符，可以让你在同一个对象上连续调用多个对象的变量或方法。<br>
+（更多dart语法，可以参考<a href="https://mp.weixin.qq.com/s/_I3ouVOtV70rxWMroqnIFw">这里</a>或者<a href="http://flutter.link/2018/02/08/Dart%E8%AF%AD%E6%B3%95%E7%B3%96/">这里</a>)<br>
+初始化方法里面，做的就是一些初始化的操作（这踏马不是废话吗。。。），包括设置UI设计尺寸，字体是否使用系统缩放，设备屏幕信息，其中屏幕信息包括以下：</p>
+<pre><code class="language-dart">/// 每个逻辑像素的字体像素数，字体的缩放比例
+  /// The number of font pixels for each logical pixel.
+  double get textScaleFactor =&gt; _textScaleFactor;
+
+  /// 设备的像素密度
+  /// The size of the media in logical pixels (e.g, the size of the screen).
+  double get pixelRatio =&gt; _pixelRatio;
+
+  /// 当前设备宽度 dp
+  /// The horizontal extent of this size.
+  double get screenWidth =&gt; _screenWidth;
+
+  ///当前设备高度 dp
+  ///The vertical extent of this size. dp
+  double get screenHeight =&gt; _screenHeight;
+
+  /// 当前设备宽度 px
+  /// The vertical extent of this size. px
+  double get screenWidthPx =&gt; _screenWidth * _pixelRatio;
+
+  /// 当前设备高度 px
+  /// The vertical extent of this size. px
+  double get screenHeightPx =&gt; _screenHeight * _pixelRatio;
+
+  /// 状态栏高度 dp 刘海屏会更高
+  /// The offset from the top
+  double get statusBarHeight =&gt; _statusBarHeight;
+
+  /// 底部安全区距离 dp
+  /// The offset from the bottom.
+  double get bottomBarHeight =&gt; _bottomBarHeight;
+</code></pre>
+<p>有这些信息后，就可以计算比例了，代码如下：</p>
+<pre><code class="language-dart"> /// 实际的dp与UI设计px的比例
+  /// The ratio of the actual dp to the design draft px
+  double get scaleWidth =&gt; _screenWidth / uiSize.width;
+
+  double get scaleHeight =&gt; _screenHeight / uiSize.height;
+
+  double get scaleText =&gt; scaleWidth;
+</code></pre>
+<p>最后是三个对外暴露的方法，代码如下：</p>
+<pre><code class="language-dart">/// 根据UI设计的设备宽度适配
+/// 高度也可以根据这个来做适配可以保证不变形,比如你先要一个正方形的时候.
+/// Adapted to the device width of the UI Design.
+/// Height can also be adapted according to this to ensure no deformation ,
+/// if you want a square
+double setWidth(num width) =&gt; width * scaleWidth;
+
+/// 根据UI设计的设备高度适配
+/// 当发现UI设计中的一屏显示的与当前样式效果不符合时,
+/// 或者形状有差异时,建议使用此方法实现高度适配.
+/// 高度适配主要针对想根据UI设计的一屏展示一样的效果
+/// Highly adaptable to the device according to UI Design
+/// It is recommended to use this method to achieve a high degree of adaptation
+/// when it is found that one screen in the UI design
+/// does not match the current style effect, or if there is a difference in shape.
+double setHeight(num height) =&gt; height * scaleHeight;
+
+///字体大小适配方法
+///- [fontSize] UI设计上字体的大小,单位px.
+///Font size adaptation method
+///- [fontSize] The size of the font on the UI design, in px.
+///- [allowFontScaling]
+double setSp(num fontSize, {bool allowFontScalingSelf}) =&gt;
+    allowFontScalingSelf == null
+        ? (allowFontScaling
+            ? (fontSize * scaleText)
+            : ((fontSize * scaleText) / _textScaleFactor))
+        : (allowFontScalingSelf
+            ? (fontSize * scaleText)
+            : ((fontSize * scaleText) / _textScaleFactor));
+</code></pre>
+<p>逻辑很简单，用传入的值，分别乘上宽或者高或者字体的比例，其中字体还要判断是否使用系统缩放。<br>
+至此，整个源码流程全部走完。</p>
+<h3 id="使用优化">使用优化</h3>
+<p>除了上面的流程，插件还提供了一些使用上的优化，一个是size_extension.dart下提供了扩展函数，另一个是flutter_screenutil.dart统一包管理。<br>
+扩展函数源码：</p>
+<pre><code class="language-dart">extension SizeExtension on num {
+///[ScreenUtil.setWidth]
+double get w =&gt; ScreenUtil().setWidth(this);
+
+///[ScreenUtil.setHeight]
+double get h =&gt; ScreenUtil().setHeight(this);
+
+///[ScreenUtil.setSp]
+double get sp =&gt; ScreenUtil().setSp(this);
+
+///[ScreenUtil.setSp]
+double get ssp =&gt; ScreenUtil().setSp(this, allowFontScalingSelf: true);
+
+///[ScreenUtil.setSp]
+double get nsp =&gt; ScreenUtil().setSp(this, allowFontScalingSelf: false);
+
+///屏幕宽度的倍数
+///Multiple of screen width
+double get sw =&gt; ScreenUtil().screenWidth * this;
+
+///屏幕高度的倍数
+///Multiple of screen height
+double get sh =&gt; ScreenUtil().screenHeight * this;
+}
+</code></pre>
+<p>dart的扩展函数和kotlin差不多，允许你在已有的类上，扩展新的方法，我想说这个语法糖真的是太甜了。<br>
+统一包管理源码：</p>
+<pre><code class="language-dart">library flutter_screenutil;
+
+export 'size_extension.dart';
+export 'screenutil.dart';
+</code></pre>
+<p>这样做的目的是，在项目中只需要导入flutter_screenutil这个包，就可以使用下面定义的另外的包，而不是导入每一个包，在很多插件中都有提供这样的功能。</p>
+<h3 id="项目中的具体使用">项目中的具体使用</h3>
+<p>说下在实际项目中的使用，首先是在第一个界面初始化screenutil，传入UI设计尺寸</p>
+<pre><code class="language-dart">ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+</code></pre>
+<p>然后使用宽度适配</p>
+<pre><code class="language-dart">Container(
+          width: 48.w,
+          height: 48.w,...)
+ style: TextStyle(color: Color(0xFF404040), fontSize: 14.sp),
+</code></pre>
+<p>使用的是扩展函数写法，需要注意的是，扩展函数数dart2.6之后才有的功能。</p>
+<h3 id="总结">总结</h3>
+<p>插件没有太多的代码，实现的功能却比较强大，回头再看一遍所有的源码，相信很多朋友都可以实现，截止到现在，插件在github共获2.2k star，所以朋友们，想做一个上千star的开源项目，也不是太难的（没有任何贬低的意思），大胆放手去做。（小声BB，我啥时候能做一个上千star的开源就好了）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[flutter-plugin源码爱恨情仇 | 一、shared_preferences]]></title>
+        <id>https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-yi-shared_preferences/</id>
+        <link href="https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-yi-shared_preferences/">
+        </link>
+        <updated>2021-01-15T08:04:13.000Z</updated>
+        <content type="html"><![CDATA[<p>想写一个系列博客，关于flutter优秀插件的源码学习，flutter-plugin源码爱恨情仇，这是第一篇，本地数据持久化----<a href="https://pub.dev/packages/shared_preferences">shared_preference</a>(^0.5.12+4)。</p>
+<h3 id="引子">引子</h3>
+<p>刚才有个朋友问我，马老师发生什么事了，我说怎么回事，给我发了一个flutter插件，我一看，源莱氏-佐田，使用shared_preferences实现数据持久化，插件的官方描述</p>
+<blockquote>
+<p>Wraps platform-specific persistent storage for simple data (NSUserDefaults on iOS and macOS, SharedPreferences on Android, etc.). Data may be persisted to disk asynchronously, and there is no guarantee that writes will be persisted to disk after returning, so this plugin must not be used for storing critical data.</p>
+</blockquote>
+<h3 id="翻译一下">翻译一下</h3>
+<blockquote>
+<p>为简单数据包装特定于平台的持久存储(iOS和macOS上的NSUserDefaults, Android上的SharedPreferences，等等)。数据可以异步持久化到磁盘，并且不能保证返回后的写操作将持久化到磁盘，所以这个插件不能用于存储关键数据。</p>
+</blockquote>
+<h3 id="源码入口">源码入口</h3>
+<p>查看使用demo</p>
+<pre><code class="language-dart">Future&lt;SharedPreferences&gt; _prefs = SharedPreferences.getInstance();
+</code></pre>
+<p>点进去一看，啪，上来就是个单例模式，很快啊，我全部防出去了</p>
+<pre><code class="language-dart"> //构造方法私有化 
+  SharedPreferences._(this._preferenceCache);
+
+  /// Loads and parses the [SharedPreferences] for this app from disk.
+  ///
+  /// Because this is reading from disk, it shouldn't be awaited in
+  /// performance-sensitive blocks.
+  static Future&lt;SharedPreferences&gt; getInstance() async {
+    if (_completer == null) {
+      _completer = Completer&lt;SharedPreferences&gt;();
+      try {
+        final Map&lt;String, Object&gt; preferencesMap =
+            await _getSharedPreferencesMap();
+        _completer.complete(SharedPreferences._(preferencesMap));
+      } on Exception catch (e) {
+        // If there's an error, explicitly return the future with an error.
+        // then set the completer to null so we can retry.
+        _completer.completeError(e);
+        final Future&lt;SharedPreferences&gt; sharedPrefsFuture = _completer.future;
+        _completer = null;
+        return sharedPrefsFuture;
+      }
+    }
+    return _completer.future;
+  }
+</code></pre>
+<p>首先是把构造方法私有化，保证其他类不能直接构造SharedPreferences的实例，只能通过getInstance这个异步方法获取实例。然后是在getInstance方法中，做一些必要的初始化操作，包括获取sp中已经存在的所有键值对到map，然后使用这个map构造SharedPreferences实例，如果发生异常，，返回一个error future的同时，会把_completer置为空，以便下次可以重试。</p>
+<p>这一段代码里面，指向的关键代码是_getSharedPreferencesMap方法，代码如下</p>
+<pre><code class="language-dart">static Future&lt;Map&lt;String, Object&gt;&gt; _getSharedPreferencesMap() async {
+    final Map&lt;String, Object&gt; fromSystem = await _store.getAll();
+    assert(fromSystem != null);
+    // Strip the flutter. prefix from the returned preferences.
+    final Map&lt;String, Object&gt; preferencesMap = &lt;String, Object&gt;{};
+    for (String key in fromSystem.keys) {
+      assert(key.startsWith(_prefix));
+      preferencesMap[key.substring(_prefix.length)] = fromSystem[key];
+    }
+    return preferencesMap;
+  }
+</code></pre>
+<p>这段代码做的是，获取当前平台对应的_store，用_store的getall方法，拿到已经存在的，且由flutter添加的（通过key的头判断）所有键值对数据，以map形式返回到_preferenceCache。<br>
+这样做的目的是，以后每次get数据时，可以直接从内存（_preferenceCache）拿数据，同步返回，提升效率。<br>
+set数据时，先对传入的key处理，统一加上头’flutter.‘作为标记，然后再对传入的value处理，如果value为空，从_preferenceCache和_store里删除改记录，如果value是List，复制一份值出来，然后把数据存到_preferenceCache和_store。<br>
+这里的_preferenceCache是在内存里的一个map对象，_store是SharedPreferencesStorePlatform类，是不同平台存数据的实现类。<br>
+get代码和set代码如下</p>
+<pre><code class="language-dart">//get
+/// Reads a value of any type from persistent storage.
+  dynamic get(String key) =&gt; _preferenceCache[key];
+
+//set string
+Future&lt;bool&gt; setString(String key, String value) =&gt;_setValue('String', key, value);
+
+Future&lt;bool&gt; _setValue(String valueType, String key, Object value) {
+    final String prefixedKey = '$_prefix$key';
+    if (value == null) {
+      _preferenceCache.remove(key);
+      return _store.remove(prefixedKey);
+    } else {
+      if (value is List&lt;String&gt;) {
+        // Make a copy of the list so that later mutations won't propagate
+        _preferenceCache[key] = value.toList();
+      } else {
+        _preferenceCache[key] = value;
+      }
+      return _store.setValue(valueType, prefixedKey, value);
+    }
+  }
+</code></pre>
+<p>上文提到的获取当前平台对应的_store，代码如下</p>
+<pre><code class="language-dart">static bool _manualDartRegistrationNeeded = true;
+static SharedPreferencesStorePlatform get _store {
+  // This is to manually endorse the Linux implementation until automatic
+  // registration of dart plugins is implemented. For details see
+  // https://github.com/flutter/flutter/issues/52267.
+  if (_manualDartRegistrationNeeded) {
+    // Only do the initial registration if it hasn't already been overridden
+    // with a non-default instance.
+    if (!kIsWeb &amp;&amp;
+        SharedPreferencesStorePlatform.instance
+            is MethodChannelSharedPreferencesStore) {
+      if (Platform.isLinux) {
+        SharedPreferencesStorePlatform.instance = SharedPreferencesLinux();
+      } else if (Platform.isWindows) {
+        SharedPreferencesStorePlatform.instance = SharedPreferencesWindows();
+      }
+    }
+    _manualDartRegistrationNeeded = false;
+  }
+
+  return SharedPreferencesStorePlatform.instance;
+}
+</code></pre>
+<p>逻辑比较清晰，判断当前平台，如果是Linux平台，使用SharedPreferencesLinux，如果是windows平台，使用SharedPreferencesWindows，如果是android，ios，web（web不太确定，看代码逻辑是这样的，但是没有找到web的实现）平台，使用MethodChannelSharedPreferencesStore，然后在这个类里面再分平台调用平台的native代码</p>
+<h3 id="flutter调用native代码">flutter调用native代码</h3>
+<p>在MethodChannelSharedPreferencesStore类里面，先设置命名通道MethodChannel，代码如下</p>
+<pre><code class="language-dart">const MethodChannel _kChannel =
+    MethodChannel('plugins.flutter.io/shared_preferences');
+</code></pre>
+<p>然后通过_invokeBoolMethod，调用以上命名通道下的native代码，_invokeBoolMethod代码如下</p>
+<pre><code class="language-dart">Future&lt;bool&gt; _invokeBoolMethod(String method, Map&lt;String, dynamic&gt; params) {
+    return _kChannel
+        .invokeMethod&lt;bool&gt;(method, params)
+        // TODO(yjbanov): I copied this from the original
+        //                shared_preferences.dart implementation, but I
+        //                actually do not know why it's necessary to pipe the
+        //                result through an identity function.
+        //
+        //                Source: https://github.com/flutter/plugins/blob/3a87296a40a2624d200917d58f036baa9fb18df8/packages/shared_preferences/lib/shared_preferences.dart#L134
+        .then&lt;bool&gt;((dynamic result) =&gt; result);
+  }
+</code></pre>
+<h3 id="android平台实现">android平台实现</h3>
+<p>在插件的android包下，io.flutter.plugins.sharedpreferences包中，有两个类，SharedPreferencesPlugin和MethodCallHandlerImpl，<br>
+SharedPreferencesPlugin类定义了android的命名通道方法，和之前MethodChannelSharedPreferencesStore使用相同的命名通道，然后flutter才可以找到android这边对应的方法，代码如下</p>
+<pre><code class="language-dart">private static final String CHANNEL_NAME = &quot;plugins.flutter.io/shared_preferences&quot;;
+
+channel = new MethodChannel(messenger, CHANNEL_NAME);
+</code></pre>
+<p>MethodCallHandlerImpl类是每一个方法在android的具体实现，可以看onMethodCall方法，实现了flutter里面调用的所有方法，代码太多不粘了。</p>
+<h3 id="ios平台实现">ios平台实现</h3>
+<p>在插件的ios包下，有两个类FLTSharedPreferencesPlugin.m和FLTSharedPreferencesPlugin.h，在FLTSharedPreferencesPlugin.h<br>
+中，定义了ios的命名通道，以及每一个方法在ios的具体实现，代码如下</p>
+<pre><code class="language-dart">//命名通道
+static NSString *const CHANNEL_NAME = @&quot;plugins.flutter.io/shared_preferences&quot;;
+FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:CHANNEL_NAME
+binaryMessenger:registrar.messenger];
+</code></pre>
+<h3 id="总结">总结</h3>
+<p>插件流程，判断当前设备的平台，通过平台原生代码获取已经存在的数据，用map保存，get数据时，直接从map里面拿，set数据时，把数据加到map中，再调用平台的原生代码，存数据到磁盘。<br>
+正如官方描述的那样，这个插件做的事，就是对数据持久化这一功能，在不同平台上面的封装（wrap），整体逻辑比较清晰，代码量不大，适合我这样的菜鸡做源码阅读。其中关键的技术点，是flutter调用原生代码，这篇博客只是看了个大概流程和调用走向，对flutter调用原生代码这一块的学习，还有待具体实操。</p>
+<h3 id="马老师镇场">马老师镇场</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1610698564210.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2020-2021随便写写]]></title>
+        <id>https://PaIn22152.github.io/post/2020-2021-sui-bian-xie-xie/</id>
+        <link href="https://PaIn22152.github.io/post/2020-2021-sui-bian-xie-xie/">
+        </link>
+        <updated>2020-12-30T09:46:00.000Z</updated>
+        <content type="html"><![CDATA[<p>2020年，对全世界的人来说，记忆最深的都是新冠病毒。</p>
+<p>今年工作上最大的进步，是学习了kotlin和flutter，并且在公司项目中得到了运用。kotlin使用后最大的感受是，kotlin是升级版的java，增加了一些语法糖，以后做android这一块的话，肯定是要熟悉的，毕竟是google主推的android开发语言，是未来的趋势。至于flutter，刚开始接触会觉得写法怪怪的，各种嵌套，但是用过的人肯定都是说真香，性能强，代码量少。未来的发展方向，主要是flutter。另外就是搞了个人网站，写了一些leetcode算法解题博客，和flutter相关的博客。</p>
+<p>生活上，早睡早起勉强算是坚持下来了吧，虽然也有熬夜的时候，但是这一年在0点后睡觉的时间，应该是不超过30天的，在1点后睡觉的应该不超过5天（国庆开车回家那次不算在内，堵车在高速太惨了），除此之外，大多数时间是23点前睡的，以后也要坚持。阅读量有点少，不到十本书，新的一年要提升。运动量还行，跑步坚持了一段时间，感觉膝盖有点不适应就没有再跑了，后面有游泳，爬山，俯卧撑，引体向上，腹肌撕裂者等，坚持运动的好处是，脖子痛头痛等问题，很少出现了。今年搬家了，开车上班要一个小时，住的远的缺点是上下班真的好累，而且除了开车没得选，没有公交地铁，好处是房子还挺宽敞安静的，价格也还能接受，和之前的比起来，好太多了。爱好方面，钓鱼算一个吧，去钓过几次，明年有时间还会继续。情感上，遇到了想追的她，目前还没啥进展，我对感情的态度是两个词，认真，珍惜，希望能和她有更多的故事吧。</p>
+<p>2020总结了几个词，希望能指导未来的路<br>
+克己，积累，坚持，格局</p>
+<p>说一下2021想要做的事，以后再来看完成得怎么样<br>
+1.换公司，flutter方向，目标是大厂，薪资20K以上；<br>
+2.继续提升flutter能力，并输出文章，定个30篇的目标；<br>
+3.算法提升，有目的性的做leetcode上的题；<br>
+4.两周一本书，不限形式内容；<br>
+5.跑步300公里，练出腹肌，完成深圳十峰；<br>
+6.脱单；</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[LeetCode每日一题（20201022）]]></title>
+        <id>https://PaIn22152.github.io/post/LeetCode每日一题（20201022）/</id>
+        <link href="https://PaIn22152.github.io/post/LeetCode每日一题（20201022）/">
+        </link>
+        <updated>2020-10-22T06:49:20.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="原题地址"><a href="https://leetcode-cn.com/problems/partition-labels/">原题地址</a></h3>
+<h3 id="思考过程">思考过程：</h3>
+<p>从最左字符开始，找到该字符在串中的最右位置，然后从左到右遍历字符，依次找到不同字符的最右位置，如果比上一次记录的最右大，更新最右，直到遍历完成后，左到右表示的字符串，即为一个片段，然后把更新最左，一直到遍历完整个串。</p>
+<h3 id="代码实现">代码实现</h3>
+<pre><code class="language-java">public List&lt;Integer&gt; partitionLabels(String s) {
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+        int lastP = 0;
+        int p = 1;
+        Set&lt;Character&gt; set = new HashSet&lt;&gt;();
+        while (p &lt;= s.length()) {
+            for (int i = lastP; i &lt; p; i++) {
+                char c = s.charAt(i);
+                if (!set.contains(c)) {
+                    int rightPosition = getRightPosition(s, c);
+                    p = Math.max(p, rightPosition);
+                    set.add(c);
+                }
+            }
+            ans.add(p - lastP);
+            lastP = p;
+            p++;
+
+        }
+        return ans;
+    }
+
+    private int getRightPosition(String s, char c) {
+        for (int i = s.length() - 1; i &gt;= 0; i--) {
+            if (s.charAt(i) == c) {
+                return i + 1;
+            }
+        }
+        return 0;
+    }
+</code></pre>
+<h3 id="执行结果">执行结果：</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1609313320382.png" alt="" loading="lazy"></figure>
+<h3 id="查看官方解法"><a href="https://leetcode-cn.com/problems/partition-labels/solution/hua-fen-zi-mu-qu-jian-by-leetcode-solution/">查看官方解法</a></h3>
+<p>贪心算法+双指针（有待深入理解）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Flutter开发知识点全记录]]></title>
+        <id>https://PaIn22152.github.io/post/flutter-kai-fa-zhi-shi-dian-quan-ji-lu/</id>
+        <link href="https://PaIn22152.github.io/post/flutter-kai-fa-zhi-shi-dian-quan-ji-lu/">
+        </link>
+        <updated>2020-10-01T07:19:42.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="关于">关于</h2>
+<p>这是一篇学习笔记博客，会记录个人flutter日常开发中的一些知识点，长期更新。如果某个知识点比较复杂，会另外写一篇博客链接到此。</p>
+<h2 id="常用工具">常用工具</h2>
+<h3 id="1强制手机竖屏">1.强制手机竖屏</h3>
+<p>在应用程序根MaterialApp之前，Widget build(BuildContext context)方法中，添加如下代码（ios可能不起作用，还未测试）</p>
+<pre><code class="language-dart">SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+</code></pre>
+<h3 id="2监听页面的生命周期">2.监听页面的生命周期</h3>
+<p>项目中经常会有一些需求，需要监听页面打开关闭等，在android使用onResume，onPause等方法实现，但是在flutter没有默认的生命周期方法，可以使用RouteAware+RouteObserver实现。<br>
+首先要给根MaterialApp的navigatorObservers属性赋值（比如routeObserver），然后State的实现类需要<a href="https://juejin.cn/post/6844903766492200974">混合</a>RouteAware类，然后在State的didChangeDependencies方法下订阅路由状态，然后就可以在RouteAware的四个方法下监听页面变化。<br>
+假如有3个页面，分别是A、B、C，跳转逻辑由A-&gt;B-&gt;C。<br>
+didPopNext：在C页面关闭后，B页面调起该方法，类似onResume()；<br>
+didPush: 当由A打开B页面时，B页面调起该方法，类似onCreate()；<br>
+didPop: 当B页面关闭时，B页面调起该方法，类似onDestroy()；<br>
+didPushNext: 当从B页面打开C页面时，该方法被调起，类似onPause()。<br>
+部分关键代码如下</p>
+<pre><code class="language-dart">//路由状态观察者初始化
+final RouteObserver&lt;Route&lt;dynamic&gt;&gt; routeObserver = RouteObserver();
+//MaterialApp赋值
+navigatorObservers: [routeObserver],
+//state 实现类混合RouteAware类
+class BaseState&lt;T extends StatefulWidget&gt; extends State with RouteAware
+//订阅路由状态
+@override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context)); //订阅
+    super.didChangeDependencies();
+  }
+</code></pre>
+<h3 id="3国际化">3.国际化</h3>
+<p>使用Intl实现。<a href="https://juejin.cn/post/6844903823119482888">参考链接</a></p>
+<h3 id="4路由统一管理和路由跳转动画">4.路由统一管理和路由跳转动画</h3>
+<p>在应用程序的根MaterialApp，设置onGenerateRoute: MyRouter.generateRoute属性，其中MyRoute代码如下</p>
+<pre><code class="language-dart">///路由管理类，管理所有路由跳转
+class MyRouter {
+
+///应用中所有界面
+  static const String home = 'home'; //主界面
+  static const String play = 'play'; //游戏界面
+  static const String pause = 'pause'; //游戏暂停界面
+
+  static Route&lt;dynamic&gt; generateRoute(RouteSettings settings) {
+
+///设置onGenerateRoute属性后，所有路由跳转都会走到此，路由传值也在此设置，例如下面的PlayRoute
+
+    Map arguments = settings.arguments;
+    switch (settings.name) {
+      //根据名称跳转相应页面
+      case home:
+        return NoAnimRouter(child: HomeRoute());
+      case pause:
+        return NoAnimRouter(child: PauseRoute());
+      case play:
+        return ScaleRouter(
+            child: PlayRoute(
+          sudokuBean: arguments[arg_key_sudoku],
+          handle: arguments[arg_key_handle],
+          handleStack: arguments[arg_key_handleStack],
+          time: arguments[arg_key_time],
+          noteMap: arguments[arg_key_note],
+          inputList: arguments[arg_key_inputlist],
+        ));
+      default:
+        return MaterialPageRoute(
+            builder: (_) =&gt; Scaffold(
+                  body: Center(
+                    child: Text('No route defined for ${settings.name}'),
+                  ),
+                ));
+    }
+  }
+}
+</code></pre>
+<p>常用的路由跳转动画，代码如下（<a href="https://github.com/xiaweizi/SimplicityWeather">代码来源</a>，RESPECT）</p>
+<pre><code class="language-dart">import 'package:flutter/material.dart';
+///路由动画
+//缩放路由动画
+class ScaleRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  ScaleRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+          transitionDuration: Duration(milliseconds: durationMs),
+          transitionsBuilder: (context, a1, a2, child) =&gt; ScaleTransition(
+            scale: Tween(begin: 0.0, end: 1.0)
+                .animate(CurvedAnimation(parent: a1, curve: curve)),
+            child: child,
+          ),
+        );
+}
+//渐变透明路由动画
+class FadeRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  final RouteSettings settings;
+  FadeRouter(
+      {this.child,
+      this.durationMs = 500,
+      this.curve = Curves.fastOutSlowIn,
+      this.settings})
+      : super(
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            settings: settings,
+            transitionDuration: Duration(milliseconds: durationMs),
+            transitionsBuilder: (context, a1, a2, child) =&gt; FadeTransition(
+                  opacity: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: child,
+                ));
+}
+//旋转路由动画
+class RotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  RotateRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            transitionDuration: Duration(milliseconds: durationMs),
+            transitionsBuilder: (context, a1, a2, child) =&gt; RotationTransition(
+                  turns: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: child,
+                ));
+}
+//右---&gt;左
+class Right2LeftRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Right2LeftRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child,
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) =&gt;
+                SlideTransition(
+                  child: child,
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(1.0, 0.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                ));
+}
+//左---&gt;右
+class Left2RightRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  List&lt;int&gt; mapper;
+  Left2RightRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : assert(true),
+        super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) {
+              return child;
+            },
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(-1.0, 0.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//上---&gt;下
+class Top2BottomRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Top2BottomRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) {
+              return child;
+            },
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(0.0, -1.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//下---&gt;上
+class Bottom2TopRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Bottom2TopRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child,
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(0.0, 1.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//缩放+透明+旋转路由动画
+class ScaleFadeRotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  ScaleFadeRotateRouter(
+      {this.child, this.durationMs = 1000, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child, //页面
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              Widget child,
+            ) =&gt;
+                RotationTransition(
+                  //旋转动画
+                  turns: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: ScaleTransition(
+                    //缩放动画
+                    scale: Tween(begin: 0.0, end: 1.0)
+                        .animate(CurvedAnimation(parent: a1, curve: curve)),
+                    child: FadeTransition(
+                      opacity: //透明度动画
+                          Tween(begin: 0.5, end: 1.0).animate(
+                              CurvedAnimation(parent: a1, curve: curve)),
+                      child: child,
+                    ),
+                  ),
+                ));
+}
+//无动画
+class NoAnimRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  NoAnimRouter({this.child})
+      : super(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            transitionDuration: Duration(milliseconds: 0),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =&gt; child);
+}
+</code></pre>
+<h3 id="5屏幕适配">5.屏幕适配</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a>，适配原理和android的今日头条适配方案一致，按宽度适配，填入设计稿的设备屏幕尺寸，相关代码如下，在应用的第一个界面的Widget build(BuildContext context)方法下初始化即可，</p>
+<pre><code class="language-dart">///初始化，设置适配尺寸 (填入设计稿中设备的屏幕尺寸)
+ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+///使用
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+height: 300.w
+fontSize: 35.sp
+</code></pre>
+<h3 id="6手机唯一标识uuid">6.手机唯一标识uuid</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/device_info">device_info</a>，相关代码如下</p>
+<pre><code class="language-dart">///设备唯一标识
+Future&lt;String&gt; getUniqueId() async {
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+    logD(&quot;ios唯一设备码：&quot; + iosDeviceInfo.identifierForVendor);
+    return 'IOS_' + iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  } else if (Platform.isAndroid) {
+    AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+    logD(&quot;android唯一设备码：&quot; + androidDeviceInfo.androidId);
+    return 'AND_' + androidDeviceInfo.androidId; // unique ID on Android
+  } else {
+    logD(&quot;Platform not support.&quot; + Platform.operatingSystem);
+    return &quot;Platform not support.&quot; + Platform.operatingSystem;
+  }
+}
+</code></pre>
+<h3 id="7log">7.log</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/logger">logger</a>，相关代码如下</p>
+<pre><code class="language-dart">final logger = Logger(
+  printer: PrettyPrinter(),
+);
+logD(dynamic d) {
+    logger.d(d);
+}
+</code></pre>
+<h3 id="8sp">8.sp</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/shared_preferences">shared_preferences</a>，做了一些简单封装，代码如下</p>
+<pre><code class="language-dart">///sp实现类，所有sp相关的，都统一在此写，包括put和get
+import 'package:shared_preferences/shared_preferences.dart';
+
+SharedPreferences _sp;
+
+Future&lt;bool&gt; spInit() async {
+  _sp ??= await SharedPreferences.getInstance();
+  return Future&lt;bool&gt;.value(true);
+}
+
+//get的简单封装，增加默认返回值
+dynamic _spGetDef(String key, dynamic def) {
+  final dynamic res = _sp?.get(key);
+  if (res == null) {
+    return def;
+  } else
+    return res;
+}
+
+//put的简单封装
+Future&lt;bool&gt; _spPutString(String key, String value) async {
+  await spInit();
+  return _sp?.setString(key, value);
+}
+
+Future&lt;bool&gt; _spPutInt(String key, int value) async {
+  await spInit();
+  return _sp?.setInt(key, value);
+}
+
+Future&lt;bool&gt; _spPutDouble(String key, double value) async {
+  await spInit();
+  return _sp?.setDouble(key, value);
+}
+
+Future&lt;bool&gt; _spPutBool(String key, bool value) async {
+  await spInit();
+  return _sp?.setBool(key, value);
+}
+
+//测试
+const String _key_test = '_key_test';
+
+Future&lt;bool&gt; spTestPut(String s) async {
+  return _spPutString(_key_test, s);
+}
+
+String spTestGet() {
+  return _spGetDef(_key_test, '');
+}
+
+</code></pre>
+<h2 id="widget相关">widget相关</h2>
+<h3 id="1类似android上的viewpagertablayout实现效果">1.类似android上的viewpager+tabLayout实现效果</h3>
+<p>在flutter上可以使用PageView+bottomNavigationBar实现。<br>
+PageView默认使用的回弹效果和android上的一样，可以使用physics这个属性去修改，如果使用ClampingScrollPhysics，则page不再可以滑动，也不会有回弹效果；如果使用BouncingScrollPhysics，回弹效果和ios类似，也可以使用其他实现类，具体效果自测。pageSnapping 属性控制滚动方式，默认true的情况下，PageView都是一页一页翻的，如果设置成false，这个PageView就可以一点点滚动，就是不用整页滚动过去，滚动到一半的时候也能停下来，具体效果自测。</p>
+<h3 id="2view点击效果">2.view点击效果</h3>
+<p>使用InkWell实现，borderRadius属性修改点击效果的圆角。enableFeedback: false属性关闭反馈（开启反馈的情况下，部分android手机点击后会有点击音效）</p>
+<h3 id="3linearlayout权重">3.LinearLayout权重</h3>
+<p>android中，使用LinearLayout的weight实现权重，在flutter可以使用Row（或者Column）+Expanded实现，Expanded的flex属性即为权重。</p>
+<h3 id="4监听back按钮">4.监听back按钮</h3>
+<p>在Widget build(BuildContext context)方法下，使用WillPopScope包装Scaffold，然后相关代码在onWillPop属性下写。</p>
+<pre><code class="language-dart">Future&lt;bool&gt; _finish() {
+    ///do something
+    return Future.value(true);
+  }
+
+ return WillPopScope(
+      onWillPop: _finish,
+      child: Scaffold());
+</code></pre>
+<h3 id="5保存page状态">5.保存page状态</h3>
+<p>使用PageView或者TabBarView时，当page页面发生切换时，默认会销毁，再切换回来会重绘。如果需要保存page的状态，让他不会销毁，可以让State实现类混合AutomaticKeepAliveClientMixin，实现wantKeepAlive方法并返回true。</p>
+<h3 id="6修改控件大小">6.修改控件大小</h3>
+<p>有一些控件（比如CupertinoSwitch），大小是固定的，不能直接通过设置宽高来控制他的大小，可以使用缩放的方式实现，代码如下</p>
+<pre><code class="language-dart"> child: Transform.scale(
+                scale: 0.88,
+                child: CupertinoSwitch(
+                    activeColor: app_theme_color,
+                    value: on,
+                    onChanged: (b) {
+                      callback(b);
+                    }),
+              ),
+</code></pre>
+<h3 id="7dialog相关">7.dialog相关</h3>
+<p>barrierDismissible控制是否可以点击阴影取消dialog。<br>
+使用WillPopScope包装AlertDialog，可以控制返回键是否取消dialog。<br>
+想自定义圆角，可以使用AlertDialog的shape属性+ClipRRect裁剪content，代码如下</p>
+<pre><code class="language-dart">AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.w))),
+content: ClipRRect(
+                borderRadius: BorderRadius.circular(10.w),
+</code></pre>
+<p>监听dialog的取消，showDialog（或者showCupertinoDialog）方法是异步的，会返回Future，使用 await showDialog(...); testBlock; 当dialog取消后会执行 testBlock</p>
+<h2 id="dart语法相关">dart语法相关</h2>
+<h3 id="1json和model类互转">1.json和Model类互转</h3>
+<p>只需要Model类实现两个如下的方法，然后就可以直接使用json</p>
+<pre><code class="language-dart">///实现方法
+Point.fromJson(Map&lt;String, dynamic&gt; json)
+      : x = json['x'],
+        y = json['y'];
+
+  Map toJson() {
+    Map map = new Map();
+    map[&quot;x&quot;] = this.x;
+    map[&quot;y&quot;] = this.y;
+    return map;
+  }
+
+  import 'dart:convert';
+  ///Model类转json字符串
+  String str = json.encode(bean);
+
+  ///json字符串转Model类
+  Bean bean = Bean.fromJson(json.decode(str));
+</code></pre>
+<h2 id="android平台相关">android平台相关</h2>
+<h2 id="ios平台相关">ios平台相关</h2>
+<h2 id="其他">其他</h2>
+<h3 id="1aes加密">1.AES加密</h3>
+<p>使用插件<a href="https://pub.dev/packages/encrypt">encrypt</a>实现，代码如下</p>
+<pre><code class="language-dart">import 'package:encrypt/encrypt.dart' as my_encrypt;
+String aesDecoded(String s) {
+  //加密的key和偏移量，不可改动，要和对json加密时使用一样
+  final key = my_encrypt.Key.fromUtf8('f4k9f5w7f8g4er26'); //加密key
+  final iv = my_encrypt.IV.fromUtf8('5e8y6w45ju8w9jq8'); //偏移量
+  //设置cbc模式
+  final encrypter = my_encrypt.Encrypter(my_encrypt.AES(key, mode: my_encrypt.AESMode.cbc));
+  //encrypter.encrypt(s, iv: iv);//加密
+  final decrypted = encrypter.decrypt(my_encrypt.Encrypted.from64(s), iv: iv);
+  return decrypted;
+}
+</code></pre>
+<p>对应的java AES加解密代码如下</p>
+<pre><code class="language-java">
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+private static final String KEY = &quot;f4k9f5w7f8g4er26&quot;;// 密匙
+    private static final String OFFSET = &quot;5e8y6w45ju8w9jq8&quot;; // 偏移量
+    private static final String ENCODING = &quot;UTF-8&quot;; // 编码
+    private static final String ALGORITHM = &quot;AES&quot;;//算法
+    private static final String CIPHER_ALGORITHM = &quot;AES/CBC/PKCS5Padding&quot;; // 默认的加密算法
+
+    /**
+     * 加密
+     */
+    public static String encrypt(String data) throws Exception {
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
+        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        byte[] encrypted = cipher.doFinal(data.getBytes(ENCODING));
+        return new BASE64Encoder().encode(encrypted);//此处使用BASE64做转码。
+        //当数据比较大时，生成的string会多出换行符，待优化
+    }
+
+    /**
+     * 解密
+     */
+    public static String decrypt(String data) throws Exception {
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
+        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+        byte[] buffer = new BASE64Decoder().decodeBuffer(data);
+        byte[] encrypted = cipher.doFinal(buffer);
+        return new String(encrypted, ENCODING);//此处使用BASE64做转码。
+    }
+</code></pre>
+<h3 id="2实际开发中用到的一些工具类型网站">2.实际开发中用到的一些工具类型网站</h3>
+<p><a href="http://laomengit.com/flutter/widgets/widgets_structure.html">Flutter组件介绍-老孟</a><br>
+<a href="https://weilu.blog.csdn.net/article/details/100108123">Flutter开发中的一些Tips</a><br>
+<a href="https://pub.dev/">pub查找-官方</a><br>
+<a href="https://javiercbk.github.io/json_to_dart/">Json 2 Dart-json生成bean</a><br>
+<a href="https://juejin.cn/book/6844733827265331214">Flutter绘制学习-掘金小册，需购买</a></p>
+<h3 id="3奇奇怪怪的问题">3.奇奇怪怪的问题</h3>
+<p>3.1 在根界面调用pop（退出应用）时，state的deactivate方法和dispose方法不会执行。</p>
+]]></content>
+    </entry>
+</feed>

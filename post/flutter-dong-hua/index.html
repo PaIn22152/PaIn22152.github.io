@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter动画 | Gridea</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Gridea</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter动画</h2>
+            <div class="post-date">2021-01-22</div>
+            
+            <div class="post-content">
+              <p>flutter动画可以分为两种：1.flutter自带的动画过渡组件，也称隐式动画组件；<br>
+2.自定义widget动画；其中1是官方提供的动画</p>
+<p>1.不需要对动画原理有太多的理解，直接使用，这些widget继承至ImplicitlyAnimatedWidget，下面逐一介绍<br>
+1.1 AnimatedContainer<br>
+正如源码里说的那样</p>
+<blockquote>
+<p>The [AnimatedContainer] will automatically animate between the old and new values of properties when they change using the provided curve and duration. Properties that are null are not animated. Its child and descendants are not animated.</p>
+</blockquote>
+<p>这是一个支持动画功能的Container，当属性值发生变化时，属性将自动从旧值移动到新值，child没有动画。<br>
+支持的属性如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1611888139765.png" alt="" loading="lazy"></p>
+<pre><code class="language-dart"> AnimatedContainer(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius), color: col),
+            duration: const Duration(seconds: 1),
+          ),
+</code></pre>
+<p>以上代码是简单使用示例，当改变其中的size、radius、col等值时，会有1秒的平滑过度动画。<br>
+如果需要修改动画的变化过程，可以使用curve参数，默认是Curves.linear，表示匀速变化；<br>
+如果需要监听动画结束，使用onEnd回调。</p>
+<p>1.2 AnimatedPadding<br>
+支持且仅支持padding的过度动画。</p>
+<p>1.3 AnimatedAlign<br>
+支持且仅支持alignment的过度动画。</p>
+<p>1.4 AnimatedPositioned和AnimatedPositionedDirectional<br>
+AnimatedPositioned支持的属性如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1611888940018.png" alt="" loading="lazy"><br>
+AnimatedPositionedDirectional支持的属性如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1611889283769.png" alt="" loading="lazy"><br>
+两者几乎等价。</p>
+<p>1.5 AnimatedOpacity<br>
+支持且仅支持opacity（透明度）的过度动画。</p>
+<p>1.6 AnimatedDefaultTextStyle<br>
+DefaultTextStyle的动画版本。child下的text组件（不管是多少层），如果没有单独设置style，将会使用AnimatedDefaultTextStyle下的style属性，且style支持动画过度。</p>
+<p>1.7 AnimatedPhysicalModel<br>
+PhysicalModel的动画版本，详细使用待更新。</p>
+<p>1.8 SliverAnimatedOpacity<br>
+SliverOpacity的动画版本，详细使用待更新。</p>
+<p>可以发现，以上的动画组件，都是其他组件的动画版本（比如AnimatedContainer和Container），在已有组件的基础上，增加了动画功能，封装的比较完善，使用比较简单。合理使用以上组件，可以完成大部分动画需求。</p>
+<p>AnimatedPadding	在padding发生变化时会执行过渡动画到新状态<br>
+AnimatedPositioned	配合Stack一起使用，当定位状态发生变化时会执行过渡动画到新的状态。<br>
+AnimatedOpacity	在透明度opacity发生变化时执行过渡动画到新状态<br>
+AnimatedAlign	当alignment发生变化时会执行过渡动画到新的状态。<br>
+AnimatedContainer	当Container属性发生变化时会执行过渡动画到新的状态。<br>
+AnimatedDefaultTextStyle	当字体样式发生变化时，子组件中继承了该样式的文本组件会动态过渡到新样式。</p>
+<p>1.9 自定义动画过渡组件</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/6xCD2h0An/" class="tag">
+                    动画
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
