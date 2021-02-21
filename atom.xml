@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://PaIn22152.github.io</id>
-    <title>Gridea</title>
-    <updated>2021-02-21T03:01:55.953Z</updated>
+    <title>Payne的小站</title>
+    <updated>2021-02-21T11:50:25.206Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://PaIn22152.github.io"/>
     <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
+    <subtitle>克己、积累、坚持、格局、全力以赴</subtitle>
     <logo>https://PaIn22152.github.io/images/avatar.png</logo>
     <icon>https://PaIn22152.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2021, Gridea</rights>
+    <rights>All rights reserved 2021, Payne的小站</rights>
     <entry>
         <title type="html"><![CDATA[LeetCode分类学习，链表操作]]></title>
         <id>https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-lian-biao-cao-zuo/</id>
