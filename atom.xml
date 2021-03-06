@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://PaIn22152.github.io</id>
     <title>Payne的小站</title>
-    <updated>2021-02-21T11:50:25.206Z</updated>
+    <updated>2021-03-06T02:17:34.570Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://PaIn22152.github.io"/>
     <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
@@ -10,6 +10,191 @@
     <logo>https://PaIn22152.github.io/images/avatar.png</logo>
     <icon>https://PaIn22152.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Payne的小站</rights>
+    <entry>
+        <title type="html"><![CDATA[Flutter2.0新特性]]></title>
+        <id>https://PaIn22152.github.io/post/flutter20-xin-te-xing/</id>
+        <link href="https://PaIn22152.github.io/post/flutter20-xin-te-xing/">
+        </link>
+        <updated>2021-03-04T02:35:04.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="写在前面">写在前面</h2>
+<p>时间2021-03-04，Flutter发布2.0版本<br>
+更新文档<a href="https://medium.com/flutter/whats-new-in-flutter-2-0-fe8e95ecc65">medium.com</a><br>
+接下来聊一聊Flutter2.0的一些新特性。</p>
+<h2 id="1flutter-web">1.Flutter Web</h2>
+<p>flutter对web的支持，已经从beta channel到了stable channel，可以直接在stable创建一个web应用。为此flutter做了一些针对web的优化，包括CanvasKit-based renderer和 <a href="https://pub.dev/documentation/url_launcher/latest/link/Link-class.html">Link widget</a>等</p>
+<h2 id="2null-safety">2.Null Safety</h2>
+<p>健全的空安全机制，主要得益于dart语言升级到2.12</p>
+<h2 id="3desktop">3.Desktop</h2>
+<p>对桌面的支持已经加入到stable channel中的早期版本，可以视作“beta snapshot”，最终稳定版本即将到来。想要尝试桌面版本，可以切换到beta channel，或者使用‘flutter config’启用某个桌面配置设置（例如enable-macos-desktop）</p>
+<h2 id="4flutter-folio">4.Flutter Folio</h2>
+<p>这是一个示例应用，目前flutter支持三个平台（Android，Ios，Web），以及将来会支持的平台（Windows，MacOS，Linux），那么怎么样才能让编写出来的程序适配不同的屏幕，不同的输入模式，不同的使用习惯。Folio回答了这些问题。<a href="https://github.com/gskinnerTeam/flutter-folio">源码</a>，<a href="https://aloisdeniel.com/#/posts/adaptative-ui">其他博客</a></p>
+<h2 id="5google移动广告插件">5.Google移动广告插件</h2>
+<p>之前做过一个flutter项目，需要接入Admob广告和fb广告，因为没有这两个广告平台都没有flutter端的支持，所以只能是在Android端接入Android 广告sdk，Ios端接入Ios 广告sdk，然后使用flutter和原生端通信，而且还不能实现原生广告。现在Google广告提供了对Flutter端的支持，可以直接在flutter使用Google广告，包括插屏，banner，原生，激励等广告。相信不久的将来，fb广告也会提供对flutter的支持。</p>
+<h2 id="6new-ios-features">6.New iOS features</h2>
+<p>新的<a href="https://api.flutter.dev/flutter/cupertino/CupertinoSearchTextField-class.html">CupertinoSearchTextField</a>提供了iOS搜索栏UI。<br>
+CupertinoFormSection，CupertinoFormRow和CupertinoTextFormFieldRow部件更容易产生与iOS的分段式视觉美学验证表单字段。<br>
+还有一些对于Ios平台性能上的优化</p>
+<h2 id="7new-widgets">7.New widgets</h2>
+<p>Autocomplete和ScaffoldMessenger</p>
+<h2 id="8add-to-app">8.Add-to-App</h2>
+<p>Add-to-App这个功能，支持在现有的原生应用基础上，增加Flutter Module，然后原生和flutter实例相互跳转</p>
+<h2 id="9其他">9.其他</h2>
+<p>Flutter Fix，Flutter DevTools等等，详见以上更新文档。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android知识点总结]]></title>
+        <id>https://PaIn22152.github.io/post/android-zhi-shi-dian-zong-jie/</id>
+        <link href="https://PaIn22152.github.io/post/android-zhi-shi-dian-zong-jie/">
+        </link>
+        <updated>2021-03-03T07:17:37.000Z</updated>
+        <content type="html"><![CDATA[<p>已经有大佬做了这方面的总结，膜拜<br>
+<a href="https://github.com/yangchong211/YCBlogs">github</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[LeetCode分类学习，动态规划]]></title>
+        <id>https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-dong-tai-gui-hua/</id>
+        <link href="https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-dong-tai-gui-hua/">
+        </link>
+        <updated>2021-02-24T02:48:58.000Z</updated>
+        <content type="html"><![CDATA[<p>动态规划（英语：Dynamic programming，简称 DP）是一种在数学、管理科学、计算机科学、经济学和生物信息学中使用的，通过把原问题分解为相对简单的子问题的方式求解复杂问题的方法。<br>
+动态规划常常适用于有重叠子问题和最优子结构性质的问题，动态规划方法所耗时间往往远少于朴素解法。<br>
+dp算法有两个要点，1是状态转移方程，2是中间结果的记录。<br>
+<a href="https://www.zhihu.com/question/23995189">详细解释</a></p>
+<h2 id="q5_最长回文子串"><a href="https://leetcode-cn.com/problems/longest-palindromic-substring/">q5_最长回文子串</a></h2>
+<p><a href="https://leetcode-cn.com/problems/longest-palindromic-substring/solution/zhong-xin-kuo-san-dong-tai-gui-hua-by-liweiwei1419/">优秀题解</a></p>
+<h3 id="思路1">思路1</h3>
+<p>暴力求解，遍历所有的子串，然后依次判断是不是回文，找到最长的回文。<br>
+复杂程度太高，效率极差，代码就不贴了。</p>
+<h3 id="思路2">思路2</h3>
+<p>动态规划<br>
+代码</p>
+<pre><code class="language-java">public String longestPalindrome2(String s) {
+        int len = s.length();
+        if (len &lt;= 1) {
+            return s;
+        }
+
+        //pass[i][j] 表示s的子串 [i,j]是否是回文
+        //状态转移方程 pass[i][j]= s[i]==s[j] &amp;&amp; pass[i+1][j-1]
+        boolean[][] pass = new boolean[len][len];
+        char[] chars = s.toCharArray();
+        int start = 0;
+        int maxLen = 1;
+        for (int i = 0; i &lt; len; i++) {
+            pass[i][i] = true;
+        }
+
+        for (int j = 1; j &lt; len; j++) {
+            for (int i = 0; i &lt; j; i++) {
+                if (chars[i] != chars[j]) {
+                    pass[i][j] = false;
+                } else {
+                    if (j - i &lt;= 2) {
+                        pass[i][j] = true;
+                    } else {
+                        //外层循环是j++，所以在此之前，一定已经给pass[0到j][j-1]赋值了
+                        pass[i][j] = pass[i + 1][j - 1];
+                    }
+                }
+
+                if (pass[i][j] &amp;&amp; j - i + 1 &gt; maxLen) {
+                    start = i;
+                    maxLen = j - i + 1;
+                }
+            }
+        }
+        return s.substring(start, start + maxLen);
+    }
+</code></pre>
+<h3 id="思路3">思路3</h3>
+<p>中心扩散<br>
+代码</p>
+<pre><code class="language-java">    public String longestPalindrome3(String s) {
+        if (s.length() &lt;= 1) {
+            return s;
+        }
+        String ans = &quot;&quot;;
+        for (int i = 0; i &lt; s.length() - 1; i++) {
+            ans = maxStr(ans, spread(s, i, false));
+            ans = maxStr(ans, spread(s, i, true));
+        }
+        return ans;
+
+    }
+
+    private String maxStr(String s1, String s2) {
+        if (s1.length() &gt;= s2.length()) {
+            return s1;
+        }
+        return s2;
+    }
+
+    private String spread(String s, int center, boolean even) {
+        int left = center;
+        int right = center;
+        if (even) {
+            right = center + 1;
+        }
+        while (left &gt;= 0 &amp;&amp; right &lt; s.length()) {
+            if (s.charAt(left) == s.charAt(right)) {
+                left--;
+                right++;
+            } else {
+                break;
+            }
+        }
+        return s.substring(left + 1, right);
+    }
+</code></pre>
+<p>实际执行结果，中心扩散优于动态规划</p>
+<h3 id="思路4">思路4</h3>
+<p>封神的马拉车算法，思路2和3，复杂度都是O(n²)，马拉车可以把复杂度降到O(n)。<br>
+<a href="https://zhuanlan.zhihu.com/p/70532099">马拉车具体怎么拉？</a><br>
+代码</p>
+<pre><code class="language-java">    public String longestPalindrome4(String s) {
+        char space = '#';
+        char header = '^';
+        char tail = '$';
+        StringBuilder sb = new StringBuilder();
+        sb.append(header).append(space);
+        int len = s.length();
+        for (int i = 0; i &lt; len; i++) {
+            sb.append(s.charAt(i)).append(space);
+        }
+        sb.append(tail);
+        String newS = sb.toString();
+
+        int p[] = new int[newS.length()];
+        int left, right, value;
+        for (int i = 1; i &lt; newS.length() - 1; i++) {
+            left = i - 1;
+            right = i + 1;
+            value = 0;
+            while (newS.charAt(left) != tail &amp;&amp; newS.charAt(right) != tail
+                    &amp;&amp; newS.charAt(left) == newS.charAt(right)) {
+                left--;
+                right++;
+                value++;
+            }
+            p[i - 1] = value;
+        }
+
+        int maxLen = 0;
+        int start = 0;
+        for (int i = 0; i &lt; p.length; i++) {
+            if (p[i] &gt;= maxLen) {
+                start = i;
+                maxLen = p[i];
+            }
+        }
+        start = (start - maxLen) / 2;
+        return s.substring(start, start + maxLen);
+    }
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[LeetCode分类学习，链表操作]]></title>
         <id>https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-lian-biao-cao-zuo/</id>
@@ -118,8 +303,31 @@
     }
 </code></pre>
 <h2 id="q148_排序链表"><a href="https://leetcode-cn.com/problems/sort-list/">q148_排序链表</a></h2>
-<h2 id="q19_删除链表的倒数第n个节点"><a href="https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/">q19_删除链表的倒数第N个节点</a></h2>
 <h3 id="思路1">思路1</h3>
+<p>把链表转成list，list排序后，生成新的链表<br>
+代码</p>
+<pre><code class="language-java">    public ListNode sortList(ListNode head) {
+        List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+        while (head != null) {
+            list.add(head.val);
+            head = head.next;
+        }
+        Collections.sort(list);
+        ListNode last = null;
+        for (int i = list.size() - 1; i &gt;= 0; i--) {
+            int v = list.get(i);
+            ListNode listNode = new ListNode(v);
+            listNode.next = last;
+            last = listNode;
+        }
+        return last;
+    }
+</code></pre>
+<p>需要额外的空间</p>
+<h3 id="思路2-2">思路2</h3>
+<p><a href="https://leetcode-cn.com/problems/sort-list/solution/sort-list-gui-bing-pai-xu-lian-biao-by-jyd/">归并排序</a></p>
+<h2 id="q19_删除链表的倒数第n个节点"><a href="https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/">q19_删除链表的倒数第N个节点</a></h2>
+<h3 id="思路1-2">思路1</h3>
 <p>双指针，预先指针<br>
 代码</p>
 <pre><code class="language-java">    public ListNode removeNthFromEnd(ListNode head, int n) {
@@ -166,6 +374,66 @@
     }
 </code></pre>
 <p>需要注意的是解环的位置，应该是长度len减去 k%len</p>
+<h2 id="q138_复制带随机指针的链表"><a href="https://leetcode-cn.com/problems/copy-list-with-random-pointer/">q138_复制带随机指针的链表</a></h2>
+<h3 id="思路1-3">思路1</h3>
+<p>map+递归<br>
+从链表头开始复制，用map&lt;oldnode,newnode&gt;存数据，当需要复制的节点不存在，构建新的，当节点已经存在，从map获取<br>
+代码</p>
+<pre><code class="language-java">public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+        if (map.containsKey(head)) {
+            return map.get(head);
+        }
+
+        Node node = new Node(head.val);
+        map.put(head, node);
+        node.next = copyRandomList(head.next);
+        node.random = copyRandomList(head.random);
+        return node;
+    }
+</code></pre>
+<h3 id="思路2-3">思路2</h3>
+<p>详见图解解法1<br>
+<a href="https://leetcode-cn.com/problems/copy-list-with-random-pointer/solution/liang-chong-shi-xian-tu-jie-138-fu-zhi-dai-sui-ji-/">优秀图解</a><br>
+代码</p>
+<pre><code class="language-java"> public Node copyRandomList2(Node head) {
+        if (head == null) {
+            return null;
+        }
+
+        //第一步，在每个原节点后面创建一个新节点
+        Node tem = head;
+        while (tem != null) {
+            Node t = new Node(tem.val);
+            t.next = tem.next;
+            tem.next = t;
+            tem = tem.next.next;
+        }
+
+        //第二步，设置新节点的随机节点
+        tem = head;
+        while (tem != null) {
+            if (tem.random != null) {
+                tem.next.random = tem.random.next;
+            }
+            tem = tem.next.next;
+        }
+
+        //第三步，将两个链表分离
+        Node dummy = new Node(-1);
+        tem = head;
+        Node cur = dummy;
+        while (tem != null) {
+            cur.next = tem.next;
+            cur = cur.next;
+            tem.next = cur.next;
+            tem = tem.next;
+        }
+        return dummy.next;
+    }
+</code></pre>
 ]]></content>
     </entry>
     <entry>
@@ -238,6 +506,34 @@
             //优化为
              map.put(c, map.getOrDefault(c, 0) + 1);
 </code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[flutter学习用项目，每日一图]]></title>
+        <id>https://PaIn22152.github.io/post/flutter-xue-xi-yong-xiang-mu-mei-ri-yi-tu/</id>
+        <link href="https://PaIn22152.github.io/post/flutter-xue-xi-yong-xiang-mu-mei-ri-yi-tu/">
+        </link>
+        <updated>2021-01-27T10:29:44.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="关于">关于</h2>
+<p>项目使用bing提供的api，实现每日一图，学习flutter用<br>
+<a href="https://github.com/PaIn22152/Bing-flutter">项目git地址</a><br>
+<a href="https://www.pgyer.com/P10E">android下载地址</a><br>
+android下载二维码<br>
+<img src="https://PaIn22152.github.io/post-images/1613984204353.png" alt="" loading="lazy"></p>
+<h2 id="使用到的插件">使用到的插件</h2>
+<p>1.网络请求，<a href="https://pub.dev/packages/http">http</a>和<a href="https://pub.dev/packages/dio">dio</a><br>
+2.状态管理，<a href="https://pub.dev/packages/flutter_bloc">flutter_bloc</a><br>
+3.路由管理，<a href="https://pub.dev/packages/fluro">fluro</a><br>
+4.屏幕适配，<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a><br>
+5.权限申请,<a href="https://pub.dev/packages/permission_handler">permission_handler</a><br>
+6.图片保存,<a href="https://pub.dev/packages/image_gallery_saver">image_gallery_saver</a><br>
+7.sp和数据库，<a href="https://pub.dev/packages/shared_preferences">shared_preferences</a>和<a href="https://pub.dev/packages/sqflite">sqflite</a></p>
+<h2 id="应用截图">应用截图</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1613984900556.jpg" alt="" width="330" height="640" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1613985332162.jpg" alt="" width="330" height="640" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1613984910744.jpg" alt="" width="330" height="640" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1613984945644.jpg" alt="" width="330" height="640" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1613984955372.jpg" alt="" width="330" height="640" loading="lazy"></p>
 ]]></content>
     </entry>
     <entry>
@@ -816,589 +1112,6 @@ binaryMessenger:registrar.messenger];
 正如官方描述的那样，这个插件做的事，就是对数据持久化这一功能，在不同平台上面的封装（wrap），整体逻辑比较清晰，代码量不大，适合我这样的菜鸡做源码阅读。其中关键的技术点，是flutter调用原生代码，这篇博客只是看了个大概流程和调用走向，对flutter调用原生代码这一块的学习，还有待具体实操。</p>
 <h3 id="马老师镇场">马老师镇场</h3>
 <figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1610698564210.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2020-2021随便写写]]></title>
-        <id>https://PaIn22152.github.io/post/2020-2021-sui-bian-xie-xie/</id>
-        <link href="https://PaIn22152.github.io/post/2020-2021-sui-bian-xie-xie/">
-        </link>
-        <updated>2020-12-30T09:46:00.000Z</updated>
-        <content type="html"><![CDATA[<p>2020年，对全世界的人来说，记忆最深的都是新冠病毒。</p>
-<p>今年工作上最大的进步，是学习了kotlin和flutter，并且在公司项目中得到了运用。kotlin使用后最大的感受是，kotlin是升级版的java，增加了一些语法糖，以后做android这一块的话，肯定是要熟悉的，毕竟是google主推的android开发语言，是未来的趋势。至于flutter，刚开始接触会觉得写法怪怪的，各种嵌套，但是用过的人肯定都是说真香，性能强，代码量少。未来的发展方向，主要是flutter。另外就是搞了个人网站，写了一些leetcode算法解题博客，和flutter相关的博客。</p>
-<p>生活上，早睡早起勉强算是坚持下来了吧，虽然也有熬夜的时候，但是这一年在0点后睡觉的时间，应该是不超过30天的，在1点后睡觉的应该不超过5天（国庆开车回家那次不算在内，堵车在高速太惨了），除此之外，大多数时间是23点前睡的，以后也要坚持。阅读量有点少，不到十本书，新的一年要提升。运动量还行，跑步坚持了一段时间，感觉膝盖有点不适应就没有再跑了，后面有游泳，爬山，俯卧撑，引体向上，腹肌撕裂者等，坚持运动的好处是，脖子痛头痛等问题，很少出现了。今年搬家了，开车上班要一个小时，住的远的缺点是上下班真的好累，而且除了开车没得选，没有公交地铁，好处是房子还挺宽敞安静的，价格也还能接受，和之前的比起来，好太多了。爱好方面，钓鱼算一个吧，去钓过几次，明年有时间还会继续。情感上，遇到了想追的她，目前还没啥进展，我对感情的态度是两个词，认真，珍惜，希望能和她有更多的故事吧。</p>
-<p>2020总结了几个词，希望能指导未来的路<br>
-克己，积累，坚持，格局</p>
-<p>说一下2021想要做的事，以后再来看完成得怎么样<br>
-1.换公司，flutter方向，目标是大厂，薪资20K以上；<br>
-2.继续提升flutter能力，并输出文章，定个30篇的目标；<br>
-3.算法提升，有目的性的做leetcode上的题；<br>
-4.两周一本书，不限形式内容；<br>
-5.跑步300公里，练出腹肌，完成深圳十峰；<br>
-6.脱单；</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[LeetCode每日一题（20201022）]]></title>
-        <id>https://PaIn22152.github.io/post/LeetCode每日一题（20201022）/</id>
-        <link href="https://PaIn22152.github.io/post/LeetCode每日一题（20201022）/">
-        </link>
-        <updated>2020-10-22T06:49:20.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="原题地址"><a href="https://leetcode-cn.com/problems/partition-labels/">原题地址</a></h3>
-<h3 id="思考过程">思考过程：</h3>
-<p>从最左字符开始，找到该字符在串中的最右位置，然后从左到右遍历字符，依次找到不同字符的最右位置，如果比上一次记录的最右大，更新最右，直到遍历完成后，左到右表示的字符串，即为一个片段，然后把更新最左，一直到遍历完整个串。</p>
-<h3 id="代码实现">代码实现</h3>
-<pre><code class="language-java">public List&lt;Integer&gt; partitionLabels(String s) {
-        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
-        int lastP = 0;
-        int p = 1;
-        Set&lt;Character&gt; set = new HashSet&lt;&gt;();
-        while (p &lt;= s.length()) {
-            for (int i = lastP; i &lt; p; i++) {
-                char c = s.charAt(i);
-                if (!set.contains(c)) {
-                    int rightPosition = getRightPosition(s, c);
-                    p = Math.max(p, rightPosition);
-                    set.add(c);
-                }
-            }
-            ans.add(p - lastP);
-            lastP = p;
-            p++;
-
-        }
-        return ans;
-    }
-
-    private int getRightPosition(String s, char c) {
-        for (int i = s.length() - 1; i &gt;= 0; i--) {
-            if (s.charAt(i) == c) {
-                return i + 1;
-            }
-        }
-        return 0;
-    }
-</code></pre>
-<h3 id="执行结果">执行结果：</h3>
-<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1609313320382.png" alt="" loading="lazy"></figure>
-<h3 id="查看官方解法"><a href="https://leetcode-cn.com/problems/partition-labels/solution/hua-fen-zi-mu-qu-jian-by-leetcode-solution/">查看官方解法</a></h3>
-<p>贪心算法+双指针（有待深入理解）</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Flutter开发知识点全记录]]></title>
-        <id>https://PaIn22152.github.io/post/flutter-kai-fa-zhi-shi-dian-quan-ji-lu/</id>
-        <link href="https://PaIn22152.github.io/post/flutter-kai-fa-zhi-shi-dian-quan-ji-lu/">
-        </link>
-        <updated>2020-10-01T07:19:42.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="关于">关于</h2>
-<p>这是一篇学习笔记博客，会记录个人flutter日常开发中的一些知识点，长期更新。如果某个知识点比较复杂，会另外写一篇博客链接到此。</p>
-<h2 id="常用工具">常用工具</h2>
-<h3 id="1强制手机竖屏">1.强制手机竖屏</h3>
-<p>在应用程序根MaterialApp之前，Widget build(BuildContext context)方法中，添加如下代码（ios可能不起作用，还未测试）</p>
-<pre><code class="language-dart">SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-</code></pre>
-<h3 id="2监听页面的生命周期">2.监听页面的生命周期</h3>
-<p>项目中经常会有一些需求，需要监听页面打开关闭等，在android使用onResume，onPause等方法实现，但是在flutter没有默认的生命周期方法，可以使用RouteAware+RouteObserver实现。<br>
-首先要给根MaterialApp的navigatorObservers属性赋值（比如routeObserver），然后State的实现类需要<a href="https://juejin.cn/post/6844903766492200974">混合</a>RouteAware类，然后在State的didChangeDependencies方法下订阅路由状态，然后就可以在RouteAware的四个方法下监听页面变化。<br>
-假如有3个页面，分别是A、B、C，跳转逻辑由A-&gt;B-&gt;C。<br>
-didPopNext：在C页面关闭后，B页面调起该方法，类似onResume()；<br>
-didPush: 当由A打开B页面时，B页面调起该方法，类似onCreate()；<br>
-didPop: 当B页面关闭时，B页面调起该方法，类似onDestroy()；<br>
-didPushNext: 当从B页面打开C页面时，该方法被调起，类似onPause()。<br>
-部分关键代码如下</p>
-<pre><code class="language-dart">//路由状态观察者初始化
-final RouteObserver&lt;Route&lt;dynamic&gt;&gt; routeObserver = RouteObserver();
-//MaterialApp赋值
-navigatorObservers: [routeObserver],
-//state 实现类混合RouteAware类
-class BaseState&lt;T extends StatefulWidget&gt; extends State with RouteAware
-//订阅路由状态
-@override
-  void didChangeDependencies() {
-    routeObserver.subscribe(this, ModalRoute.of(context)); //订阅
-    super.didChangeDependencies();
-  }
-</code></pre>
-<h3 id="3国际化">3.国际化</h3>
-<p>使用Intl实现。<a href="https://juejin.cn/post/6844903823119482888">参考链接</a></p>
-<h3 id="4路由统一管理和路由跳转动画">4.路由统一管理和路由跳转动画</h3>
-<p>在应用程序的根MaterialApp，设置onGenerateRoute: MyRouter.generateRoute属性，其中MyRoute代码如下</p>
-<pre><code class="language-dart">///路由管理类，管理所有路由跳转
-class MyRouter {
-
-///应用中所有界面
-  static const String home = 'home'; //主界面
-  static const String play = 'play'; //游戏界面
-  static const String pause = 'pause'; //游戏暂停界面
-
-  static Route&lt;dynamic&gt; generateRoute(RouteSettings settings) {
-
-///设置onGenerateRoute属性后，所有路由跳转都会走到此，路由传值也在此设置，例如下面的PlayRoute
-
-    Map arguments = settings.arguments;
-    switch (settings.name) {
-      //根据名称跳转相应页面
-      case home:
-        return NoAnimRouter(child: HomeRoute());
-      case pause:
-        return NoAnimRouter(child: PauseRoute());
-      case play:
-        return ScaleRouter(
-            child: PlayRoute(
-          sudokuBean: arguments[arg_key_sudoku],
-          handle: arguments[arg_key_handle],
-          handleStack: arguments[arg_key_handleStack],
-          time: arguments[arg_key_time],
-          noteMap: arguments[arg_key_note],
-          inputList: arguments[arg_key_inputlist],
-        ));
-      default:
-        return MaterialPageRoute(
-            builder: (_) =&gt; Scaffold(
-                  body: Center(
-                    child: Text('No route defined for ${settings.name}'),
-                  ),
-                ));
-    }
-  }
-}
-</code></pre>
-<p>常用的路由跳转动画，代码如下（<a href="https://github.com/xiaweizi/SimplicityWeather">代码来源</a>，RESPECT）</p>
-<pre><code class="language-dart">import 'package:flutter/material.dart';
-///路由动画
-//缩放路由动画
-class ScaleRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  ScaleRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : super(
-          pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
-          transitionDuration: Duration(milliseconds: durationMs),
-          transitionsBuilder: (context, a1, a2, child) =&gt; ScaleTransition(
-            scale: Tween(begin: 0.0, end: 1.0)
-                .animate(CurvedAnimation(parent: a1, curve: curve)),
-            child: child,
-          ),
-        );
-}
-//渐变透明路由动画
-class FadeRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  final RouteSettings settings;
-  FadeRouter(
-      {this.child,
-      this.durationMs = 500,
-      this.curve = Curves.fastOutSlowIn,
-      this.settings})
-      : super(
-            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
-            settings: settings,
-            transitionDuration: Duration(milliseconds: durationMs),
-            transitionsBuilder: (context, a1, a2, child) =&gt; FadeTransition(
-                  opacity: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
-                    parent: a1,
-                    curve: curve,
-                  )),
-                  child: child,
-                ));
-}
-//旋转路由动画
-class RotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  RotateRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : super(
-            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
-            transitionDuration: Duration(milliseconds: durationMs),
-            transitionsBuilder: (context, a1, a2, child) =&gt; RotationTransition(
-                  turns: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
-                    parent: a1,
-                    curve: curve,
-                  )),
-                  child: child,
-                ));
-}
-//右---&gt;左
-class Right2LeftRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  Right2LeftRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : super(
-            transitionDuration: Duration(milliseconds: durationMs),
-            pageBuilder: (ctx, a1, a2) =&gt; child,
-            transitionsBuilder: (
-              ctx,
-              a1,
-              a2,
-              child,
-            ) =&gt;
-                SlideTransition(
-                  child: child,
-                  position: Tween&lt;Offset&gt;(
-                    begin: Offset(1.0, 0.0),
-                    end: Offset(0.0, 0.0),
-                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
-                ));
-}
-//左---&gt;右
-class Left2RightRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  List&lt;int&gt; mapper;
-  Left2RightRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : assert(true),
-        super(
-            transitionDuration: Duration(milliseconds: durationMs),
-            pageBuilder: (ctx, a1, a2) {
-              return child;
-            },
-            transitionsBuilder: (
-              ctx,
-              a1,
-              a2,
-              child,
-            ) {
-              return SlideTransition(
-                  position: Tween&lt;Offset&gt;(
-                    begin: Offset(-1.0, 0.0),
-                    end: Offset(0.0, 0.0),
-                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
-                  child: child);
-            });
-}
-//上---&gt;下
-class Top2BottomRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  Top2BottomRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : super(
-            transitionDuration: Duration(milliseconds: durationMs),
-            pageBuilder: (ctx, a1, a2) {
-              return child;
-            },
-            transitionsBuilder: (
-              ctx,
-              a1,
-              a2,
-              child,
-            ) {
-              return SlideTransition(
-                  position: Tween&lt;Offset&gt;(
-                    begin: Offset(0.0, -1.0),
-                    end: Offset(0.0, 0.0),
-                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
-                  child: child);
-            });
-}
-//下---&gt;上
-class Bottom2TopRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  Bottom2TopRouter(
-      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
-      : super(
-            transitionDuration: Duration(milliseconds: durationMs),
-            pageBuilder: (ctx, a1, a2) =&gt; child,
-            transitionsBuilder: (
-              ctx,
-              a1,
-              a2,
-              child,
-            ) {
-              return SlideTransition(
-                  position: Tween&lt;Offset&gt;(
-                    begin: Offset(0.0, 1.0),
-                    end: Offset(0.0, 0.0),
-                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
-                  child: child);
-            });
-}
-//缩放+透明+旋转路由动画
-class ScaleFadeRotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  final int durationMs;
-  final Curve curve;
-  ScaleFadeRotateRouter(
-      {this.child, this.durationMs = 1000, this.curve = Curves.fastOutSlowIn})
-      : super(
-            transitionDuration: Duration(milliseconds: durationMs),
-            pageBuilder: (ctx, a1, a2) =&gt; child, //页面
-            transitionsBuilder: (
-              ctx,
-              a1,
-              a2,
-              Widget child,
-            ) =&gt;
-                RotationTransition(
-                  //旋转动画
-                  turns: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-                    parent: a1,
-                    curve: curve,
-                  )),
-                  child: ScaleTransition(
-                    //缩放动画
-                    scale: Tween(begin: 0.0, end: 1.0)
-                        .animate(CurvedAnimation(parent: a1, curve: curve)),
-                    child: FadeTransition(
-                      opacity: //透明度动画
-                          Tween(begin: 0.5, end: 1.0).animate(
-                              CurvedAnimation(parent: a1, curve: curve)),
-                      child: child,
-                    ),
-                  ),
-                ));
-}
-//无动画
-class NoAnimRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
-  final Widget child;
-  NoAnimRouter({this.child})
-      : super(
-            opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
-            transitionDuration: Duration(milliseconds: 0),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) =&gt; child);
-}
-</code></pre>
-<h3 id="5屏幕适配">5.屏幕适配</h3>
-<p>使用的插件是<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a>，适配原理和android的今日头条适配方案一致，按宽度适配，填入设计稿的设备屏幕尺寸，相关代码如下，在应用的第一个界面的Widget build(BuildContext context)方法下初始化即可，</p>
-<pre><code class="language-dart">///初始化，设置适配尺寸 (填入设计稿中设备的屏幕尺寸)
-ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
-///使用
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-height: 300.w
-fontSize: 35.sp
-</code></pre>
-<h3 id="6手机唯一标识uuid">6.手机唯一标识uuid</h3>
-<p>使用的插件是<a href="https://pub.dev/packages/device_info">device_info</a>，相关代码如下</p>
-<pre><code class="language-dart">///设备唯一标识
-Future&lt;String&gt; getUniqueId() async {
-  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  if (Platform.isIOS) {
-    IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
-    logD(&quot;ios唯一设备码：&quot; + iosDeviceInfo.identifierForVendor);
-    return 'IOS_' + iosDeviceInfo.identifierForVendor; // unique ID on iOS
-  } else if (Platform.isAndroid) {
-    AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
-    logD(&quot;android唯一设备码：&quot; + androidDeviceInfo.androidId);
-    return 'AND_' + androidDeviceInfo.androidId; // unique ID on Android
-  } else {
-    logD(&quot;Platform not support.&quot; + Platform.operatingSystem);
-    return &quot;Platform not support.&quot; + Platform.operatingSystem;
-  }
-}
-</code></pre>
-<h3 id="7log">7.log</h3>
-<p>使用的插件是<a href="https://pub.dev/packages/logger">logger</a>，相关代码如下</p>
-<pre><code class="language-dart">final logger = Logger(
-  printer: PrettyPrinter(),
-);
-logD(dynamic d) {
-    logger.d(d);
-}
-</code></pre>
-<h3 id="8sp">8.sp</h3>
-<p>使用的插件是<a href="https://pub.dev/packages/shared_preferences">shared_preferences</a>，做了一些简单封装，代码如下</p>
-<pre><code class="language-dart">///sp实现类，所有sp相关的，都统一在此写，包括put和get
-import 'package:shared_preferences/shared_preferences.dart';
-
-SharedPreferences _sp;
-
-Future&lt;bool&gt; spInit() async {
-  _sp ??= await SharedPreferences.getInstance();
-  return Future&lt;bool&gt;.value(true);
-}
-
-//get的简单封装，增加默认返回值
-dynamic _spGetDef(String key, dynamic def) {
-  final dynamic res = _sp?.get(key);
-  if (res == null) {
-    return def;
-  } else
-    return res;
-}
-
-//put的简单封装
-Future&lt;bool&gt; _spPutString(String key, String value) async {
-  await spInit();
-  return _sp?.setString(key, value);
-}
-
-Future&lt;bool&gt; _spPutInt(String key, int value) async {
-  await spInit();
-  return _sp?.setInt(key, value);
-}
-
-Future&lt;bool&gt; _spPutDouble(String key, double value) async {
-  await spInit();
-  return _sp?.setDouble(key, value);
-}
-
-Future&lt;bool&gt; _spPutBool(String key, bool value) async {
-  await spInit();
-  return _sp?.setBool(key, value);
-}
-
-//测试
-const String _key_test = '_key_test';
-
-Future&lt;bool&gt; spTestPut(String s) async {
-  return _spPutString(_key_test, s);
-}
-
-String spTestGet() {
-  return _spGetDef(_key_test, '');
-}
-
-</code></pre>
-<h2 id="widget相关">widget相关</h2>
-<h3 id="1类似android上的viewpagertablayout实现效果">1.类似android上的viewpager+tabLayout实现效果</h3>
-<p>在flutter上可以使用PageView+bottomNavigationBar实现。<br>
-PageView默认使用的回弹效果和android上的一样，可以使用physics这个属性去修改，如果使用ClampingScrollPhysics，则page不再可以滑动，也不会有回弹效果；如果使用BouncingScrollPhysics，回弹效果和ios类似，也可以使用其他实现类，具体效果自测。pageSnapping 属性控制滚动方式，默认true的情况下，PageView都是一页一页翻的，如果设置成false，这个PageView就可以一点点滚动，就是不用整页滚动过去，滚动到一半的时候也能停下来，具体效果自测。</p>
-<h3 id="2view点击效果">2.view点击效果</h3>
-<p>使用InkWell实现，borderRadius属性修改点击效果的圆角。enableFeedback: false属性关闭反馈（开启反馈的情况下，部分android手机点击后会有点击音效）</p>
-<h3 id="3linearlayout权重">3.LinearLayout权重</h3>
-<p>android中，使用LinearLayout的weight实现权重，在flutter可以使用Row（或者Column）+Expanded实现，Expanded的flex属性即为权重。</p>
-<h3 id="4监听back按钮">4.监听back按钮</h3>
-<p>在Widget build(BuildContext context)方法下，使用WillPopScope包装Scaffold，然后相关代码在onWillPop属性下写。</p>
-<pre><code class="language-dart">Future&lt;bool&gt; _finish() {
-    ///do something
-    return Future.value(true);
-  }
-
- return WillPopScope(
-      onWillPop: _finish,
-      child: Scaffold());
-</code></pre>
-<h3 id="5保存page状态">5.保存page状态</h3>
-<p>使用PageView或者TabBarView时，当page页面发生切换时，默认会销毁，再切换回来会重绘。如果需要保存page的状态，让他不会销毁，可以让State实现类混合AutomaticKeepAliveClientMixin，实现wantKeepAlive方法并返回true。</p>
-<h3 id="6修改控件大小">6.修改控件大小</h3>
-<p>有一些控件（比如CupertinoSwitch），大小是固定的，不能直接通过设置宽高来控制他的大小，可以使用缩放的方式实现，代码如下</p>
-<pre><code class="language-dart"> child: Transform.scale(
-                scale: 0.88,
-                child: CupertinoSwitch(
-                    activeColor: app_theme_color,
-                    value: on,
-                    onChanged: (b) {
-                      callback(b);
-                    }),
-              ),
-</code></pre>
-<h3 id="7dialog相关">7.dialog相关</h3>
-<p>barrierDismissible控制是否可以点击阴影取消dialog。<br>
-使用WillPopScope包装AlertDialog，可以控制返回键是否取消dialog。<br>
-想自定义圆角，可以使用AlertDialog的shape属性+ClipRRect裁剪content，代码如下</p>
-<pre><code class="language-dart">AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10.w))),
-content: ClipRRect(
-                borderRadius: BorderRadius.circular(10.w),
-</code></pre>
-<p>监听dialog的取消，showDialog（或者showCupertinoDialog）方法是异步的，会返回Future，使用 await showDialog(...); testBlock; 当dialog取消后会执行 testBlock</p>
-<h2 id="dart语法相关">dart语法相关</h2>
-<h3 id="1json和model类互转">1.json和Model类互转</h3>
-<p>只需要Model类实现两个如下的方法，然后就可以直接使用json</p>
-<pre><code class="language-dart">///实现方法
-Point.fromJson(Map&lt;String, dynamic&gt; json)
-      : x = json['x'],
-        y = json['y'];
-
-  Map toJson() {
-    Map map = new Map();
-    map[&quot;x&quot;] = this.x;
-    map[&quot;y&quot;] = this.y;
-    return map;
-  }
-
-  import 'dart:convert';
-  ///Model类转json字符串
-  String str = json.encode(bean);
-
-  ///json字符串转Model类
-  Bean bean = Bean.fromJson(json.decode(str));
-</code></pre>
-<h2 id="android平台相关">android平台相关</h2>
-<h2 id="ios平台相关">ios平台相关</h2>
-<h2 id="其他">其他</h2>
-<h3 id="1aes加密">1.AES加密</h3>
-<p>使用插件<a href="https://pub.dev/packages/encrypt">encrypt</a>实现，代码如下</p>
-<pre><code class="language-dart">import 'package:encrypt/encrypt.dart' as my_encrypt;
-String aesDecoded(String s) {
-  //加密的key和偏移量，不可改动，要和对json加密时使用一样
-  final key = my_encrypt.Key.fromUtf8('f4k9f5w7f8g4er26'); //加密key
-  final iv = my_encrypt.IV.fromUtf8('5e8y6w45ju8w9jq8'); //偏移量
-  //设置cbc模式
-  final encrypter = my_encrypt.Encrypter(my_encrypt.AES(key, mode: my_encrypt.AESMode.cbc));
-  //encrypter.encrypt(s, iv: iv);//加密
-  final decrypted = encrypter.decrypt(my_encrypt.Encrypted.from64(s), iv: iv);
-  return decrypted;
-}
-</code></pre>
-<p>对应的java AES加解密代码如下</p>
-<pre><code class="language-java">
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
-private static final String KEY = &quot;f4k9f5w7f8g4er26&quot;;// 密匙
-    private static final String OFFSET = &quot;5e8y6w45ju8w9jq8&quot;; // 偏移量
-    private static final String ENCODING = &quot;UTF-8&quot;; // 编码
-    private static final String ALGORITHM = &quot;AES&quot;;//算法
-    private static final String CIPHER_ALGORITHM = &quot;AES/CBC/PKCS5Padding&quot;; // 默认的加密算法
-
-    /**
-     * 加密
-     */
-    public static String encrypt(String data) throws Exception {
-        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
-        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-        byte[] encrypted = cipher.doFinal(data.getBytes(ENCODING));
-        return new BASE64Encoder().encode(encrypted);//此处使用BASE64做转码。
-        //当数据比较大时，生成的string会多出换行符，待优化
-    }
-
-    /**
-     * 解密
-     */
-    public static String decrypt(String data) throws Exception {
-        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
-        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
-        cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
-        byte[] buffer = new BASE64Decoder().decodeBuffer(data);
-        byte[] encrypted = cipher.doFinal(buffer);
-        return new String(encrypted, ENCODING);//此处使用BASE64做转码。
-    }
-</code></pre>
-<h3 id="2实际开发中用到的一些工具类型网站">2.实际开发中用到的一些工具类型网站</h3>
-<p><a href="http://laomengit.com/flutter/widgets/widgets_structure.html">Flutter组件介绍-老孟</a><br>
-<a href="https://weilu.blog.csdn.net/article/details/100108123">Flutter开发中的一些Tips</a><br>
-<a href="https://pub.dev/">pub查找-官方</a><br>
-<a href="https://javiercbk.github.io/json_to_dart/">Json 2 Dart-json生成bean</a><br>
-<a href="https://juejin.cn/book/6844733827265331214">Flutter绘制学习-掘金小册，需购买</a></p>
-<h3 id="3奇奇怪怪的问题">3.奇奇怪怪的问题</h3>
-<p>3.1 在根界面调用pop（退出应用）时，state的deactivate方法和dispose方法不会执行。</p>
 ]]></content>
     </entry>
 </feed>

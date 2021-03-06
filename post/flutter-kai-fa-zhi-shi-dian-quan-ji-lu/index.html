@@ -504,6 +504,9 @@ content: ClipRRect(
                 borderRadius: BorderRadius.circular(10.w),
 </code></pre>
 <p>监听dialog的取消，showDialog（或者showCupertinoDialog）方法是异步的，会返回Future，使用 await showDialog(...); testBlock; 当dialog取消后会执行 testBlock</p>
+<h3 id="8text多余的黄线问题">8.Text多余的黄线问题</h3>
+<p>当使用Text出现多余的黄线时，可以将style中的inherit参数设置为false解决<br>
+比如使用hero动画包装Text，动画时会出现黄色的下划线，可以使用以上方法解决</p>
 <h2 id="dart语法相关">dart语法相关</h2>
 <h3 id="1json和model类互转">1.json和Model类互转</h3>
 <p>只需要Model类实现两个如下的方法，然后就可以直接使用json</p>
