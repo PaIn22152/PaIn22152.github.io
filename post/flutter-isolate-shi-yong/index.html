@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter isolate使用 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter isolate使用</h2>
+            <div class="post-date">2021-04-20</div>
+            
+            <div class="post-content">
+              <h3 id="1多个isolate间通信">1.多个isolate间通信</h3>
+<p>1.1把isolate1注册到IsolateNameServer</p>
+<pre><code class="language-dart">/// A port used to communicate from a background isolate to the UI isolate.
+    final ReceivePort port = ReceivePort();
+
+    /// Register the UI isolate's SendPort to allow for communication from the background isolate.
+    IsolateNameServer.registerPortWithName(
+      port.sendPort,
+      isolateName,
+    );
+    port.listen(_doJob);
+</code></pre>
+<p>1.2在另外一个isolate2中，获取到刚刚的SendPort，然后发送数据</p>
+<pre><code class="language-dart">final SendPort _uiSendPort =
+        IsolateNameServer.lookupPortByName(isolateName);
+    _uiSendPort?.send('_alarmCallback');
+</code></pre>
+<p>这时会执行isolate1中的_doJob方法。</p>
+<p>以上，是一次完整的isolate间的单向通信过程。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/b31rY_73b/" class="tag">
+                    isolate
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter-yuan-duan-cha-jian-ben-di-hua/">
+                  <h3 class="post-title">
+                    flutter远端插件本地化
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
