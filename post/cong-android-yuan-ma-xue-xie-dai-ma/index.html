@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>从Android源码学写代码 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">从Android源码学写代码</h2>
+            <div class="post-date">2021-06-04</div>
+            
+            <div class="post-content">
+              <h1 id="0-前言">0 前言</h1>
+<p>Android源码可以说是Android开发的最佳实践代码，所以从Android源码中，可以学习怎样写出优秀的代码。</p>
+<h1 id="1-stringdef和intdef的使用">1 @StringDef和@IntDef的使用</h1>
+<p>@StringDef和@IntDef可以用来代替枚举使用。<br>
+Context.getSystemService方法中，就使用了@StringDef。</p>
+<pre><code class="language-java">/** @hide */
+@StringDef(suffix = { &quot;_SERVICE&quot; }, value = {
+            POWER_SERVICE,
+            WINDOW_SERVICE,
+            ......
+            PERMISSION_SERVICE,
+            LIGHTS_SERVICE,
+})
+@Retention(RetentionPolicy.SOURCE)
+public @interface ServiceName {}
+
+
+public abstract @Nullable Object getSystemService(@ServiceName @NonNull String name);
+</code></pre>
+<p>当调用函数时，被@ServiceName修饰的参数，只能从定义的范围里面选择，否则编译器会做相关提示，但也是可以运行的。<br>
+@IntDef用法类似，用来修饰int值。<br>
+在<a href="https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/app/ContextImpl.java">ContextImpl</a>类中有如下代码</p>
+<pre><code class="language-java">    static final int STATE_UNINITIALIZED = 0;
+    static final int STATE_INITIALIZING = 1;
+    static final int STATE_READY = 2;
+    static final int STATE_NOT_FOUND = 3;
+    /** @hide */
+    @IntDef(prefix = { &quot;STATE_&quot; }, value = {
+            STATE_UNINITIALIZED,
+            STATE_INITIALIZING,
+            STATE_READY,
+            STATE_NOT_FOUND,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ServiceInitializationState {}
+</code></pre>
+<p>说一个题外话，记得刚做Android开发时就听说不要使用enum枚举，因为枚举比静态常量多两倍以上的内存，所以一直都不敢在开发时使用枚举，但是在写@StringDef和@IntDef代替枚举相关内容时，偶然发现一篇文章介绍android中的枚举的，<a href="https://juejin.cn/post/6844903976219967501">Android 中不应该使用 Enum 吗？</a>，然后也去看了下lifecycle的源码，确实是使用了enum。所以枚举没那么恐怖，以后就放心的使用枚举吧。</p>
+<pre><code class="language-java">//lifecycle部分源码
+ @SuppressWarnings(&quot;WeakerAccess&quot;)
+    public enum Event {
+        /**
+         * Constant for onCreate event of the {@link LifecycleOwner}.
+         */
+        ON_CREATE,
+        /**
+         * Constant for onStart event of the {@link LifecycleOwner}.
+         */
+        ON_START,
+        /**
+         * Constant for onResume event of the {@link LifecycleOwner}.
+         */
+        ON_RESUME,
+        /**
+         * Constant for onPause event of the {@link LifecycleOwner}.
+         */
+        ON_PAUSE,
+        /**
+         * Constant for onStop event of the {@link LifecycleOwner}.
+         */
+        ON_STOP,
+        /**
+         * Constant for onDestroy event of the {@link LifecycleOwner}.
+         */
+        ON_DESTROY,
+        /**
+         * An {@link Event Event} constant that can be used to match all events.
+         */
+        ON_ANY
+    }
+</code></pre>
+<p>androidx下的RecyclerView的源码里面，也使用了枚举</p>
+<pre><code class="language-java">
+//RecyclerView  line 7823
+/**
+         * Defines how this Adapter wants to restore its state after a view reconstruction (e.g.
+         * configuration change).
+         */
+        public enum StateRestorationPolicy {
+            /**
+             * Adapter is ready to restore State immediately, RecyclerView will provide the state
+             * to the LayoutManager in the next layout pass.
+             */
+            ALLOW,
+            /**
+             * Adapter is ready to restore State when it has more than 0 items. RecyclerView will
+             * provide the state to the LayoutManager as soon as the Adapter has 1 or more items.
+             */
+            PREVENT_WHEN_EMPTY,
+            /**
+             * RecyclerView will not restore the state for the Adapter until a call to
+             * {@link #setStateRestorationPolicy(StateRestorationPolicy)} is made with either
+             * {@link #ALLOW} or {@link #PREVENT_WHEN_EMPTY}.
+             */
+            PREVENT
+        }
+
+</code></pre>
+<h1 id="2">2</h1>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/N22qQnI8j/" class="tag">
+                    Android源码
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/she-ji-mo-shi/">
+                  <h3 class="post-title">
+                    设计模式
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
