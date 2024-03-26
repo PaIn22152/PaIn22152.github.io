@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>面向对象思想 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">面向对象思想</h2>
+            <div class="post-date">2021-05-28</div>
+            
+            <div class="post-content">
+              <p><a href="https://toc.codepie.fun/">在线目录生成工具</a></p>
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href="#head1">0 前言</a></li>
+<li><a href="#head2">1 三大特性</a>
+<ul>
+<li><a href="#head3"> 封装</a></li>
+<li><a href="#head4"> 继承</a></li>
+<li><a href="#head5"> 多态</a></li>
+</ul>
+</li>
+<li><a href="#head6">2 类图</a>
+<ul>
+<li><a href="#head7"> 泛化关系（Generalization）</a></li>
+<li><a href="#head8"> 实现关系（Realization）</a></li>
+<li><a href="#head9"> 聚合关系（Aggregation）</a></li>
+<li><a href="#head10"> 组合关系（Composition）</a></li>
+<li><a href="#head11"> 关联关系（Association）</a></li>
+<li><a href="#head12"> 依赖关系（Dependency）</a></li>
+</ul>
+</li>
+<li><a href="#head13">3 六大原则</a>
+<ul>
+<li><a href="#head14"> 1.单一职责原则</a></li>
+<li><a href="#head15"> 2.开闭原则</a></li>
+<li><a href="#head16"> 3.里氏替换原则</a></li>
+<li><a href="#head17"> 4.依赖倒置原则</a></li>
+<li><a href="#head18"> 5.接口隔离原则</a></li>
+<li><a href="#head19"> 6.迪米特原则</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="span-idhead10-前言span"><span id="head1">0 前言</span></h1>
+<p>个人学习、整理和记录面向对象相关知识点用。其中大部分内容来自以下地址，表示感谢。<br>
+<a href="https://www.cyc2018.xyz/%E5%85%B6%E5%AE%83/%E7%BC%96%E7%A0%81%E5%AE%9E%E8%B7%B5/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E6%80%9D%E6%83%B3.html#%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB-dependency">cyc-面向对象思想</a><br>
+<a href="https://zhuanlan.zhihu.com/p/58092071">面向对象设计之魂的六大原则</a><br>
+<a href="https://juejin.cn/post/6844903527140032525#heading-4">设计模式（一）——面向对象六大原则</a></p>
+<h1 id="span-idhead21-三大特性span"><span id="head2">1 三大特性</span></h1>
+<p>封装、继承、多态。</p>
+<h2 id="span-idhead3-封装span"><span id="head3"> 封装</span></h2>
+<p>利用抽象数据类型将数据和基于数据的操作封装在一起，使其构成一个不可分割的独立实体。数据被保护在抽象数据类型的内部，尽可能地隐藏的细节，只保留一些对外的接口使其与外部发生联系。用户无需关心对象内部的细节，但可以通过对象对外提供的接口来访问对象。</p>
+<p>优点：<br>
+1.减少耦合：可以独立地开发、测试、优化、使用、理解和修改；<br>
+2.减轻维护的负担：可以更容易被理解，并且在调试的时候可以不影响其他模块；<br>
+3.有效地调节性能：可以通过剖析来确定哪些模块影响了系统的性能；<br>
+4.提高软件的可重用性；<br>
+5.降低了构建大型系统的风险：即使整个系统不可用，但是这些独立的模块却有可能是可用的。</p>
+<p>示例代码</p>
+<pre><code class="language-java">
+public class Person {
+
+    private String name;
+    private int gender;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getGender() {
+        return gender == 0 ? &quot;man&quot; : &quot;woman&quot;;
+    }
+
+    public void work() {
+        if (18 &lt;= age &amp;&amp; age &lt;= 50) {
+            System.out.println(name + &quot; is working very hard!&quot;);
+        } else {
+            System.out.println(name + &quot; can't work any more!&quot;);
+        }
+    }
+}
+</code></pre>
+<h2 id="span-idhead4-继承span"><span id="head4"> 继承</span></h2>
+<p>继承实现了IS-A关系，例如Cat和Animal就是一种IS-A关系，因此Cat可以继承自Animal，从而获得Animal非private的属性和方法。<br>
+继承应该遵循里氏替换原则，子类对象必须能够替换掉所有父类对象。<br>
+Cat可以当做Animal来使用，也就是说可以使用Animal引用Cat对象。父类引用指向子类对象称为向上转型。</p>
+<pre><code class="language-java">Animal animal = new Cat();
+</code></pre>
+<p>继承特点：<br>
+1.子类拥有父类非private的属性和方法；<br>
+2.子类可以拥有自己的属性和方法，即子类可以对父类进行拓展；<br>
+3.子类可以用自己的方式实现父类的方法（重写）。</p>
+<p>继承的缺点：<br>
+1.父类变，子类就必须变；<br>
+2.继承破坏了封装，对于父类而言，他的实现对子类来说是透明的；<br>
+3.继承是一种强耦合关系。</p>
+<h2 id="span-idhead5-多态span"><span id="head5"> 多态</span></h2>
+<p>多态分为编译时多态和运行时多态：编译时多态主要指方法的重载；运行时多态指程序中定义的对象引用所指向的具体类型在运行期间才确定。<br>
+运行时多态，需要满足三个条件：1.继承；2.覆盖（重写）；3.向上转型。<br>
+下面的代码中，乐器类（Instrument）有两个子类：Wind和Percussion，他们都覆盖了父类的play方法，并且在main方法中使用父类Instrument来引用Wind和Persussion对象。在Instrument引用调用play（）方法时，会执行实际引用对象所在类的play（）方法，而不是Instrument类的方法。</p>
+<pre><code class="language-java">public class Instrument {
+
+    public void play() {
+        System.out.println(&quot;Instument is playing...&quot;);
+    }
+}
+
+
+public class Wind extends Instrument {
+
+    public void play() {
+        System.out.println(&quot;Wind is playing...&quot;);
+    }
+}
+
+
+public class Percussion extends Instrument {
+
+    public void play() {
+        System.out.println(&quot;Percussion is playing...&quot;);
+    }
+}
+
+
+public class Music {
+
+    public static void main(String[] args) {
+        List&lt;Instrument&gt; instruments = new ArrayList&lt;&gt;();
+        instruments.add(new Wind());
+        instruments.add(new Percussion());
+        for(Instrument instrument : instruments) {
+            instrument.play();
+        }
+    }
+}
+
+
+out&gt;&gt;&gt;&gt;
+Wind is playing...
+Percussion is playing...
+
+</code></pre>
+<h1 id="span-idhead62-类图span"><span id="head6">2 类图</span></h1>
+<p>以下内容，使用<a href="https://www.planttext.com/">PlanUML</a>绘制</p>
+<h2 id="span-idhead7-泛化关系generalizationspan"><span id="head7"> 泛化关系（Generalization）</span></h2>
+<p>用来描述继承关系，在java中使用extends关键字。<br>
+<img src="https://PaIn22152.github.io/post-images/1622447472391.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Generalization
+
+class Vihical
+class Car
+class Trunck
+
+Vihical &lt;|-- Car
+Vihical &lt;|-- Trunck
+
+@enduml
+</code></pre>
+<h2 id="span-idhead8-实现关系realizationspan"><span id="head8"> 实现关系（Realization）</span></h2>
+<p>用来描述实现一个接口，在java中使用implements关键字。<br>
+<img src="https://PaIn22152.github.io/post-images/1622447656745.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Realization
+
+interface MoveBehavior
+class Fly
+class Run
+
+MoveBehavior &lt;|.. Fly
+MoveBehavior &lt;|.. Run
+
+@enduml
+</code></pre>
+<h2 id="span-idhead9-聚合关系aggregationspan"><span id="head9"> 聚合关系（Aggregation）</span></h2>
+<p>表示整体由部分组成，但是整体和部分不是强依赖的，整体不存在了部分还在。<br>
+<img src="https://PaIn22152.github.io/post-images/1622447821793.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Aggregation
+
+class Computer
+class Keyboard
+class Mouse
+class Screen
+
+Computer o-- Keyboard
+Computer o-- Mouse
+Computer o-- Screen
+
+@enduml
+</code></pre>
+<h2 id="span-idhead10-组合关系compositionspan"><span id="head10"> 组合关系（Composition）</span></h2>
+<p>和聚合不同，组合中整体和部分是强依赖的，整体不存在了部分也不存在。比如公司和部门，公司没了部门也就没了。但是公司和员工就属于聚合关系。<br>
+<img src="https://PaIn22152.github.io/post-images/1622448743181.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Composition
+
+class Company
+class DepartmentA
+class DepartmentB
+
+Company *-- DepartmentA
+Company *-- DepartmentB
+
+@enduml
+</code></pre>
+<h2 id="span-idhead11-关联关系associationspan"><span id="head11"> 关联关系（Association）</span></h2>
+<p>表示不同类对象之间有关联，这是一种静态关系，与运行过程的状态无关，在最开始就可以确定。因此也可以用1对1，多对1，多对多这种关联关系来表示。比如学生和学校就是关联关系，一个学校可以有好多学生，但是一个学生只属于一个学校，因此这是一种多对1的关系，在运行之前就可以确定。<br>
+<img src="https://PaIn22152.github.io/post-images/1622449219968.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Association
+
+class School
+class Student
+
+School &quot;1&quot; - &quot;n&quot; Student
+
+@enduml
+</code></pre>
+<h2 id="span-idhead12-依赖关系dependencyspan"><span id="head12"> 依赖关系（Dependency）</span></h2>
+<p>和关联关系不同的是，依赖关系是在运行过程中起作用的。A类和B类是依赖关系主要有三种形式：<br>
+1.A类是B类方法的局部变量；<br>
+2.A类是B类方法的参数；<br>
+3.A类向B类发送消息，从而影响B类发生变化。<br>
+<img src="https://PaIn22152.github.io/post-images/1622449420112.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">@startuml
+
+title Dependency
+
+class Vihicle {
+    move(MoveBehavior)
+}
+
+interface MoveBehavior {
+    move()
+}
+
+note &quot;MoveBehavior.move()&quot; as N
+
+Vihicle ..&gt; MoveBehavior
+
+Vihicle .. N
+
+@enduml
+</code></pre>
+<p><a href="https://blog.csdn.net/hguisu/article/details/7609483">类之间的关系</a></p>
+<h1 id="span-idhead133-六大原则span"><span id="head13">3 六大原则</span></h1>
+<p>1.单一职责原则（SRP，Single Responsibility Principle）；<br>
+2.开闭原则（OCP，Open Close Principle）；<br>
+3.里氏替换原则（LSP，Liskov Substitution Principle）；<br>
+4.依赖倒置原则（DIP，Dependence Inversion Principle）；<br>
+5.接口隔离原则（ISP，Interface Segregation Principle）；<br>
+6.迪米特原则（LOD，Law of Demeter）。</p>
+<h2 id="span-idhead14-1单一职责原则span"><span id="head14"> 1.单一职责原则</span></h2>
+<p>定义：就一个类而言，应该仅有一个引起它变化的原因。<br>
+也就是说一个类只负责一项职责，一个类中应该是一组相关性很高的函数及数据的封装。</p>
+<h2 id="span-idhead15-2开闭原则span"><span id="head15"> 2.开闭原则</span></h2>
+<p>定义：一个软件实体应当对拓展开放，对修改关闭。即软件实体应尽量在不修改原有代码的情况下进行拓展。<br>
+开闭原则提倡一个类一旦完成，后续增加新的功能就不应该通过修改这个类来实现，而是通过继承，增加新的类。这个原则比较虚，也很难做到完全遵循，需要在开发中自行体会。</p>
+<h2 id="span-idhead16-3里氏替换原则span"><span id="head16"> 3.里氏替换原则</span></h2>
+<p>定义：所有引用父类的地方，必须能透明地使用其子类的对象。<br>
+也就是说，软件系统中所有用到某个类的地方，替换成它的子类后仍然能够正常运行。这个原则依赖面向对象的继承性和多态性，这个原则我们有意无意中使用的比较多。</p>
+<h2 id="span-idhead17-4依赖倒置原则span"><span id="head17"> 4.依赖倒置原则</span></h2>
+<p>定义：抽象不应该依赖于细节，细节应该依赖抽象。即要针对接口编程，而不是针对实现编程。<br>
+该原则有以下关键点：<br>
+1.高层模块不应该依赖底层模块。两者都应该依赖其抽象；<br>
+2.抽象不应该依赖细节；<br>
+3.细节应该依赖抽象<br>
+其中，抽象是指java中的抽象类或者接口；细节是指java中的具体实现类；高层模块是指java中的调用类；底层模块是指java中的实现类。<br>
+模块间的依赖通过抽象发生，实现类之间不发生直接的依赖关系。</p>
+<h2 id="span-idhead18-5接口隔离原则span"><span id="head18"> 5.接口隔离原则</span></h2>
+<p>定义：使用多个专门的接口，而不是 使用单一的总接口。即客户端不应该依赖那些它不需要的接口。<br>
+意思是接口应该尽可能的小，从而到达解耦的目的，使系统容易重构。</p>
+<h2 id="span-idhead19-6迪米特原则span"><span id="head19"> 6.迪米特原则</span></h2>
+<p>定义：一个软件实体应当尽可能少地与其他实体发生相互作用。<br>
+一个类应该对自己需要调用的类知道得最少，类的内部如何实现，如何复杂都与调用者或者依赖者没有关系，调用者或者依赖者只需要知道它需要的方法即可。</p>
+<p>总结：<br>
+六大原则全是以构建灵活、可扩展、可维护的软件系统为目的，所以说它的重要性高与设计模式，应该是程序员时刻印在脑子里的东西，设计模式也是它的具体实践而已。六大原则比较抽象，很难在日常开发中100%地遵循所有的原则。但是，也应该把这六大原则作为日常开发的理论指导，只要你或多或少的遵循这六大原则，那么写出来的代码就不会太烂，慢慢地也就能理解那些看起来吊炸天的设计模式的意图和思路。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/xmJ-qTb4c/" class="tag">
+                    面向对象
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/23ISjbIDu/" class="tag">
+                    学习笔记
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/O2p7xL7Rh/" class="tag">
+                    基础
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/cao-zuo-xi-tong-xiang-guan-ji-chu/">
+                  <h3 class="post-title">
+                    操作系统相关基础
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

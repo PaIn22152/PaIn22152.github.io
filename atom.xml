@@ -1,0 +1,1063 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://PaIn22152.github.io</id>
+    <title>Payne的小站</title>
+    <updated>2024-03-26T02:32:15.797Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://PaIn22152.github.io"/>
+    <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
+    <subtitle>克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注</subtitle>
+    <logo>https://PaIn22152.github.io/images/avatar.png</logo>
+    <icon>https://PaIn22152.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, Payne的小站</rights>
+    <entry>
+        <title type="html"><![CDATA[Zygote为什么使用Socket，而不是Binder]]></title>
+        <id>https://PaIn22152.github.io/post/zygote-wei-shi-me-shi-yong-socketer-bu-shi-binder/</id>
+        <link href="https://PaIn22152.github.io/post/zygote-wei-shi-me-shi-yong-socketer-bu-shi-binder/">
+        </link>
+        <updated>2024-03-21T09:26:12.000Z</updated>
+        <content type="html"><![CDATA[<p>Zygote进程为什么用Socket而不是Binder?</p>
+<ol>
+<li>先后时序问题：Binder驱动是早于init进程加载的。而init进程是安卓系统启动的第一个进程。安卓中一般使用的Binder引用，都是保存在ServiceManager进程中的，而如果想从ServiceManager中获取到对应的Binder引用，前提是需要注册。init进程是先创建ServiceManager，后创建Zygote进程的。虽然Zygote更晚创建，但是也不能保证Zygote进程去注册binder的时候，ServiceManager已经初始化好了。注册时间点无法保证，AMS无法获取到Zygote的binder引用。</li>
+<li>多线程问题：Linux中fork进程是不推荐fork一个多线程的进程的，因为如果存在锁的情况下，会导致锁异常。而如果自身作为Binder机制的接收者，就会创建一个额外的线程来进行处理（发送者进程是无影响的）。所以，如果使用Binder机制，就会导致去fork一个多线程的进程。</li>
+<li>效率问题：AMS和Zygote之间使用的LocalSocket，相对于网络Socket，减少了数据验证等环节，所以其实效率相对于正常的网络Socket会大幅的提升。虽然还是要经过两次拷贝，但是由于数据量并不大，所以其实影响并不明显。</li>
+<li>Binder拷贝问题：如果使用Binder机制的话，从Zygote中fork出子进程会拷贝Zygote中Binder对象。从而多占用了一块无用的内存区域。而Binder对象不能释放。Binder的特殊性在于其是成对存在的，其分为Client端对象和Server端对象。假设我们使用Binder，如果要释放掉Server端Binder引用对象，就必须释放掉AMS中的Client端Binder对象，那这样就会导致AMS失去Binder从而无法正常向Zygote发送消息。而使用Socket通讯的话，fork出APP进程之后，APP进程会去主动的关闭掉这个Socket，从而释放这块区域。使用Binder会造成额外的内存占用。</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Surface详解]]></title>
+        <id>https://PaIn22152.github.io/post/surface-xiang-jie/</id>
+        <link href="https://PaIn22152.github.io/post/surface-xiang-jie/">
+        </link>
+        <updated>2024-03-15T07:44:49.000Z</updated>
+        <content type="html"><![CDATA[<p>test</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[音视频基础知识扫盲]]></title>
+        <id>https://PaIn22152.github.io/post/yin-shi-pin-ji-chu-zhi-shi-sao-mang/</id>
+        <link href="https://PaIn22152.github.io/post/yin-shi-pin-ji-chu-zhi-shi-sao-mang/">
+        </link>
+        <updated>2024-03-09T07:05:57.000Z</updated>
+        <content type="html"><![CDATA[<p>下图展示了两种音视频的过程，一是从采集到保存成文件，二是从采集到网络流传输到播放。<br>
+<img src="https://PaIn22152.github.io/post-images/1710323277121.png" alt="" loading="lazy"></p>
+<h3 id="名词解释">名词解释</h3>
+<p>编码：视频的原始数据量很大，不利于传输和存储，所以需要通过一定的算法压缩数据。常见的音频编解码标准有MP3、AAC，视频编解码标准有H264、H265。<br>
+解码：将编码后的数据还原成原始数据，以显示画面，是编码的逆过程。<br>
+封装：将编码后的音频和视频，按照一定的格式存储在一个文件中。常见的封装格式有MP4、TS、AVI等。<br>
+解封装：从文件中分离出音频数据和视频数据，是封装的逆过程。</p>
+<p>PCM：是一种音频原始数据格式。<br>
+AAC：是一种音频编解码标准。<br>
+YUV：是一种视频原始数据格式。此外还有RGB格式。<br>
+H264：是一种视频编解码标准。<br>
+MP4：是一种音视频封装格式。</p>
+<p>帧：视频是利用人眼视觉暂留的原理，通过播放一系列的图片画面，使人眼产生运动的感觉。这些画面中的一张画面为一帧。<br>
+帧率：帧率也称为FPS(Frames PerSecond)的缩写——帧/秒，指每秒钟的帧数，影响画面流畅度<br>
+码率：是数据传输时单位时间传送的数据位数,一般用的单位是kbps即千位每秒，或者mbps及兆位每秒<br>
+分辨率：是图片的宽*高，比如1920*1080表示图片宽1920个像素点，高1080个像素点，通常称为1080P，影响图片大小</p>
+<p>I帧：即Intra-coded picture（帧内编码图像帧），I帧表示关键帧，可以理解为这一帧画面的完整保留；解码时只需要本帧数据就可以完成。<br>
+P帧：即Predictive-coded Picture（前向预测编码图像帧）。P帧表示的是这一帧跟之前的一个关键帧（或P帧）的差别，解码时需要用之前缓存的画面叠加上本帧定义的差别，生成最终画面。<br>
+B帧：即Bidirectionally predicted picture（双向预测编码图像帧)。B帧是双向差别帧，也就是B帧记录的是本帧与前后帧的差别，换言之，要解码B帧，不仅要取得之前的缓存画面，还要解码之后的画面，通过前后画面的与本帧数据的叠加取得最终的画面。B帧压缩率高，但是解码时CPU会比较累。<br>
+GOP：GOP即Group of picture（图像组），指两个I帧之间的距离。<br>
+PTS和DTS：P帧需要参考前面的I帧或P帧才可以生成一张完整的图片，而B帧则需要参考前面I帧或P帧及其后面的一个P帧才可以生成一张完整的图片。这样就带来了一个问题：在视频流中，先到来的 B 帧无法立即解码，需要等待它依赖的后面的 I、P 帧先解码完成，这样一来播放时间与解码时间不一致了，顺序打乱了，那这些帧该如何播放呢？这时就引入了另外两个概念：DTS 和 PTS，在编码的时候由编码器生成。<br>
+DTS（Decoding Time Stamp）：即解码时间戳，这个时间戳的意义在于告诉播放器该在什么时候解码这一帧的数据。<br>
+PTS（Presentation Time Stamp）：即显示时间戳，这个时间戳用来告诉播放器该在什么时候显示这一帧的数据。<br>
+SPS和PPS：H264码流由一个一个的NALU组成，其中每个NALU之间通过起始码进行分隔，起始码有两种，0x000001（3Byte）或者0x00000001（4Byte），SPS和PPS是两种特殊的NALU，在解码过程中起关键作用。SPS(Sequence Paramater Set)序列参数集，保存了一组视频编码序列的全局参数，例如编码的 Profile、level、图像宽高等，帧头数据为起始码+0x67，长度18byte。PPS(Picture Paramater Set)图像参数集，对应的是一个序列中某一副图像或者几幅图像的参数，帧头数据为起始码+0x68，长度8byte。一般情况下，SPS和PPS位于码流的起始位置，比如在封装文件中位于文件头部，但是对于实时流，通常需要从流中间开始解码，所以需要在每个I帧前添加SPS和PPS。下图为简单的H264码流结构<br>
+<img src="https://PaIn22152.github.io/post-images/1710387508027.png" alt="" loading="lazy"></p>
+<p>音频样本：一个音频样本是一个数字，代表在一个特定时间点的测量声波值<br>
+采样率：指每秒记录的音频样本数，单位为赫兹（Hz）或者千赫兹（kHz），比如采样率为8kHz，表示每1/8000秒的时间采集一次音频样本<br>
+采样精度：又叫采样位深或者采样大小或者采样格式，以每个样本的比特（bit）为单位，代表了每个样本的细节质量，比如16bit的精度，意味着每个样本有2^16=65536个不同的振幅，有越多的振幅，数字录音听起来就越接近原声<br>
+音频帧：指一个时间段内的音频样本组，ACC格式一帧采样1024个样本，即由连续的1024个样本组成一个音频帧<br>
+声道数：指声音的频道数，常见的有单声道（mono），双声道（stereo），声道数增加表示音频大小也会成倍增加<br>
+ADTS：ADTS（Audio Data Transport Stream）音频数据传输流是AAC音频流的容器格式，它是一种通过网络传输音频流的标准格式之一。在ADTS文件中，每个AAC音频帧都以一个长度为7或9个字节的ADTS帧头开始，其中包含了同步标记、帧长度、采样率、声道数和其他元数据。接下来是AAC编码的原始音频数据，这些数据会被添加到ADTS帧中，以形成完整的音频帧。有的时候当你编码AAC裸流的时候，会遇到写出来的AAC⽂件并不能在PC和⼿机上播放，很⼤的可能就是AAC⽂件的每⼀帧⾥缺少了ADTS头信息⽂件的包装拼接，只需要加⼊头⽂件ADTS即可。<br>
+ADIF：Audio Data Interchange Format 音频数据交换格式。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。ADIF只有一个文件头，ADTS每个包前面有一个文件头。<br>
+计算举例：采样率44.1kHz，精度16bit，声道数2，AAC格式<br>
+60s的音频文件大小：采样率*采样精度*通道数*时间<br>
+44100*16bit*2*60s / 8bit=10584000Byte=10.09MB<br>
+一帧音频的大小为：通道数*每帧采样数*采样精度<br>
+2*1024*16 bit=32768 bit=32768/8 Byte=4096 Byte<br>
+一帧音频的播放时长（ms）：每帧采样数*1000/采样率<br>
+1024*1000/44100=23.2ms<br>
+音频帧率：采样率/每帧采样数<br>
+44100/1024=43帧/s</p>
+<p>推流：将编码后的音视频数据，以流的形式，按照指定协议推送到服务器的过程<br>
+拉流：从服务器拉取数据流，然后将数据解码后播放<br>
+RTMP：是一种常用的流媒体传输协议，广泛用于视频直播，基于tcp协议实现<br>
+RTSP：是一种多媒体播放控制协议，和RTMP相比，提供了更多的控制，RTSP支持多种传输协议，包括UDP、TCP和HTTP</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MediaCodec详解]]></title>
+        <id>https://PaIn22152.github.io/post/mediacodec-xiang-jie/</id>
+        <link href="https://PaIn22152.github.io/post/mediacodec-xiang-jie/">
+        </link>
+        <updated>2024-03-09T06:49:08.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="是什么">是什么</h2>
+<p>MediaCodec类可用于访问Android底层的多媒体编解码器，是Android底层多媒体支持基础架构的一部分，通常与MediaExtractor, MediaSync, MediaMuxer, MediaCrypto, MediaDrm, Image, Surface, 以及AudioTrack一起使用。简单来说，MediaCodec是Android硬编码（解码）实现的API接口，可以将视频数据在YUV和H264转换，可以将音频数据在PCM和AAC转换。</p>
+<h2 id="怎么用">怎么用</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1709967030465.png" alt="" loading="lazy"><br>
+MediaCodec采用异步方式处理数据，并且使用了一组输入输出buffer（ByteBuffer）。</p>
+<ol>
+<li>使用者从MediaCodec请求一个空的输入buffer（ByteBuffer），填充满数据后将它传递给MediaCodec处理。</li>
+<li>MediaCodec处理完这些数据并将处理结果输出至一个空的输出buffer（ByteBuffer）中。</li>
+<li>使用者从MediaCodec获取输出buffer的数据，消耗掉里面的数据，使用完输出buffer的数据之后，将其释放回编解码器</li>
+</ol>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test(MediaFormat encoderFormat) {
+        try {
+            //获取视频编码器
+            MediaCodec encoder = MediaCodec.createEncoderByType(
+                MediaFormat.MIMETYPE_VIDEO_AVC);
+            //配置编码器
+            encoder.configure(encoderFormat, null, null, 
+            MediaCodec.CONFIGURE_FLAG_ENCODE);
+            //开始编码
+            encoder.start();
+
+            //输入yuv数据到编码器
+            byte[] yuv = new byte[1024];
+            input(encoder, yuv);
+
+            //获取编码后的h264数据
+            output(encoder);
+
+            //停止编码
+            encoder.stop();
+            //释放编码器资源
+            encoder.release();
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void input(MediaCodec encoder, byte[] frame) {
+        //从输入队列中获取数据索引，1s超时
+        int inputBufferIndex = encoder.dequeueInputBuffer(1000 * 1000);
+        if (inputBufferIndex &gt;= 0) {
+            //通过数据索引，获取输入buffer
+            ByteBuffer inputBuffer = encoder.getInputBuffer(inputBufferIndex);
+            inputBuffer.clear();
+            //将数据放入输入buffer
+            inputBuffer.put(frame);
+            //将输入buffer放入队列
+            encoder.queueInputBuffer(inputBufferIndex, 0, frame.length,
+                    System.nanoTime(), 0);
+        }
+    }
+
+    BufferInfo info = new BufferInfo();
+
+    private void output(MediaCodec encoder) {
+        //从输出队列中获取数据索引
+        int outputBufferIndex = encoder.dequeueOutputBuffer(info, 200 * 1000);
+        if (outputBufferIndex &gt;= 0) {
+            //通过数据索引，获取输出buffer
+            ByteBuffer outputBuffer = encoder.getOutputBuffer(outputBufferIndex);
+            if (outputBuffer != null) {
+                outputBuffer.position(0);
+                byte[] h264 = new byte[outputBuffer.remaining()];
+                outputBuffer.get(h264);
+                //todo 使用编码后的h264数据
+                //数据使用后，将buffer释放到codec
+                encoder.releaseOutputBuffer(outputBufferIndex, false);
+                outputBuffer.clear();
+            }
+        }
+    }
+</code></pre>
+<h2 id="生命周期">生命周期</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1709967047085.png" alt="" loading="lazy"><br>
+在编解码器的生命周期内有三种理论状态：停止态-Stopped、执行态-Executing、释放态-Released，停止状态（Stopped）包括了三种子状态：未初始化（Uninitialized）、配置（Configured）、错误（Error）。执行状态（Executing）在概念上会经历三种子状态：刷新（Flushed）、运行（Running）、流结束（End-of-Stream）。</p>
+<p>当你使用任意一种工厂方法（factory methods）创建了一个编解码器，此时编解码器处于未初始化状态（Uninitialized）。首先，你需要使用configure(…)方法对编解码器进行配置，这将使编解码器转为配置状态（Configured）。然后调用start()方法使其转入执行状态（Executing）。在这种状态下你可以通过上述的缓存队列操作处理数据。<br>
+执行状态（Executing）包含三个子状态： 刷新（Flushed）、运行（ Running） 以及流结束（End-of-Stream）。在调用start()方法后编解码器立即进入刷新子状态（Flushed），此时编解码器会拥有所有的缓存。一旦第一个输入缓存（input buffer）被移出队列，编解码器就转入运行子状态（Running），编解码器的大部分生命周期会在此状态下度过。当你将一个带有end-of-stream 标记的输入缓存入队列时，编解码器将转入流结束子状态（End-of-Stream）。在这种状态下，编解码器不再接收新的输入缓存，但它仍然产生输出缓存（output buffers）直到end-of- stream标记到达输出端。你可以在执行状态（Executing）下的任何时候通过调用flush()方法使编解码器重新返回到刷新子状态（Flushed）。<br>
+通过调用stop()方法使编解码器返回到未初始化状态（Uninitialized），此时这个编解码器可以再次重新配置 。当你使用完编解码器后，你必须调用release()方法释放其资源。<br>
+在极少情况下编解码器会遇到错误并进入错误状态（Error）。这个错误可能是在队列操作时返回一个错误的值或者有时候产生了一个异常导致的。通过调用 reset()方法使编解码器再次可用。你可以在任何状态调用reset()方法使编解码器返回到未初始化状态（Uninitialized）。否则，调用 release()方法进入最终的Released状态。</p>
+<h2 id="mediaformat">MediaFormat</h2>
+<p>MediaFormat类用于描述媒体数据的格式信息，比如媒体类型（audio/mp4a-latm 或 video/avc）、编码格式、采样率、通道数、比特率、帧率、码率、分辨率等信息。</p>
+<h3 id="创建对象">创建对象</h3>
+<p>可以使用createAudioFormat 和 createVideoFormat创建音频和视频格式的MediaFormat对象</p>
+<pre><code class="language-java">MediaFormat audioFormat = MediaFormat.createAudioFormat(&quot;audio/mp4a-latm&quot;, 44100, 2);
+MediaFormat videoFormat = MediaFormat.createVideoFormat(&quot;video/avc&quot;, 1920, 1080);
+</code></pre>
+<h3 id="属性设置和查询">属性设置和查询</h3>
+<p>常用的属性类型有3种，分别是Integer、String和ByteBuffer</p>
+<p>Integer常见属性有：<br>
+KEY_BIT_RATE：音频或视频的比特率，单位为比特每秒（bps）。<br>
+KEY_SAMPLE_RATE：音频的采样率，单位为赫兹（Hz）。<br>
+KEY_CHANNEL_COUNT：音频的通道数。<br>
+KEY_WIDTH：视频的宽度，单位为像素。<br>
+KEY_HEIGHT：视频的高度，单位为像素。<br>
+KEY_FRAME_RATE：视频的帧率，单位为帧每秒（fps）。<br>
+KEY_I_FRAME_INTERVAL：视频的 I 帧间隔，单位为秒。通常情况下，视频编码器会在视频中周期性地插入一个 I 帧，以便于视频的随机访问。该属性指定 I 帧之间的时间间隔，如果值为 1，则表示每一帧都是 I 帧，如果值为 2，则表示每两帧为一个 GOP（Group Of Pictures），第一帧为 I 帧，后续帧为 P 帧或 B 帧。<br>
+KEY_MAX_INPUT_SIZE：媒体输入数据的最大大小，单位为字节。通常情况下，编码器需要知道输入数据的最大大小，以便于为输入数据分配足够的缓冲区。</p>
+<p>String常见属性有：<br>
+KEY_MIME：媒体格式的 MIME 类型。MIME（Multipurpose Internet Mail Extensions）类型是一种标准化的方式，用于表示不同类型的数据格式。例如，视频格式的 MIME 类型可能为 video/mp4，音频格式的 MIME 类型可能为 audio/mpeg。<br>
+KEY_LANGUAGE：媒体的语言。<br>
+KEY_TITLE：媒体的标题。<br>
+KEY_ALBUM：媒体所属的专辑。<br>
+KEY_AUTHOR：媒体的作者。<br>
+KEY_GENRE：媒体的流派或类型。<br>
+KEY_MIME_TYPE：同 KEY_MIME。</p>
+<p>ByteBuffer常见属性有：<br>
+csd-0 : 代表H264或者H265编码器中的SPS（Sequence Parameter Set）<br>
+csd-1 : 代表H264或者H265编码器中的PPS（Picture Parameter Set）<br>
+说明：H264 和 H265 编码器在编码视频数据时，会将视频帧数据分为多个 NAL（Network Abstraction Layer）单元，并在每个 NAL 前面添加特定的起始码（start code）或者长度信息（length information）。SPS 和 PPS 分别是 H264 和 H265 编码器中的两个关键信息单元，包含了视频的基本参数信息（如分辨率、帧率、码率等）以及编码参数（如编码方式、压缩比等），是解码器解码视频时必须用到的信息。<br>
+示例代码：</p>
+<pre><code class="language-java">byte[] sps = format.getByteBuffer(&quot;csd-0&quot;).array();
+byte[] pps = format.getByteBuffer(&quot;csd-1&quot;).array();
+</code></pre>
+<h2 id="mediaextractor">MediaExtractor</h2>
+<p>MediaExtractor负责从音视频文件中提取出数据流，比如输入MP4（或者TS）文件，按帧输出视频h264数据。</p>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test() {
+        try {
+            MediaExtractor videoExtractor = new MediaExtractor();
+            //设置文件地址
+            videoExtractor.setDataSource(&quot;file/path/test.mp4&quot;);
+            //获取通道数
+            int trackCount = videoExtractor.getTrackCount();
+            for (int i = 0; i &lt; trackCount; i++) {
+                //获取指定通道的格式信息
+                MediaFormat format = videoExtractor.getTrackFormat(i);
+                //判断当前通道是否为视频
+                String mime = format.getString(MediaFormat.KEY_MIME);
+                if (mime.startsWith(&quot;video&quot;)) {//视频通道
+                    //mime.startsWith(&quot;audio&quot;)  音频通道
+                    videoExtractor.selectTrack(i);
+                }
+            }
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1024 * 1024);
+            while (true) {
+                //获取当前帧的flag
+                int flag = videoExtractor.getSampleFlags();
+                //获取当前帧的时间戳
+                long curSampleTime = videoExtractor.getSampleTime();
+                //获取当前帧数据
+                int size = videoExtractor.readSampleData(byteBuffer, 0);
+                byte[] h264 = new byte[size];
+                byteBuffer.get(h264, 0, size);
+                //跳转到下一帧
+                boolean b = videoExtractor.advance();
+                //没有更多数据，结束
+                if (!b) {
+                    break;
+                }
+            }
+            //释放资源
+            videoExtractor.release();
+        } catch (Exception e) {
+
+        }
+    }
+</code></pre>
+<h2 id="mediamuxer">MediaMuxer</h2>
+<p>MediaMuxer负责将音视频数据流封装成MP4文件（或者TS文件，需要对Framework层代码做改动），和MediaExtractor的作用刚好相反。</p>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test(MediaFormat videoFormat, MediaFormat audioFormat) {
+        try {
+            //设置输出文件路径和文件格式
+            MediaMuxer mediaMuxer = new MediaMuxer(&quot;outFile.mp4&quot;,
+                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            //添加通道
+            int trackVideo = mediaMuxer.addTrack(videoFormat);
+            int trackAudio = mediaMuxer.addTrack(audioFormat);
+            //开始合成
+            mediaMuxer.start();
+
+            //仅展示API调用，实际使用根据具体情况定
+            boolean running = true;
+            byte[] videoData = new byte[1024];
+            boolean videoIsKey = true;//视频数据是否是关键帧
+            byte[] audioData = new byte[512];
+            BufferInfo mBufferInfoVideo = new BufferInfo();
+            BufferInfo mBufferInfoAudio = new BufferInfo();
+            while (running) {
+                //如果视频帧是关键帧，写入相应flag
+                if (videoIsKey) {
+                    mBufferInfoVideo.flags = MediaCodec.BUFFER_FLAG_KEY_FRAME;
+                }
+                //数据大小
+                mBufferInfoVideo.size = videoData.length;
+                //时间戳
+                mBufferInfoVideo.presentationTimeUs = System.nanoTime() / 1000L;
+                //写入视频数据到视频通道
+                mediaMuxer.writeSampleData(trackVideo,
+                        ByteBuffer.wrap(videoData), mBufferInfoVideo);
+
+                mBufferInfoAudio.presentationTimeUs = System.nanoTime() / 1000L;
+                mBufferInfoAudio.size = audioData.length;
+                //写入音频数据到音频通道
+                mediaMuxer.writeSampleData(trackAudio,
+                        ByteBuffer.wrap(audioData), mBufferInfoAudio);
+            }
+
+            //停止合成
+            mediaMuxer.stop();
+            //释放资源
+            mediaMuxer.release();
+        } catch (Exception e) {
+
+        }
+    }
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android Framework（二），应用冷启动过程]]></title>
+        <id>https://PaIn22152.github.io/post/android-frameworker-ying-yong-leng-qi-dong-guo-cheng/</id>
+        <link href="https://PaIn22152.github.io/post/android-frameworker-ying-yong-leng-qi-dong-guo-cheng/">
+        </link>
+        <updated>2022-05-03T10:28:41.000Z</updated>
+        <content type="html"><![CDATA[<p>当启动Activity时，系统后台没有该应用的进程，系统会先创建一个新的进程分配给该应用，然后再跳转Activity，这叫应用的冷启动。</p>
+<h1 id="0主要流程">0主要流程</h1>
+<p>1.Launcher请求AMS过程<br>
+2.AMS请求Zygote进程，创建应用进程<br>
+3.AMS到ApplicationThread过程<br>
+4.ActivityThread启动Activity</p>
+<h1 id="1launcher请求ams过程">1.Launcher请求AMS过程</h1>
+<p>简化流程为下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1651580179071.png" alt="" loading="lazy"><br>
+当点击应用程序的图标时，就会调用Launcher的startActivitySafely方法，方法里面会先将Intent的Flag设置为FLAG_ACTIVITY_NEW_TASK，这样新的Activity就会在新的任务栈中启动，然后调用startActivity方法，通过一系列的调用链后，会走到Instrumentation的execStartActivity方法，这个方法里面，会先调用ActivityManager的getService方法获取AMS的代理对象，然后调用AMS的startActivity方法。这里是通过Binder的方式实现的进程间通信，把启动Activity的任务从Launcher进程转移到了AMS的syetem_server进程中。</p>
+<h1 id="2ams请求zygote进程创建应用进程">2.AMS请求Zygote进程，创建应用进程</h1>
+<p>AMS在startActivity之前，会先判断目标进程是否存在，如果不存在，会先创建应用的进程。<br>
+这里可以分为两部分，一部分是AMS发送启动应用进程的请求，一部分是Zygote接收请求并创建应用进程。</p>
+<h2 id="21ams发送请求">2.1AMS发送请求</h2>
+<p>AMS会调用startProcessLocked方法向Zygote进程发送请求，在这个方法里面，会先将应用进程的启动参数写入到ZygoteState中，然后与一个名为“zygote”的Socket建立连接，并匹配ABI。</p>
+<h2 id="22zygote接收请求并创建进程">2.2Zygote接收请求并创建进程</h2>
+<p>在Zygote进程中，Socket连接成功并匹配ABI后，会返回ZygoteState对象， 这个对象里面有启动进程的参数，然后通过fork当前进程的方式，使用进程参数创建进程，并在新创建的进程中创建Binder线程池，然后通过反射的方式创建出ActivityThread对象，然后通过抛异常的方式，调用ActivityThread的main方法，这里使用抛异常的方式而不是直接调用main方法，是因为这样做可以清除所有设置过程中需要的堆栈帧。ActivityThread类用于管理当前应用进程的主线程，在main方法里面，会创建并开启主线程消息循环，使得进程可以方便地使用消息循环机制。</p>
+<h1 id="3ams到applicationthread的调用过程">3AMS到ApplicationThread的调用过程</h1>
+<p>在应用进程创建完成之后，才会调用AMS的startActivity方法，然后调用startActivityAsUser方法，这个方法里面，首先判断调用者进程是否被隔离，然后检查调用者是否有权限，判断通过后调用ActivityStarter的startActivityLocked方法，这个ActivityStarter类是加载Activity的控制类，会收集所有的逻辑来决定如何将Intent和Flags转换为Activity，并将Activity和Task以及Stack相关联，最后在ActivityStackSupervisor的realStartActivityLocked方法中，通过ApplicationThread来与应用程序进程进行Binder通信，ApplicationThread是AMS所在进程system_server进程和应用进程的通信桥梁。</p>
+<h1 id="4activitythread启动activity">4ActivityThread启动Activity</h1>
+<p>在ApplicationThread的scheduleLaunchActivity方法中，会先将启动Activity的参数封装成ActivityClientRecord，然后通过H类发送LAUNCH_ACTIVITY消息，这个H类是ActivityThread的内部类，继承自Handler，是应用进程中主线程的消息管理类，因为ApplicatioThread是一个Binder，它的调用逻辑是运行在Binder线程池中的，所以需要用Handler将代码逻辑切换到主线程中。接下来看看H类中，对LAUNCH_ACTIVITY消息的处理，首先是获取到handler传过来的ActivityClientRecord对象，然后通过getPackageInfoNoCheck方法获得LoadedApk对象并赋值给ActivityClientRecord。应用进程要启动Activity时需要将该Activity所属的APK加载进来，而LoadedApk就是用来描述已加载的APK文件的。然后调用handleLaunchActivity，通过调用performLaunchActivity方法来启动Activity，并将Activity的状态设置为Resume，在performLauncheActivity方法中，首先获取Menifest里面设置的Activity信息，然后获取APK文件的描述类LoadedApk，然后获取Activity的类名和包名，然后创建Activity的上下文环境，然后通过Instrumetation创建Activity的实例，然后创建Application并调用attach方法绑定Context，然后调用Activity的attach方法初始化Activity，在attach方法中，会创建Window对象并与Activity相关联，然后调用Instrumentation的callActivityOnCreate方法启动Activity，先调用performCreate然后调用Activity的onCreate，至此，真正启动了Activity。</p>
+<h1 id="小结">小结</h1>
+<p>应用冷启动（根Activity的启动）过程涉及到4个进程，分别是Launcher进程、AMS所在的system_server进程、Zygote进程、应用程序进程，它们之间的关系如图所示，<br>
+这里放图 todo</p>
+<p>首先Launcher进程向AMS请求创建根Activity，AMS会判断Activity所需的应用进程是否存在，如果不存在就会请求Zygote进程创建应用进程，应用进程启动之后，AMS会请求应用进程启动Activity。其中，AMS和Zygote通信采用Socket方式，Launcher和AMS、AMS和应用进程通信采用Binder方式。<br>
+而如果是普通的Activity启动，只会涉及AMS所在的system_server进程和应用进程。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android工程师进阶34讲-Android源码分析]]></title>
+        <id>https://PaIn22152.github.io/post/android-gong-cheng-shi-jin-jie-34-jiang-android-yuan-ma-fen-xi/</id>
+        <link href="https://PaIn22152.github.io/post/android-gong-cheng-shi-jin-jie-34-jiang-android-yuan-ma-fen-xi/">
+        </link>
+        <updated>2022-05-01T12:22:42.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1startactivity启动过程">1startActivity启动过程</h1>
+<p>假设从Activity A中跳转到另一个App中的Activity B，过程如下图所示：<br>
+<img src="https://PaIn22152.github.io/post-images/1651409134876.png" alt="" loading="lazy"><br>
+整个startActivity的流程分为3部分，也涉及3个进程之间的交互：<br>
+1.Activity A  到  AMS；<br>
+2.AMS  到  进程B中的ApplicationThread；<br>
+3.ApplicationThread  到  Activity B；</p>
+<h2 id="11-activity-a到ams阶段">1.1 Activity A到AMS阶段</h2>
+<p>这一过程并不复杂，用一张图表示具体过程如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651409321428.png" alt="" loading="lazy"><br>
+下面具体看看源码：<br>
+<img src="https://PaIn22152.github.io/post-images/1651409411481.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1651409493767.png" alt="" loading="lazy"><br>
+调用startActivity后，最终会调用到startActivityForResult方法，在startActivityForResult中，调用Instrumentation.exeStartActivity方法，把Activity的跳转交给类Instrumentation类去处理。</p>
+<p>而在Instrumentation中，会通过ActivityManager.getService获取AMS的实例，然后调用其startActivity方法，至此，startActivity的工作重心从Activity A转移到类系统进程AMS中。</p>
+<h2 id="12ams到applicationthread">1.2AMS到ApplicationThread</h2>
+<p>这一步的流程看起来很负责，实际上就干了两件事：<br>
+1.综合处理launchMode和Intent中的Flag标志位，并根据处理结果生成一个目标Activity B的对象（ActivityRecord）；<br>
+2.判断是否需要位目标Activity B创建一个新的进程（ProcessRecord）、新的任务栈（TaskRecord）。</p>
+<p>从AMS的startActivity看起：<br>
+<img src="https://PaIn22152.github.io/post-images/1651410587774.png" alt="" loading="lazy"><br>
+经过多个方法的调用，最终通过obtainStarter方法获取了ActivityStarter类型的对象（ActivityStarter类是专门负责一个Activity的启动操作，主要作用包括解析Intent、创建ActivityRecord、创建TaskRecord等），然后调用其execute方法，在execute方法中，会再次调用其内部的startActivityMayWait方法：<br>
+<img src="https://PaIn22152.github.io/post-images/1651410879649.png" alt="" loading="lazy"><br>
+从上图可以看出，获取目标Activity信息的操作由mSupervisor来实现，它是ActivityStackSupervisor类型，是负责Activity所处栈的管理类。在startActivityMayWait中调用类一个重载的startActivity方法，而最终会调用ActivityStarter中的startActivityUnchecked方法来获取启动Activity的结果。然后调用到realStartActivityLocked方法，在这个方法中，调用启动事物ClientTransaction的schedule方法，而这个transaction实际上是在创建ClientTransaction时传入的app.thread对象，也就是ApplicationThread。</p>
+<h2 id="13applicationthread到activity">1.3ApplicationThread到Activity</h2>
+<p>从ApplicationThread的scheduleTransaction方法开始，调用了ActivityThread中的scheduleTransaction方法，这个方法实际上实在ActivityThread的父类ClientTransactionHandler中实现的，具体代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651411999035.png" alt="" loading="lazy"><br>
+调用sendMessage方法，向Handler中发送了一个EXECUTE_TRANSACTION的消息，并且Message中的obj就是启动Activity的事务对象，而这个Handler的具体实现是ActivityThread中的mH对象，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651412118345.png" alt="" loading="lazy"><br>
+最终调用了事务的execute方法，然后调用ActivityThread中的handleLaunchActivity方法：<br>
+<img src="https://PaIn22152.github.io/post-images/1651412406117.png" alt="" loading="lazy"><br>
+1初始化Activity的WindowManager，每一个Activity都会对应一个窗口；<br>
+2调用performLauncheActivity创建并显示Activity<br>
+3通过反射创建目标Activity 对象<br>
+4调用attach方法建立Activity与Context之间的联系，创建PhoneWindow对象，并与Activity进行关联操作<br>
+5通过Instrumentation最终调用Activity的onCreate方法</p>
+<h1 id="2底层剖析window-activity-view三者关系">2底层剖析Window、Activity、View三者关系</h1>
+<p>当我们需要显示Activity布局时，只需要在Activity 中添加一行setContentView即可，查看Activity中的源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651763057383.png" alt="" loading="lazy"><br>
+可以看到，其实Activity几乎什么都每做，而是将操作直接交给Window处理的，getWindow返回的是Activity中的全局变量mWindow，是一个Window类型，它的赋值是在ActivityThread中的performLaunchActivity中，通过反射创建Activity对象后，执行attach方法，attach方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651763246006.png" alt="" loading="lazy"><br>
+在Activity的attach方法中将一个PhoneWindow对象赋值给mWindow，接下来调用了setWindowManager方法将系统WindowManager传给PhoneWindow，如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1651763447172.png" alt="" loading="lazy"><br>
+最终，在PhoneWindow中持有一个WindowManagerImpl的引用。</p>
+<h2 id="phonewindow的setcontentview">PhoneWindow的setContentView</h2>
+<p>Activity将setContentView的操作交给了PhoneWindow，接下来看看其实现过程：<br>
+<img src="https://PaIn22152.github.io/post-images/1651763724195.png" alt="" loading="lazy"><br>
+图中1处判断mContentParent是否为空，为空则调用installDecor初始化DecorView和mContentParent<br>
+图中2处将传入的布局添加到mContentParent中。<br>
+可以看出，在PhoneWindow中默认有一个DecorView（是FrameLayout子类），在DecorView中默认自带一个mContentParent（ViewGroup类型），然后把xml中写的布局添加到mContentParent中，因此经过setContentView之后，PhoneWindow内部的View关系如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651764057124.gif" alt="" loading="lazy"><br>
+目前为止，PhoneWindow中只是创建类一个DecorView，并在DecorView中填充Activity中传入的布局，可是DecorView还没有跟Activity建立任何联系，也没有被绘制到界面上显示。我们知道，Activity执行到onCreate时并不可见，只有执行完onResume后Activity中的内容才是屏幕可见状态，这是因为在onCreate阶段只是初始化类Activity需要显示的内容，而在onResume阶段才会将PhoneWindow中的DecorView绘制到屏幕上。<br>
+在ActivityThread的handleResumeActivity中，会调用WindowManager的addView方法将DecorView添加到WMS，如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1651764422573.png" alt="" loading="lazy"><br>
+WindowManager的addView结果有两个：<br>
+1.DecorView被渲染绘制到屏幕上显示；<br>
+2.DecorView可以接收屏幕触摸事件。</p>
+<h2 id="windowmanager的addview">WindowManager的addView</h2>
+<p>PhoneWindow只是负责处理一些应用窗口通用的逻辑（设置标题栏，导航栏等），真正完成把一个View作为窗口添加到WMS的过程是由WindowManager来完成的。<br>
+WindowManager是接口类型，真正的实现者是WindowManagerImpl类，addView源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651845312135.png" alt="" loading="lazy"><br>
+WindowManagerImpl也是一个空壳，它调用了WindowManagerGlobal的addView方法。WindowManagerGlobal是一个单例，每一个进程中只有一个实例对象，如上图红框所示，在addView方法中创建了一个最关键的ViewRootImpl对象，然后通过ViewRootImpl的setView方法将view添加到WMS。</p>
+<h2 id="viewrootimpl的setview">ViewRootImpl的setView</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1651845551778.png" alt="" loading="lazy"><br>
+图中1处的requestLayout是刷新布局的操作，调用此方法后ViewRootImpl所关联的View执行measure-layout-draw操作，确保View被添加到Window上显示到屏幕之前，已经完成测量和绘制操作。<br>
+图中2处调用mWindowSession的addToDisplay方法将View添加到WMS中。<br>
+WindowSession是WindowManagerGlobal中的单例对象，初始化代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651845805825.png" alt="" loading="lazy"><br>
+sWindowSession实际上是IWindowSession类型，是一个Binder类型，真正的实现类是System进程中的Session。上图中红框中就是用AIDL获取System进程中Session的对象，addToDisplay方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651845995643.png" alt="" loading="lazy"><br>
+图中的mService就是WMS，至此，Window已经成功的被传递给类WMS，剩下的工作就全部转移到系统system_server进程中的WMS来完成最终的添加操作。</p>
+<h2 id="再看activity">再看Activity</h2>
+<p>上文提到addView成功有一个标志就是能够接收触碰事件，通过对setContentView流程的分析，可以看出添加View的操作实质上是PhoneWindow在全盘操作，背后负责人是WMS，而Activity没有任何参与。但是当触碰事件发生后，Touch事件首先是被传入到Activity，然后才被下发到布局中的ViewGroup和View，那么Touch事件是如何传递到Activity上的呢？<br>
+ViewRootImpl中的setView方法中，除了调用IWindowSession执行跨进程添加View之外，还有一项重要的操作就是设置输入事件的处理：<br>
+<img src="https://PaIn22152.github.io/post-images/1651846525126.png" alt="" loading="lazy"><br>
+如上图红框中所示，设置了一系列的输入通道。一个触碰事件的发生是由屏幕发起，然后经过驱动层一系列的优化计算通过Socket跨进程通知AndroidFramework层（WMS），最终屏幕事件被发送到上图的输入管道中。<br>
+这些输入管道实际上是一个链表结构，当某一个屏幕触摸事件到达其中的ViewPostImeInpustState时，会经过onProcess来处理，如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651846774689.png" alt="" loading="lazy"><br>
+可以看到在onProcess中最终调用来一个mView的dispatchPointerEvent方法，mView实际上就是PhoneWindow中的DecorView，而dispatchPointerEvent是被View.java实现的，如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651846909397.png" alt="" loading="lazy"><br>
+最终调用来PhoneWindow中Callback的dispatchTouchEvent方法，这个Callback就是Activity，在启动Activity阶段，attach中有如下代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1651847029022.png" alt="" loading="lazy"><br>
+再看Activity的dispatchTouchEvent：<br>
+<img src="https://PaIn22152.github.io/post-images/1651847082258.png" alt="" loading="lazy"><br>
+Touch事件在Activity中绕来一圈，最终回到PhoneWindow中的DecorView来处理。</p>
+<h2 id="小结">小结</h2>
+<p>通过setContentView的流程，分析了Activity、Window、View之间的关系。整个过程Activity表面上参与度比较低，大部分View的添加操作都被封装到Window中实现。而Activity就相当于提供给开发人员的一个管理类，通过它能够更简单的实现Window和View的操作逻辑。以下几点需要注意：<br>
+1.一个Activity中有一个Window，也就是PhoneWindow对象，在PhoneWindow中有一个DecorView，在setContentView中会将layout填充到此DecorView中；<br>
+2.一个应用进程中只有一个WindowMnagerGlobal对象，因为在ViewRootImpl中它是static静态类型；<br>
+3.每一个PhoneWindow对应一个ViewRootImpl对象；<br>
+4.WindowManagerGlobal通过调用ViewRootImpl的setView方法，完成window的添加过程；<br>
+5.ViewRootImpl的setView方法中主要完成两件事情，View渲染（requestLayout）以及接收触屏事件。</p>
+<h1 id="3android如何通过view进行渲染">3Android如何通过View进行渲染</h1>
+<p>上文介绍类Activity、Window和View之间的关系，了解了ViewRootImpl在整个过程中起到承上启下的作用。一方面ViewRootImpl中通过Binder通信机制，远程调用WindowSession将View添加到Window中，另一方面，ViewRootImpl在添加View之前，又需要调用requestLayout方法，执行完整的View树的渲染操作。</p>
+<h2 id="屏幕绘制">屏幕绘制</h2>
+<p>ViewRootImpl requestLayout流程<br>
+requestLayout第一次被调用是在setView中，从名字也能看出，这个方法的主要目的就是请求布局操作，其中包括View的测量、布局、绘制等<br>
+<img src="https://PaIn22152.github.io/post-images/1652191073400.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1652191099259.png" alt="" loading="lazy"><br>
+requestLayout源码如上图，注释1处检查是否为合法线程，一般情况下就是检查是否为主线程；<br>
+注释2处将请求布局标识符设置为true，这个参数决定了后续是否需要执行measure和layout操作；<br>
+最后执行scheduleTraversals方法，如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652191284518.png" alt="" loading="lazy"><br>
+注释1处向主线程消息队列插入同步屏障消息，该方法发送一个没有target的Message到Queue中，在next方法中获取消息时，如果发现没有target的Message，则在一定的时间内跳过同步消息，优先执行异步消息，保证UI绘制操作优先执行。<br>
+注释2处调用Choregographer的postCallback方法，实际上也是发送一个Message到主线程消息队列。流程代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652191817621.png" alt="" loading="lazy"><br>
+可以看出，最终通过Handler发送到MessageQueue中的Message被设置为异步消息。<br>
+mTraversalRunnable是一个实现Runnable接口的TraversalRunnable类型对象，其run方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652192021413.png" alt="" loading="lazy"><br>
+在run方法中调用了doTraversal方法，并最终调用了performTraversals()方法，在这个方法里面会真正地开始View绘制流程：measure-&gt;layout-&gt;draw。</p>
+<p>ViewRootImpl的performTraversals方法<br>
+这个方法比较重，源码有将近900行，但是抽取一下核心部分代码可以发现，这个方法只负责做3件事：<br>
+<img src="https://PaIn22152.github.io/post-images/1652192238739.png" alt="" loading="lazy"><br>
+接下来以measure流程举例<br>
+我们知道View的测量是一层递归调用，递归执行子View的测量工作后，再最后决定父View的宽高，这个递归的起源就是DecorView。measureHierarchy方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652192440302.png" alt="" loading="lazy"><br>
+这个方法中，通过getRootMeasureSpec方法获取了根View的MeasureSpec，实际上就是Window的宽高，然后调用performMeasure方法进行测量工作</p>
+<p>ViewRootImpl的performMeasure<br>
+<img src="https://PaIn22152.github.io/post-images/1652192616304.png" alt="" loading="lazy"><br>
+方法很简单，只是执行了mView的measure方法，这个mView就是DecorView，然后在DecorView的measure方法中会调用onMeasure方法，然后会递归调用子View的onMeasure方法。performLayout方法过程类似。</p>
+<p>ViewRootImpl的performDraw<br>
+<img src="https://PaIn22152.github.io/post-images/1652192791294.png" alt="" loading="lazy"><br>
+图中可以看出，在performDraw方法中，调用的是ViewRootImpl的draw方法，在draw方法中进行UI绘制操作。Android系统提供了2种绘制方式，图中1表示App开启了硬件加速功能，所以会启用硬件加速绘制；2处表示使用软件绘制。<br>
+ViewRootImpl中有一个非常重要的对象Surface，ViewRootImpl会将在draw方法中绘制的UI元素，绑定到这个Surface上，如果说Canvas是画板，那么Surface就是画板上的画纸，Surface中的内容最终会被传递给底层的SurfaceFlinger，最终将Surface中的内容进行合成并显示到屏幕。</p>
+<p>软件绘制drawSoftware<br>
+<img src="https://PaIn22152.github.io/post-images/1652193158078.png" alt="" loading="lazy"><br>
+1处就是调用DecorView的draw方法将UI元素绘制到画布Canvas对象中，2处将Canvas中的内容显示到屏幕上，实际上就是将Canvas中的内容提交给SurfaceFlinger进行合成处理。默认情况下软件绘制没有采用GPU渲染的方式，全部由CPU完成。<br>
+DecorView并没有覆写draw方法，因此实际上是调用顶层View的draw方法：<br>
+<img src="https://PaIn22152.github.io/post-images/1652193400033.png" alt="" loading="lazy"><br>
+1处绘制View的背景，2绘制View自身内容，3表示对draw事件进行分发，在ViewGroup中会递归调用子View的draw。</p>
+<p>硬件加速<br>
+是否启用硬件加速<br>
+在ViewRootImpl的draw方法中，通过以下判断是否启用硬件加速：<br>
+<img src="https://PaIn22152.github.io/post-images/1652193570952.png" alt="" loading="lazy"><br>
+而启用硬件加速的设置，可以在manifest清单文件中，指定Application或者某个Activity支持硬件加速，如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652193659983.png" alt="" loading="lazy"><br>
+此外还可以通过Window或者VIew在进行更小粒度的硬件加速设置：<br>
+<img src="https://PaIn22152.github.io/post-images/1652193724661.png" alt="" loading="lazy"><br>
+需要注意的是，不是所有的2D绘制操作都支持硬件加速，如果在自定义View中使用了以下API，可能会造成程序工作不正常：<br>
+Canvas<br>
+clipPath()<br>
+clipRegion()<br>
+drawPicture()<br>
+drawPosText()<br>
+drawTextOnPath()<br>
+drawVertices()<br>
+Paint<br>
+setLinearText()<br>
+setMaskFilter()<br>
+setRasterizer()</p>
+<p>硬件加速优势<br>
+接下来看看为什么硬件加速能够提高UI渲染的性能，ViewRootImpl的draw方法中，硬件加速部分代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652194005905.png" alt="" loading="lazy"><br>
+图中mThreadRenderer是ThreadRenderer类型，其draw方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652194051447.png" alt="" loading="lazy"><br>
+1处是硬件加速的特殊之处，通过updateRootDisplayList方法将View视图抽象成一个RenderNode对象，并构建View的DrawOp树；2处通知RenderThread进行绘制操作，RenderThread是一个单例线程，每个进程最多只有一个硬件渲染线程，所以不会有并发问题。<br>
+updateRootDisplayList方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1652194251224.png" alt="" loading="lazy"><br>
+Android硬件加速过程中，View属兔被抽象成RenderNode节点，View中的绘制操作都会被抽象成一个个DrawOp，每个DrawOp有对应的OpenGL绘制命令。绘制命令是由GPU执行的，GPU比CPU更擅长进行计算操作，所以整个流程会更加顺畅。</p>
+<p>Invalidate轻量级刷新<br>
+Invalidate和requestLayout的区别在于，它不一定会触发View的measure和layout操作，多数情况下只执行draw操作。<br>
+postInvalidate和invalidate的区别是可以在非UI线程调用，原理是通过Handler方法发送消息到主线程去执行invalidate方法</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android工程师34讲-Android核心技术]]></title>
+        <id>https://PaIn22152.github.io/post/android-gong-cheng-shi-34-jiang-android-he-xin-ji-zhu/</id>
+        <link href="https://PaIn22152.github.io/post/android-gong-cheng-shi-34-jiang-android-he-xin-ji-zhu/">
+        </link>
+        <updated>2022-04-20T13:54:09.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1android是如何通过activity进行交互的">1Android是如何通过Activity进行交互的</h1>
+<p>taskAffinity可以指定Activity的任务栈，但是需要配合singleTask或者SingleInstance一起使用。</p>
+<p>taskAffinity+allowTaskReparenting<br>
+allowTaskReparenting赋予Activity在Task之间转移的特性。一个在后台任务栈中的Activity A，当有其他任务栈进入前台，并且taskAffinity和A相同，则会自动将A添加到当前启动的任务栈中。<br>
+当一个应用A启动来应用B的某个Activity后，如果这个Activity的allowTaskReparenting属性为true，那么当B被启动后，此Activity会直接从应用A的任务栈移到B的任务栈。<br>
+再具体点，比如现在有两个应用A和B，A启动来B的Activity C，然后按Home键回到桌面，然后再点击B的桌面图标，这个时候并不是启动B的主Activity，而是重新显示C。</p>
+<p>通过Binder传递数据时，对数据大小有限制，大小为1M-8K，所以使用Intent传递的数据都不能大于这个值，解决办法可以是使用transient修饰非必须数据，或者将对象转为JSON字符串，减少数据量，或者使用EventBus等事件总线三方库传递数据。</p>
+<p>当应用中有多个进程时，会导致应用的Application的onCreate方法被执行多次，需要通过进程名称判断是不是符合的进程，然后才在符合的进程中做相应的操作。</p>
+<p>从Android10版本开始，系统限制来后台启动Activity的操作，官方建议使用通知来替代直接启动Activity，如果一定要启动，可以申请悬浮窗权限后可以正常启动。</p>
+<h1 id="2touch事件分发">2Touch事件分发</h1>
+<p>事件分发在ViewGroup中，主要涉及到的方法有dispatchTouchEvent、onInterceptTouchEvent、onTouchEvent。<br>
+在dispatchTouchEvent中，主要有三步：<br>
+1.检查当前ViewGroup是否需要拦截事件，如果拦截则此事件不再传递给子view，如果之前已经传递来，则以CANCEL的方式通知子view；<br>
+2.如果事件不拦截，将事件分发给子View，如果子view将事件捕获，则将mFirstTouchTarget赋值给捕获Touch事件的View；<br>
+3.根据mFirstTouchTarget，再次分发事件</p>
+<p>步骤1的具体代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650468702504.png" alt="" loading="lazy"><br>
+图中红框标出来是否需要拦截的条件：<br>
+如果事件为DOWN事件，则调用onInterceptTouchEvent进行拦截判断；<br>
+或者mFirstTouchTarget不为null，代表已经有子view捕获了这个事件，子view的dispatchTouchEvent返回true就是代表捕获了touch事件。<br>
+（如果是down以外的事件，且mFirstTouchEvent为null，表示没有子view捕获事件，则直接拦截）</p>
+<p>如果步骤1没有拦截事件，执行步骤2，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650468977208.png" alt="" loading="lazy"><br>
+上图代码中：1处表明事件主动分发的前提是事件为DOWN事件；<br>
+2处遍历所有子view；<br>
+3处判断事件坐标是否在子view坐标范围内，并且子view并没有处在动画状态；<br>
+4处调用dispatchTransformedTouchEvent方法将事件分发给子ciew，如果子view捕获事件成功（dispatchTouchEvent返回true），则将mFirstTouchEvent赋值给子view</p>
+<p>步骤3代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650806224508.png" alt="" loading="lazy"><br>
+步骤3有两个分支：<br>
+分支1，如果此时mFirstTouchTarget为null，说明在上述的事件分发中并没有子View对事件进行捕获操作，这种情况直接调用dispatchTransformedTouchEvent方法，并传入child为null，最终会调用super.dispatchTouchEvent方法，实际上最终会调用自身的onTouchEvent方法处理事件。也就是说，如果没有子View捕获处理touch事件，ViewGroup会通过自身的onTouchEvent方法进行处理。<br>
+分支2，mFirstTouchTarget不为null，说明在步骤2有子View捕获了事件，则直接将当前以及后续的事件交给mFirstTouchTarget指向的View进行处理。</p>
+<p>为什么DOWN事件特殊<br>
+所有touch事件都是从DOWN事件开始的，这是DOWN事件比较特殊的原因之一。另外一个原因是DOWN事件的处理结果会直接影响后续MOVE、UP事件的逻辑。<br>
+在步骤2中，只有DOWN事件会传递给子View进行捕获判断，一旦子View捕获成功，后续的MOVE和UP事件是通过遍历mFirstTouchTarget链表，查找之前接受DOWN的子View，并将触摸事件分配给这些子View。也就是说后续的MOVE、UP等事件的分发交给谁，取决于它们的起始事件DOWN是由谁捕获的。</p>
+<p>mFirstTouchTarget有什么作用<br>
+mFirstTouchTarget的部分源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650807008566.png" alt="" loading="lazy"><br>
+可以看出其实mFirstTouchTarget是一个TouchTarget类型的链表结构。而这个TouchTarget的作用就是用来记录捕获了DOWN事件的View，具体保存在上图的child变量。可是为什么是链表类型的结构呢？因为Android设备是支持多指操作的，每一个手指的DOWN事件都可以当作一个TouchTarget保存起来。在步骤3中判断如果mFirstTouchTarget不为null，则再次将事件分发给相应的TouchTarget。</p>
+<p>容易被遗漏的CANCEL事件<br>
+在上面的步骤3中，继续向子View分发事件的代码中，有以下的逻辑：<br>
+<img src="https://PaIn22152.github.io/post-images/1650807781295.png" alt="" loading="lazy"><br>
+上面红框中表明已经有子View捕获了touch事件，但是蓝色框中的intercepted变量又是true，这种情况下，事件的主导权会重新回到父视图ViewGoup中，并包装一个CANCEL事件传给child。<br>
+总结一下就是，当父视图的onInterceptTouchEvent先返回false，然后在子View的dispatchTouchEvent中返回true表示子View捕获事件，然后在接下来的MOVE过程中，父视图的onIntercepetTouchEvent又返回true，intercepted被重新置为true，此时上诉逻辑就会被触发，子控件会收到CANCEL事件。</p>
+<p>小结：<br>
+ViewGroup的dispatchTouchEvent事件分发主要分3部分：<br>
+1.判断是否需要拦截；主要是根据onInterceptTouchEvent方法的返回值来决定是否拦截；<br>
+2.在DOWN事件中将touch事件分发给子View；这一过程如果有子View捕获消费来touch事件，会对mFirstTouchTarget进行赋值；<br>
+3.DOWN、MOVE、UP事件都会根据mFirstTouchTarget是否为null，决定是自己处理touch事件，还是再次分发给子View。</p>
+<p>然后是几个特殊的点：<br>
+DOWN事件的特殊之处：事件的起点；决定后续事件由谁来消费；<br>
+mFirstTouchTarget的作用：记录消费DOWN事件的View，是一个链表结构；<br>
+CANCEL事件的触发场景：当父视图先不拦截，然后在MOVE事件中重新拦截，此时子View会接收到一个CANCEL事件。此外，当事件分发过程中出现界面跳转，Activity会收到CANCEL事件，并依次下发到View。</p>
+<h1 id="3自定义view">3自定义View</h1>
+<p>自定义View有两种方式：<br>
+1.继承系统提供的成熟控件（比如LinearLayout、RelativeLayout、ImageView等）；<br>
+2.直接继承自系统View或者ViewGroup，并自绘显示内容。</p>
+<h2 id="31继承现有控件">3.1继承现有控件</h2>
+<p>相对而言，这是一种较简单的实现方式。因为大部分核心工作，比如关于控件大小的测量、控件位置的摆放等相关的计算，在系统中都已经实现封装好了，开发人员只要在其基础上进行一些扩展，并按照自己的意图显示相应的UI元素。比如下面的代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1650893369761.png" alt="" loading="lazy"></p>
+<p>自定义属性<br>
+有时候我们想在XML布局文件中使用自定义View时，希望能够在XML文件中直接指定显示文字、字体颜色，等属性时，就需要用到自定义属性。自定义属性具体分为以下几个步骤：<br>
+1.在attrs.xml中声明自定义属性<br>
+在res的values目录下的attrs.xml文件中，使用标签自定义属性，如下例：<br>
+<img src="https://PaIn22152.github.io/post-images/1650893652242.png" alt="" loading="lazy"><br>
+2.在xml布局文件中使用自定义属性<br>
+<img src="https://PaIn22152.github.io/post-images/1650893691543.png" alt="" loading="lazy"><br>
+需要先添加命名空间xmlns:app，然后通过命名空间引用自定义属性，并传入相应的资源或者字符串。<br>
+3.在自定义View中，获取自定义属性的引用值<br>
+<img src="https://PaIn22152.github.io/post-images/1650893810315.png" alt="" loading="lazy"><br>
+入上图，主要是通过Context.obtainStyleAttributes方法获取到自定义属性的集合，然后从这个集合中取出相应的自定义属性。</p>
+<h2 id="32直接继承自view或者viewgroup">3.2直接继承自View或者ViewGroup</h2>
+<p>这种方式相比第一种麻烦一些，但是更加灵活，也能实现更加复制的UI界面。有以下几个问题需要解决：<br>
+1.如何根据相应的属性将UI元素绘制到界面；<br>
+2.自定义控件的大小，也就是宽高分别怎么设置；<br>
+3.如果是ViewGroup，如何合理安排其内部子View的摆放位置；</p>
+<p>以上三个问题，依次在如下方法中解决：onDraw、onMeasure、onLayout。<br>
+因此自定义View的重点工作就是复写并合理地实现这三个方法。</p>
+<p>onDraw<br>
+onDraw方法接收一个canvas类型的参数。Canvas可以理解为一个画布，在这块画布上可以绘制各种类型的UI元素，有如下的方法：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894391257.png" alt="" loading="lazy"><br>
+Canvas中没一个绘制操作都需要传入一个Paint对象，Paint相对于一个画笔，有以下属性：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894459598.png" alt="" loading="lazy"></p>
+<p>onMeasure<br>
+首先需要搞清楚，自定义View为什么需要重新测量？正常情况下，我们直接在XML布局文件中定义好View的宽高，然后让自定义View在此宽高的区域显示即可。但是为了更好地兼容不同尺寸的屏幕，有时会用wrap_content和match_parent属性来表示控件的显示规则，它们分别代表“自适应大小”和“填充父视图大小”，但是这两个属性并没有指定具体的大小，因此我们需要在onMeasure方法中过滤出这两种情况，真正的测量出自定义View应该显示的宽高大小。<br>
+所有工作都是在onMeasure方法中完成，方法定义如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894983589.png" alt="" loading="lazy"><br>
+可以看出，方法会传入两个参数，widthMeasureSpec和heightMeasureSpec。这两个参数是从父视图传递给子View的两个参数，它们表示的是宽高，以及测量模式。<br>
+一共有3种测量模式：<br>
+1.EXACTLY：表示在XML布局文件中宽高使用match_parent或者固定大小的宽高；<br>
+2.AT_MOST：表示在XML布局文件中宽高使用wrap_content；<br>
+3.UNSPECIFIED:父容器没有对当前View有任何限制，当前View可以取任意尺寸；</p>
+<p>具体值和测量模式可以通过如下的API获取到：<br>
+<img src="https://PaIn22152.github.io/post-images/1650896357281.png" alt="" loading="lazy"><br>
+在widthMeasureSpec和heightMeasureSpec中，都是使用二进制高2位表示测量模式，低30位表示宽高的具体值。<br>
+自定义View中，如果不复写onMeasure方法，默认使用父类的实现，也就是View中的实现，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650896868991.png" alt="" loading="lazy"><br>
+蓝色框中的setMeasureDimension是一个非常重要的方法，这个方法传入的值直接决定View的宽高，也就是说如果调用setMeasureDimension(100,200)，最终View就显示宽100*高200的矩形范围。红色下标线标识的getDefaultSize返回的就是默认大小，默认为父视图的剩余可用空间。<br>
+所以当使用的自定义View没有处理wrap_content时，实际使用的宽高就是父视图的剩余可用空间。解决这一问题也比较简单，复写onMeasure，过滤出wrap_content的情况，并主动调用setMeasureDimension方法设置正确的宽高即可，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650897273852.png" alt="" loading="lazy"></p>
+<p>ViewGroup中的onMeasure<br>
+在viewGroup中，onMeasure方法会更加复杂一些。因为ViewGroup在测量自己的宽高之前，需要先确定其内部子View的大小，然后才能确定自己的大小。<br>
+当我们自定义一个ViewGoup的时候，需要在onMeasure方法中综合考虑子View的宽高。比如实现一个流式布局效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650897938459.png" alt="" loading="lazy"><br>
+每一行上的item个数不一定，当每行的item累计宽度超过可用总宽度，则需要重启一行摆放item，因此需要在onMeasure方法中主动的分行计算出最终高度，代码如下：</p>
+<pre><code class="language-java">   //测量控件的宽和高
+
+    @Override
+
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        //获得宽高的测量模式和测量值
+
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+
+
+
+        //获得容器中子View的个数
+
+        int childCount = getChildCount();
+
+        //记录每一行View的总宽度
+
+        int totalLineWidth = 0;
+
+        //记录每一行最高View的高度
+
+        int perLineMaxHeight = 0;
+
+        //记录当前ViewGroup的总高度
+
+        int totalHeight = 0;
+
+        for (int i = 0; i &lt; childCount; i++) {
+
+            View childView = getChildAt(i);
+
+            //对子View进行测量
+
+            measureChild(childView, widthMeasureSpec, heightMeasureSpec);
+
+            MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+            //获得子View的测量宽度
+
+            int childWidth = childView.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+
+            //获得子View的测量高度
+
+            int childHeight = childView.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+
+            if (totalLineWidth + childWidth &gt; widthSize) {
+
+                //统计总高度
+
+                totalHeight += perLineMaxHeight;
+
+                //开启新的一行
+
+                totalLineWidth = childWidth;
+
+                perLineMaxHeight = childHeight;
+
+            } else {
+
+                //记录每一行的总宽度
+
+                totalLineWidth += childWidth;
+
+                //比较每一行最高的View
+
+                perLineMaxHeight = Math.max(perLineMaxHeight, childHeight);
+
+            }
+
+            //当该View已是最后一个View时，将该行最大高度添加到totalHeight中
+
+            if (i == childCount - 1) {
+
+                totalHeight += perLineMaxHeight;
+
+            }
+
+        }
+
+        //如果高度的测量模式是EXACTLY，则高度用测量值，否则用计算出来的总高度（这时高度的设置为wrap_content）
+
+        heightSize = heightMode == MeasureSpec.EXACTLY ? heightSize : totalHeight;
+
+        setMeasuredDimension(widthSize, heightSize);
+
+    }
+
+</code></pre>
+<p>上述代码有两个目的：<br>
+1.调用measureChild方法递归测量子View；<br>
+2.通过叠加每一行的高度，计算出最终Layout的高度。</p>
+<p>onLayout<br>
+上文在onMeasure中只是计算出来ViewGroup的最终高度，但是并没有规定某一个子View应该显示在何处位置。要定义ViewGroup内部的显示规则，则需要复写实现onLayout方法。<br>
+ViewGroup中的onLayout方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650898517671.png" alt="" loading="lazy"><br>
+这是一个抽象方法，也就是说每一个自定义ViewGroup都必须自己实现如何排布子View，具体就是遍历每一个子View，调用child.(l,t,r,b)方法来为每一个子View设置具体的布局位置，四个参数分别代表左上右下的坐标位置，简单实现如下：</p>
+<pre><code class="language-java">    @Override
+
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        mAllViews.clear();
+
+        mPerLineMaxHeight.clear();
+
+        //存放每一行的子View
+
+        List&lt;View&gt; lineViews = new ArrayList&lt;&gt;();
+
+        //记录每一行已存放View的总宽度
+
+        int totalLineWidth = 0;
+
+        //记录每一行最高View的高度
+
+        int lineMaxHeight = 0;
+
+        /****遍历所有View，将View添加到List&lt;List&lt;View&gt;&gt;集合中**********/
+
+        //获得子View的总个数
+
+        int childCount = getChildCount();
+
+        for (int i = 0; i &lt; childCount; i++) {
+
+            View childView = getChildAt(i);
+
+            MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+            int childWidth = childView.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+
+            int childHeight = childView.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+
+            if (totalLineWidth + childWidth &gt; getWidth()) {
+
+                mAllViews.add(lineViews);
+
+                mPerLineMaxHeight.add(lineMaxHeight);
+
+                //开启新的一行
+
+                totalLineWidth = 0;
+
+                lineMaxHeight = 0;
+
+                lineViews = new ArrayList&lt;&gt;();
+
+            }
+
+            totalLineWidth += childWidth;
+
+            lineViews.add(childView);
+
+            lineMaxHeight = Math.max(lineMaxHeight, childHeight);
+
+        }
+
+        //单独处理最后一行
+
+        mAllViews.add(lineViews);
+
+        mPerLineMaxHeight.add(lineMaxHeight);
+
+        /************遍历集合中的所有View并显示出来************/
+
+        //表示一个View和父容器左边的距离
+
+        int mLeft = 0;
+
+        //表示View和父容器顶部的距离
+
+        int mTop = 0;
+
+        for (int i = 0; i &lt; mAllViews.size(); i++) {
+
+            //获得每一行的所有View
+
+            lineViews = mAllViews.get(i);
+
+            lineMaxHeight = mPerLineMaxHeight.get(i);
+
+            for (int j = 0; j &lt; lineViews.size(); j++) {
+
+                View childView = lineViews.get(j);
+
+                MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+                int leftChild = mLeft + lp.leftMargin;
+
+                int topChild = mTop + lp.topMargin;
+
+                int rightChild = leftChild + childView.getMeasuredWidth()；
+
+                int bottomChild = topChild + childView.getMeasuredHeight();
+
+                //四个参数分别表示View的左上角和右下角
+
+                childView.layout(leftChild, topChild, rightChild, bottomChild);
+
+                mLeft += lp.leftMargin + childView.getMeasuredWidth() + lp.rightMargin;
+
+            }
+
+            mLeft = 0;
+
+            mTop += lineMaxHeight;
+
+        }
+
+    }
+
+</code></pre>
+<p>小结<br>
+自定义View主要包含几个方法：<br>
+onDraw，主要复制绘制UI元素<br>
+onMeasure，主要复制测量自定义控件具体显示的宽高<br>
+onLayout，主要是在自定义ViewGroup中复写，并实现子View的显示位置</p>
+<h1 id="4recyclerview">4RecyclerView</h1>
+<p>四级缓存<br>
+第一级缓存：mAttachedScrap、mChangedScrap<br>
+用来缓存屏幕内的ViewHolder，当调用notify方法时，只需要在原有的ViewHolder基础上重新绑定新的数据即可</p>
+<p>第二级缓存：mCachedViews<br>
+用来缓存移除屏幕之外的ViewHolder，默认缓存两个，可以通过setViewCacheSize方法修改容量大小，如果容量已满，则会根据FIFO规则将旧的移除，加入新的</p>
+<p>第三级缓存：ViewCacheExtension<br>
+是预留给开发人员的一个抽象类，使用情景较少</p>
+<p>第四级缓存：RecycledViewPool<br>
+也是用来缓存屏幕外的ViewHolder，当mCachedViews个数满类后，从mCachedViews中淘汰的ViewHolder会先将内部数据清理，然后缓存到RecycledViewPool中，当从RecycledViewPool中取出ViewHolder时需要重新调用onBindViewHolder绑定数据</p>
+<p>当RV需要使用ViewHolder时，会先从4级缓存中依次查找，如果都没有再调用createViewHolder创建</p>
+<h1 id="5okhttp">5OKHTTP</h1>
+<p>使用过程，通过newCall方法生成call对象，再通过调度器Dispatcher的enqueue方法把call对象保存到队列里面，然后在线程池中执行。具体执行的时候，会依次执行拦截器，这里用到的设计模式是责任链模式。（纯粹的责任链模式，处理完后就传递结束，okhttp这里不是纯的，每一次处理完，会把处理后的结果继续往后传递，后面的继续处理）<br>
+拦截器，上文提到的拦截器，主要有：<br>
+BridgeInterceptor：主要对Request中的Header设置默认值，，比如Content-Type、Keep-Alive、Cookie等；<br>
+CacheInterceptor：负责HTTP请求的缓存处理；<br>
+ConnectInterceptor：负责建立与服务器地址之间的连接，也就是TCP连接；<br>
+CallServerInterceptor：负责向服务器发送请求，并从服务器拿到远端数据结果。<br>
+在添加上述几个拦截器之前，会调用client.interceptors将我们设置的自定义拦截器添加到列表中。</p>
+<p>CacheInterceptor缓存拦截器，根据Request获取当前已有缓存的Response，然后创建CacheStategy，再通过这个CacheStrategy对象判断缓存是否可用，如果可用则直接返回，否则调用chain.proceed()继续执行下一个拦截器，也就是发送网络请求，从网络获取到response后，再判断是否将Response进行缓存操作。使用CacheInterceptor拦截器时，需要设置自定义的Cache类，用来指定一些属性，比如缓存路径、最大可用空间，可以使用默认的Cache类。</p>
+<p>CallServerInterceptor是okhttp的最后一个拦截器，也是最核心的起落请求部分。主要负责发送网络请求，以及获取到网络数据后的返回处理。</p>
+<h1 id="6bitmap">6Bitmap</h1>
+<p>Bitmap用来描述一张图片的长、宽、颜色等信息，通常情况下，我们可以使用BitmapFactory来将某一路径下的图片解析为Bitmap对象。可以使用通过Bitmap.getAllocationByteCount()方法获取Bitmap占用的字节大小，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651064907467.png" alt="" loading="lazy"><br>
+图中rodman是保存在res/drawavle-xhdpi目录下的一张600*600的，大小为65kb的图片，打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 5673): bitmap size is 1440000
+</code></pre>
+<p>解释：<br>
+默认情况下，BitmapFactory使用BitMap.Config.ARGB_8888的存储方式来加载图片内容，而在这种存储模式下，每一个像素需要占用4个字节，所以上图中的内存大小可以使用如下公式计算：</p>
+<pre><code class="language-txt">宽 * 高 * 4 = 600 * 600 * 4 = 1440000
+</code></pre>
+<p>屏幕自适应<br>
+还是上面那张图，将rodman移动到res/drawable-hdpi目录下，重新运行代码，打印日志如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 2560000
+</code></pre>
+<p>这是因为BitmapFactory在解析图片的过程中，会根据当前屏幕密度和图片所在的srawable目录来做对比，根据这个对比值进行缩放操作，具体公式如下：</p>
+<pre><code class="language-txt">缩放比例 scale = 当前设备屏幕密度 / 图片所在 drawable 目录对应屏幕密度
+Bitmap 实际大小 = 宽 * scale * 高 * scale * Config 对应存储像素数
+</code></pre>
+<p>而在assets中的图片，系统不会进行缩放，使用代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651065512438.png" alt="" loading="lazy"><br>
+打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 1440000
+</code></pre>
+<h2 id="61bitmap加载优化">6.1Bitmap加载优化</h2>
+<p>上面的例子可以看出，一张65kb大小的图片被加载到内存后，占用来2.5M的内存，所以需要在适当的时候对加载的图片进行缩略优化</p>
+<p>优化1:<br>
+修改图片加载的Config，修改占用字节少的存储方式可以快速有效降低图片占用内存，比如将默认的ARGB_8888修改为RGB_565，这种存储方式一个像素占用2个字节，所以整体相比ARGB_8888内存占用直接减半，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651065912648.png" alt="" loading="lazy"><br>
+打印日志如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 720000
+</code></pre>
+<p>优化2:<br>
+Options中还有一个inSamplseSize参数，可以实现Bitmap采样压缩，这个参数的含义是宽高纬度上每隔inSampleSize个像素进行一次采集，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066084690.png" alt="" loading="lazy"><br>
+因为宽高都会进行采样，所以最终图片会被缩略4倍，打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 180000
+</code></pre>
+<p>inSampleSize的取值应该总是2的指数，如1，2，4，8等。如果外界传入的inSampleSize的值不为2的指数，那么系统会向下取整并选择一个最接近2的指数来代替。比如3，系统会选择2来代替</p>
+<p>优化3:<br>
+Bitmap复用，有以下的需求，某个页面创建来多个Bitmap，比如两张图片A和B，通过点击某一按钮需要在Image上切换显示这两张图片，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066443942.gif" alt="" loading="lazy"><br>
+如果使用以下的代码，每次切换图片都通过Bitmapfactory创建新的Bitmap对象，那么当方法执行完毕后，Bitmap对象会被GC回收，这样不断地创建和销毁大内存对象，就会导致内存抖动，造成UI界面卡顿<br>
+<img src="https://PaIn22152.github.io/post-images/1651066810614.png" alt="" loading="lazy"><br>
+这种场景下，可以使用Options.inBitmap优化，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066924209.png" alt="" loading="lazy"><br>
+1处创建一个可以用来复用的Bitmap对象<br>
+2处将options.inMutable赋值为true，options.inBitmap赋值为之前创建的reuseBitmap对象，从而避免重新分配内存。<br>
+需要注意，复用Bitmap之前，需要调用canUseForInBitmap方法来判断是否可以复用</p>
+<p>优化4:<br>
+BitmapRegionDecoder图片分片显示<br>
+当需要加载显示的图片很大或者很长的时候，在不压缩图片的前提下，不建议一次性将整张图加载到内存，而是采用分片加载的方式来显示图片部分内容，然后再根据手势操作，放大缩小或者移动图片显示区域。<br>
+实现过程<br>
+使用BitmapRegionDecoder将图片加载到内存中，图片可以以绝对路径、文件描述符、输入流的方式传递给BitmapRegionDecoder，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651067535723.png" alt="" loading="lazy"><br>
+在此基础上，通过自定义View，添加touch事件来动态设置Bitmap需要显示的区域Rect，就可以实现大图加载</p>
+<p>优化5：<br>
+在RecyclerView中需要展示一大堆图片时，由于用户会不断地上下滑动，某个Bitmap可能会被短时间内加载并销毁多次，这种情况下使用适当的缓存，可以有效地减缓GC频率保证图片加载效率，提高界面的响应速度和流畅性。常用的缓存是LruCache，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651067895481.png" alt="" loading="lazy"><br>
+LruCache内部是使用LinkedHashMap来实现的LRU（最近最少未使用），这是因为LinkedHashMap天然就支持LRU，只需要在初始化的时候设置accessOrder参数为true。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[动态规划]]></title>
+        <id>https://PaIn22152.github.io/post/dong-tai-gui-hua/</id>
+        <link href="https://PaIn22152.github.io/post/dong-tai-gui-hua/">
+        </link>
+        <updated>2022-04-15T06:54:24.000Z</updated>
+        <content type="html"><![CDATA[<p>本文来自对《代码随想录》的学习。<br>
+动态规划五部曲：<br>
+1.确定dp数组以及下标含义；<br>
+2.确定递推公式；<br>
+3.dp数组如何初始化；<br>
+4.确定遍历顺序；<br>
+5.举例推导dp数组。</p>
+<p>动态规划如何debug？<br>
+最好的方式是把dp数组打印出来，看看究竟是不是按照自己的思路推导的；<br>
+写代码前一定要把状态转移在dp数组上的具体情况模拟一遍，确定最后推出的是想要的结果。</p>
+<p>背包问题<br>
+01背包：有n件物品和一个最多能背重量为w的背包。第i件物品的重量是w[i]，得到的价值是v[i]。每件物品只能用一次，求解可以得到的最大总价值。</p>
+<p>二维dp数组<br>
+1.确定dp数组以及下标的含义<br>
+dp[i][j]表示，从n个物品的前i个里面任意取，放进容量为j的背包，价值总和最大是dp[i][j]。</p>
+<p>2.确定递推公式<br>
+对于第i个物品，有两种选择，不放到背包，或者放到背包。如果不放到背包，则dp[i][j]和dp[i-1][j]相等；如果放到背包，则dp[i][j]=dp[i-1][j-w[i]]+v[i]，这里需要限制j&gt;=w[i]。因为要求最大值，所以应该是以上两种情况种较大的值，得到如下递推公式：<br>
+dp[i][j]=max(dp[i-1][j]  ,  dp[i-1][j-w[i]]+v[i]);</p>
+<p>3.dp数组初始化，当i为0时，表示不选物品，所以最大值都为0；当j为0时，表示背包容量为0，最大值也都为0；其他下标的值，都是根据表中左上方的到的，所以初始值都会被覆盖，不需要特殊处理。</p>
+<p>4.确定遍历顺序，先遍历物品和先遍历背包都一样，选择先遍历物品。</p>
+<p>5.举例推导dp数组</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android性能优化]]></title>
+        <id>https://PaIn22152.github.io/post/android-xing-neng-you-hua/</id>
+        <link href="https://PaIn22152.github.io/post/android-xing-neng-you-hua/">
+        </link>
+        <updated>2022-04-12T02:11:57.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1oom篇">1.OOM篇</h1>
+<p>https://mp.weixin.qq.com/s/GFnWqYmEih6LMBLU52jTmw<br>
+OOM全称Out Of Memory，导致这一异常主要有以下三类原因：<br>
+1.线程数太多；<br>
+2.打开太多文件；<br>
+3.内存不足；</p>
+<h2 id="11线程数太多">1.1线程数太多</h2>
+<p>系统对每个进程的线程数是有限制的，当线程数超过这个限制后，就会出发OOM，不同的设备限制不一样，低端一点的手机上这个限制会更小，所以就更容易出现OOM问题。为了解决这个问题导致OOM，思路就是要降低线程数的峰值。</p>
+<p>常规一点的方案是统一线程管理库，通过代码review的方式禁止使用new thread创建线程，但是这样的方式对开发人员有要求，也增加了代码review的工作量，而且对于三分库不起作用。<br>
+所以就需要有新的思路来解决这些问题，我们知道，在Android中创建线程主要是通过以下几种方式：<br>
+1.Thread及其子类；<br>
+2.ThreadPoolExecutor及其子类、Executors、ThreadFactory实现类；<br>
+如果将创建线程的指令，在编译期通过ASM修改字节码的方式替换成自定义的方法，就可以实现统一项目线程池。<br>
+在自定义线程池中，设置合理的线程池参数，比如核心线程设置为1或者是0，最大线程池数量设置2*NCPU+1。</p>
+<h2 id="12打开太多文件">1.2打开太多文件</h2>
+<p>Android是基于Linux内核，/proc/pid/limits描述了系统对每个进程的一些资源限制，其中Max_open_files指的就是最大打开文件数。当打开的文件数超过规定数目后，就会触发OOM，对于这个问题一般是监控为主，当文件打开数大于1000，或者连续递增超过50，触发信息收集，以便定位问题。</p>
+<h2 id="13内存不足">1.3内存不足</h2>
+<p>导致OOM的最主要很常见原因就是内存不足，当需要创建新的对象时，虚拟机的堆内容不足以创建对象，且发生GC后还是不够，就会抛出OOM异常。这一块的优化主要有两点，图片加载优化、内存泄露监控。</p>
+<p>图片加载优化<br>
+为了避免图片加载导致的OOM，有以下三个点可以做优化：<br>
+1.软引用；<br>
+对于大内存对象Bitmap，可以通过SoftReference修饰，当发生GC后依然内存不够时，会回收软引用数据；<br>
+2.onLowMemory；当内存不足的时候，Application，Activity，Fragment都会调用onLowMemory方法，可以在这个方法下清除缓存，释放内存。Glide就有使用这种方式。<br>
+3.Bitmap像素存储位置；Bitmap之所以占用内存大，是因为Bitmap的像素数据，<br>
+Bitmap像素数据=宽<em>高</em>1像素占用内存<br>
+1像素占用多少内存，是和Bitmap的格式有关的，比如使用RGB_565格式，1像素占用2byte，ARGB_8888格式，则占用4byte。所以可以考虑使用内存占用较少的格式。至于宽高，一些大图可以使用缩放后的宽高。<br>
+Android7.0之前，Bitmap是在java堆里面分配内存的，而8.0之后，是在native，所以8.0之后比较少因为bitmap引起OOM。</p>
+<h2 id="14内存监控">1.4内存监控</h2>
+<p>线下监控，LeakCanary；<br>
+线上监控，KOOM，原理和LeakCanary差不多，流程是：<br>
+虚拟机supend-》fork虚拟机进程-》虚拟机resume-》dump内存镜像</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[gradle+asm实现字节码插桩]]></title>
+        <id>https://PaIn22152.github.io/post/gradle-xue-xi/</id>
+        <link href="https://PaIn22152.github.io/post/gradle-xue-xi/">
+        </link>
+        <updated>2022-04-03T13:57:58.000Z</updated>
+        <content type="html"><![CDATA[<p>字节码插桩技术，通过AOP的手段实现业务</p>
+<p>可以实现的功能：<br>
+1.统一处理事件点击，点击防抖<br>
+2.日志打点，可以处理自己的activity或者是三方SDK的activity<br>
+3.性能监控、动态权限控制等</p>
+<p>先看一看android打包过程：<br>
+<img src="https://PaIn22152.github.io/post-images/1649046151565.webp" alt="" loading="lazy"><br>
+其中需要关注的是中间生成的class文件，通过ASM修改原class文件，生成新的class文件，再使用新的class文件打包到dex文件中；</p>
+<p>实现过程<br>
+总体思路，遍历项目中所有的.class文件，过滤出需要处理的class文件，在需要处理的方法中，通过ASM插入字节码。</p>
+<p>具体实现：<br>
+androidstudio使用gradle编译打包项目时，都是通过一个个transform处理的，并且我们可以自定义transform去获取所有class文件的引用，自定义transform需要依赖GradlePlugin，所以首先需要创建一个GradlePlugin；之后再通过ASM插入字节码。</p>
+<p>自定义的gradle插件写好后，可以通过gradle构建命令，构建并发布插件，然后就可以在app中使用了</p>
+<p>ASM是一套开源框架，常用的几个API如下：<br>
+ClassReader，负责解析.class文件中的字节码，并将所有字节码传递给ClassWriter；<br>
+ClassVisitor，负责访问class文件中的各个元素，解析class文件结构，然后自动调用内部相应的FieldVisitor或者MethodVisitor方法，进一步解析或者修改class文件内容。<br>
+ClassWriter，继承自ClassVisitor，它是生成字节码的工具类，负责将修改后的字节码输出为byte数组。</p>
+<p>需要注意的点：<br>
+AGP升级到7之后，maven插件不再可用，要换成apply plugin: 'maven-publish'<br>
+对应的下面的task也需要换，整体的文件如下</p>
+<pre><code class="language-grovvy">apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+dependencies {
+
+    implementation gradleApi()
+    implementation localGroovy()
+
+    implementation 'com.android.tools.build:gradle:7.1.2'
+
+
+    //ASM相关依赖
+    implementation 'org.ow2.asm:asm:9.1'
+    implementation 'org.ow2.asm:asm-commons:9.1'
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            //定义插件的在本地 maven 中的 id
+            groupId 'danny.lifecycle.plugin'
+            artifactId 'asm_lifecycle_plugin'
+            //定义插件的在本地 maven 中的版本号
+            version '1.0.0'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            // 发布位置
+            url uri('../asm_lifecycle_repo')
+        }
+    }
+}
+
+</code></pre>
+<p>实测中发现，Transform类已经废弃，而且使用FileUtils时也找不到，导致demo最终没有成功运行。</p>
+]]></content>
+    </entry>
+</feed>

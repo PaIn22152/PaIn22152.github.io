@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android性能优化 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android性能优化</h2>
+            <div class="post-date">2022-04-12</div>
+            
+            <div class="post-content">
+              <h1 id="1oom篇">1.OOM篇</h1>
+<p>https://mp.weixin.qq.com/s/GFnWqYmEih6LMBLU52jTmw<br>
+OOM全称Out Of Memory，导致这一异常主要有以下三类原因：<br>
+1.线程数太多；<br>
+2.打开太多文件；<br>
+3.内存不足；</p>
+<h2 id="11线程数太多">1.1线程数太多</h2>
+<p>系统对每个进程的线程数是有限制的，当线程数超过这个限制后，就会出发OOM，不同的设备限制不一样，低端一点的手机上这个限制会更小，所以就更容易出现OOM问题。为了解决这个问题导致OOM，思路就是要降低线程数的峰值。</p>
+<p>常规一点的方案是统一线程管理库，通过代码review的方式禁止使用new thread创建线程，但是这样的方式对开发人员有要求，也增加了代码review的工作量，而且对于三分库不起作用。<br>
+所以就需要有新的思路来解决这些问题，我们知道，在Android中创建线程主要是通过以下几种方式：<br>
+1.Thread及其子类；<br>
+2.ThreadPoolExecutor及其子类、Executors、ThreadFactory实现类；<br>
+如果将创建线程的指令，在编译期通过ASM修改字节码的方式替换成自定义的方法，就可以实现统一项目线程池。<br>
+在自定义线程池中，设置合理的线程池参数，比如核心线程设置为1或者是0，最大线程池数量设置2*NCPU+1。</p>
+<h2 id="12打开太多文件">1.2打开太多文件</h2>
+<p>Android是基于Linux内核，/proc/pid/limits描述了系统对每个进程的一些资源限制，其中Max_open_files指的就是最大打开文件数。当打开的文件数超过规定数目后，就会触发OOM，对于这个问题一般是监控为主，当文件打开数大于1000，或者连续递增超过50，触发信息收集，以便定位问题。</p>
+<h2 id="13内存不足">1.3内存不足</h2>
+<p>导致OOM的最主要很常见原因就是内存不足，当需要创建新的对象时，虚拟机的堆内容不足以创建对象，且发生GC后还是不够，就会抛出OOM异常。这一块的优化主要有两点，图片加载优化、内存泄露监控。</p>
+<p>图片加载优化<br>
+为了避免图片加载导致的OOM，有以下三个点可以做优化：<br>
+1.软引用；<br>
+对于大内存对象Bitmap，可以通过SoftReference修饰，当发生GC后依然内存不够时，会回收软引用数据；<br>
+2.onLowMemory；当内存不足的时候，Application，Activity，Fragment都会调用onLowMemory方法，可以在这个方法下清除缓存，释放内存。Glide就有使用这种方式。<br>
+3.Bitmap像素存储位置；Bitmap之所以占用内存大，是因为Bitmap的像素数据，<br>
+Bitmap像素数据=宽<em>高</em>1像素占用内存<br>
+1像素占用多少内存，是和Bitmap的格式有关的，比如使用RGB_565格式，1像素占用2byte，ARGB_8888格式，则占用4byte。所以可以考虑使用内存占用较少的格式。至于宽高，一些大图可以使用缩放后的宽高。<br>
+Android7.0之前，Bitmap是在java堆里面分配内存的，而8.0之后，是在native，所以8.0之后比较少因为bitmap引起OOM。</p>
+<h2 id="14内存监控">1.4内存监控</h2>
+<p>线下监控，LeakCanary；<br>
+线上监控，KOOM，原理和LeakCanary差不多，流程是：<br>
+虚拟机supend-》fork虚拟机进程-》虚拟机resume-》dump内存镜像</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/gradle-xue-xi/">
+                  <h3 class="post-title">
+                    gradle+asm实现字节码插桩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter-plugin源码爱恨情仇 | 二、flutter_screenutil | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter-plugin源码爱恨情仇 | 二、flutter_screenutil</h2>
+            <div class="post-date">2021-01-15</div>
+            
+            <div class="post-content">
+              <p>flutter-plugin源码爱恨情仇第二篇，屏幕适配----<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a>(^3.2.0)。</p>
+<h3 id="前言">前言</h3>
+<p>上篇和马老师一起看了sp在flutter端的实现，主要功能是原生平台代码实现的，今天看一个不使用任何原生代码的插件flutter_screenutil，插件实现了在不同设备上的屏幕适配。接下来就让我们耗子尾汁。</p>
+<h3 id="适配原理">适配原理</h3>
+<p>先说一下适配原理，根据UI设计时的手机尺寸，计算出实际设备与UI设计的比例，然后每次给控件赋值时都通过这个比例，计算实际尺寸。举个栗子，UI设计尺寸是360x640（单位像素，下同），测试机实际尺寸是720x1280，那么比例就是2，某一个控件在标注稿上，是100x100，那么在测试机上的实际尺寸就是在此基础上在乘比例2，为200x200，这样的效果就是，100的宽，在设计稿上占了屏幕的1/3（大概），实际设备上，使用200的宽，也是占用屏幕1/3，达到相同的显示效果。</p>
+<h3 id="注意点">注意点</h3>
+<p>手机的宽高比不是都一样，有的手机会矮一点，有的手机会高一点，实际项目中，一般处理方案是根据宽的比例适配。至于高度部分，如果在部分手机上，会有超过整个屏幕的情况，高度会做成可滚动的，从上往下布局，这样的效果是在高屏幕手机上，下面会有空白，在矮屏幕手机上，显示不完的部分滚动显示。如果不会有超过屏幕的情况，那垂直方向可以相对布局，把多余的空白部分均分，这样的效果是，在高屏手机上，控件间距离大一点，显得空旷一点，在矮屏手机上，控件间距离小一点，显得紧凑一点，但是不同手机的整体效果都是比较一致的。</p>
+<h3 id="源码">源码</h3>
+<p>这时候可能有朋友就要说了，你这扯了这么多有的没的废话，源码呢？我说我这个有用，他说没用，我说有用，他说没用，我说年轻人要讲武德，现在就开始淦源码。<br>
+初始化代码：</p>
+<pre><code class="language-dart">ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+</code></pre>
+<p>传入的参数分别为，上下文对象，UI设计的尺寸，是否根据系统的字体大小进行缩放，其中后两个参数的默认值分别是1080 x 1920 和false，源码如下：</p>
+<pre><code class="language-dart">static void init(
+    BuildContext context, {
+    Size designSize = defaultSize,
+    bool allowFontScaling = false,
+  })
+  static const Size defaultSize = Size(1080, 1920);
+</code></pre>
+<p>完整的初始化源码如下：</p>
+<pre><code class="language-dart">ScreenUtil._();
+
+  factory ScreenUtil() {
+    assert(
+      _instance != null,
+      '\nEnsure to initialize ScreenUtil before accessing it.\nPlease execute the init method : ScreenUtil.init()',
+    );
+    return _instance;
+  }
+
+  static void init(
+    BuildContext context, {
+    Size designSize = defaultSize,
+    bool allowFontScaling = false,
+  }) {
+    _instance ??= ScreenUtil._();
+    _instance
+      ..uiSize = designSize
+      ..allowFontScaling = allowFontScaling;
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+    _pixelRatio = mediaQuery.devicePixelRatio;
+    _screenWidth = mediaQuery.size.width;
+    _screenHeight = mediaQuery.size.height;
+    _statusBarHeight = mediaQuery.padding.top;
+    _bottomBarHeight = mediaQuery.padding.bottom;
+    _textScaleFactor = mediaQuery.textScaleFactor;
+  }
+</code></pre>
+<p>和sp插件一样，也是一来就就是单例模式，区别是sp每次调用获取单例的方法getInstance时，都会判断有没有初始化，如果没有就先初始化，而screenutil则是必须先手动调用一次初始化方法init后，才会生成单例对象，然后才可以通过ScreenUtil()方法获取到单例对象，导致这一差异的原因，是screenutil的初始化需要传值。<br>
+上诉代码中，用到的dart语法糖有<br>
+1.判空赋值 a??= b，只有当a为null时，b赋值给a；<br>
+2.级联运算符 a..i=1 ..s='s'，使用级联运算符，可以让你在同一个对象上连续调用多个对象的变量或方法。<br>
+（更多dart语法，可以参考<a href="https://mp.weixin.qq.com/s/_I3ouVOtV70rxWMroqnIFw">这里</a>或者<a href="http://flutter.link/2018/02/08/Dart%E8%AF%AD%E6%B3%95%E7%B3%96/">这里</a>)<br>
+初始化方法里面，做的就是一些初始化的操作（这踏马不是废话吗。。。），包括设置UI设计尺寸，字体是否使用系统缩放，设备屏幕信息，其中屏幕信息包括以下：</p>
+<pre><code class="language-dart">/// 每个逻辑像素的字体像素数，字体的缩放比例
+  /// The number of font pixels for each logical pixel.
+  double get textScaleFactor =&gt; _textScaleFactor;
+
+  /// 设备的像素密度
+  /// The size of the media in logical pixels (e.g, the size of the screen).
+  double get pixelRatio =&gt; _pixelRatio;
+
+  /// 当前设备宽度 dp
+  /// The horizontal extent of this size.
+  double get screenWidth =&gt; _screenWidth;
+
+  ///当前设备高度 dp
+  ///The vertical extent of this size. dp
+  double get screenHeight =&gt; _screenHeight;
+
+  /// 当前设备宽度 px
+  /// The vertical extent of this size. px
+  double get screenWidthPx =&gt; _screenWidth * _pixelRatio;
+
+  /// 当前设备高度 px
+  /// The vertical extent of this size. px
+  double get screenHeightPx =&gt; _screenHeight * _pixelRatio;
+
+  /// 状态栏高度 dp 刘海屏会更高
+  /// The offset from the top
+  double get statusBarHeight =&gt; _statusBarHeight;
+
+  /// 底部安全区距离 dp
+  /// The offset from the bottom.
+  double get bottomBarHeight =&gt; _bottomBarHeight;
+</code></pre>
+<p>有这些信息后，就可以计算比例了，代码如下：</p>
+<pre><code class="language-dart"> /// 实际的dp与UI设计px的比例
+  /// The ratio of the actual dp to the design draft px
+  double get scaleWidth =&gt; _screenWidth / uiSize.width;
+
+  double get scaleHeight =&gt; _screenHeight / uiSize.height;
+
+  double get scaleText =&gt; scaleWidth;
+</code></pre>
+<p>最后是三个对外暴露的方法，代码如下：</p>
+<pre><code class="language-dart">/// 根据UI设计的设备宽度适配
+/// 高度也可以根据这个来做适配可以保证不变形,比如你先要一个正方形的时候.
+/// Adapted to the device width of the UI Design.
+/// Height can also be adapted according to this to ensure no deformation ,
+/// if you want a square
+double setWidth(num width) =&gt; width * scaleWidth;
+
+/// 根据UI设计的设备高度适配
+/// 当发现UI设计中的一屏显示的与当前样式效果不符合时,
+/// 或者形状有差异时,建议使用此方法实现高度适配.
+/// 高度适配主要针对想根据UI设计的一屏展示一样的效果
+/// Highly adaptable to the device according to UI Design
+/// It is recommended to use this method to achieve a high degree of adaptation
+/// when it is found that one screen in the UI design
+/// does not match the current style effect, or if there is a difference in shape.
+double setHeight(num height) =&gt; height * scaleHeight;
+
+///字体大小适配方法
+///- [fontSize] UI设计上字体的大小,单位px.
+///Font size adaptation method
+///- [fontSize] The size of the font on the UI design, in px.
+///- [allowFontScaling]
+double setSp(num fontSize, {bool allowFontScalingSelf}) =&gt;
+    allowFontScalingSelf == null
+        ? (allowFontScaling
+            ? (fontSize * scaleText)
+            : ((fontSize * scaleText) / _textScaleFactor))
+        : (allowFontScalingSelf
+            ? (fontSize * scaleText)
+            : ((fontSize * scaleText) / _textScaleFactor));
+</code></pre>
+<p>逻辑很简单，用传入的值，分别乘上宽或者高或者字体的比例，其中字体还要判断是否使用系统缩放。<br>
+至此，整个源码流程全部走完。</p>
+<h3 id="使用优化">使用优化</h3>
+<p>除了上面的流程，插件还提供了一些使用上的优化，一个是size_extension.dart下提供了扩展函数，另一个是flutter_screenutil.dart统一包管理。<br>
+扩展函数源码：</p>
+<pre><code class="language-dart">extension SizeExtension on num {
+///[ScreenUtil.setWidth]
+double get w =&gt; ScreenUtil().setWidth(this);
+
+///[ScreenUtil.setHeight]
+double get h =&gt; ScreenUtil().setHeight(this);
+
+///[ScreenUtil.setSp]
+double get sp =&gt; ScreenUtil().setSp(this);
+
+///[ScreenUtil.setSp]
+double get ssp =&gt; ScreenUtil().setSp(this, allowFontScalingSelf: true);
+
+///[ScreenUtil.setSp]
+double get nsp =&gt; ScreenUtil().setSp(this, allowFontScalingSelf: false);
+
+///屏幕宽度的倍数
+///Multiple of screen width
+double get sw =&gt; ScreenUtil().screenWidth * this;
+
+///屏幕高度的倍数
+///Multiple of screen height
+double get sh =&gt; ScreenUtil().screenHeight * this;
+}
+</code></pre>
+<p>dart的扩展函数和kotlin差不多，允许你在已有的类上，扩展新的方法，我想说这个语法糖真的是太甜了。<br>
+统一包管理源码：</p>
+<pre><code class="language-dart">library flutter_screenutil;
+
+export 'size_extension.dart';
+export 'screenutil.dart';
+</code></pre>
+<p>这样做的目的是，在项目中只需要导入flutter_screenutil这个包，就可以使用下面定义的另外的包，而不是导入每一个包，在很多插件中都有提供这样的功能。</p>
+<h3 id="项目中的具体使用">项目中的具体使用</h3>
+<p>说下在实际项目中的使用，首先是在第一个界面初始化screenutil，传入UI设计尺寸</p>
+<pre><code class="language-dart">ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+</code></pre>
+<p>然后使用宽度适配</p>
+<pre><code class="language-dart">Container(
+          width: 48.w,
+          height: 48.w,...)
+ style: TextStyle(color: Color(0xFF404040), fontSize: 14.sp),
+</code></pre>
+<p>使用的是扩展函数写法，需要注意的是，扩展函数数dart2.6之后才有的功能。</p>
+<h3 id="总结">总结</h3>
+<p>插件没有太多的代码，实现的功能却比较强大，回头再看一遍所有的源码，相信很多朋友都可以实现，截止到现在，插件在github共获2.2k star，所以朋友们，想做一个上千star的开源项目，也不是太难的（没有任何贬低的意思），大胆放手去做。（小声BB，我啥时候能做一个上千star的开源就好了）</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/XNvTkkr4L/" class="tag">
+                    plugin
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-yi-shared_preferences/">
+                  <h3 class="post-title">
+                    flutter-plugin源码爱恨情仇 | 一、shared_preferences
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>ClassLoader | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">ClassLoader</h2>
+            <div class="post-date">2022-03-09</div>
+            
+            <div class="post-content">
+              <p><a href="https://zhuanlan.zhihu.com/p/51374915">参考文章</a></p>
+<p>ClassLoader做什么的？<br>
+顾名思义，它是用来加载Class的。它负责将Class的字节码形式转换成内存形式的Class对象。字节码可以来自磁盘文件*.class，也可以是jar包里的*.class，也可以来自远程服务器提供的字节流，字节码的本质就是一个字节数组byte[]。<br>
+<img src="https://PaIn22152.github.io/post-images/1646815424675.png" alt="" loading="lazy"></p>
+<p>延迟加载<br>
+JVM允许并不是一次性加载所有需要的类，它是按需加载，也就是延迟加载。程序在运行的过程中会逐渐遇到很多不认识的新类，这时候就会调用ClassLoader来加载这些类。加载完成后会将Class对象存在ClassLoader里面，下次就不需要重新加载了。</p>
+<p>分类<br>
+JVM运行实例中会存在多个ClassLoader，不同的ClassLoader会从不同的地方加载字节码文件。这些地方可以是文件目录，可以是jar文件，可以是网络地址。JVM内置了三个重要的ClassLoader，分别是BootstrapClassloader、ExtensionClassLoader和AppClassLoader。<br>
+BootstrapClassLoader又称为根加载器，负责加载JVM运行时的核心类，这些类位于JAVA_HOME/lib/rt.jar文件中，比如java.util.*、java.io.*、java.lang.*等等；<br>
+ExtensionClassLoader负责加载JVM扩展类，它们位于JAVA_HOME/lib/ext/*.jar中；<br>
+AppClassLoader才是直接面向用户的加载器，它会加载Classpath环境变量里定义的路径中的jar包和目录。我们自己编写的代码以及使用的第三方jar包，通常都是由它加载的。<br>
+<img src="https://PaIn22152.github.io/post-images/1646816488068.png" alt="" loading="lazy"><br>
+在Android虚拟机中，ClassLoader有以下类型：<br>
+BootClassLoader，和Java中的BootstrapClassLoader作用类似，是用来加载Framework层的字节码文件的；<br>
+PathClassLoader，和Java中的AppClassLoader作用类似，用来加载已经安装到系统中的APK文件中的Class文件；<br>
+DexClassLoader，和Java中的CustomClassLoader作用类似，用来加载指定目录中的字节码文件；<br>
+BaseDexClassLoader，这是一个父类，DexClassLoader和PathClassLoader都是它的子类。</p>
+<p>双亲委派<br>
+双亲委派是指ClassLoader在加载一个未知的类名时，它不是立即去搜寻Classpath，而是会先将这个类名称交给父加载器去加载，只有当父加载器不能加载这个类时，才会自己去加载。这里说的父加载器，但是实际上他们并不是继承的关系，而是组合关系。当ClassLoader的parent的值是null时，表示它的父加载器是根加载器，如果某个Class对象的classLoader属性值是null，表示这个类是由根加载器加载的。</p>
+<p>自定义加载器<br>
+ClassLoader里面有三个重要的方法。loadClass()、findClass()和defineClass()。<br>
+loadClass()方法是加载目标类的入口，它首先会查找当前ClassLoader以及它的父类加载器里面是否已经加载了目标类，如果没有找到就会让父类加载器尝试加载，如果父类加载器都加载不了，就会调用fingClass()让自定义加载器自己加载目标类。ClassLoader的findClass()方法是需要子类来覆盖的，不同的加载器将使用不同的逻辑来获取目标类的字节码。拿到这个字节码之后再调用defineClass()方法将字节码转换成Class对象。伪代码如下：</p>
+<pre><code class="language-java">class ClassLoader {
+
+  // 加载入口，定义了双亲委派规则
+  Class loadClass(String name) {
+    // 是否已经加载了
+    Class t = this.findFromLoaded(name);
+    if(t == null) {
+      // 交给双亲
+      t = this.parent.loadClass(name)
+    }
+    if(t == null) {
+      // 双亲都不行，只能靠自己了
+      t = this.findClass(name);
+    }
+    return t;
+  }
+
+  // 交给子类自己去实现
+  Class findClass(String name) {
+    throw ClassNotFoundException();
+  }
+
+  // 组装Class对象
+  Class defineClass(byte[] code, String name) {
+    return buildClassFromCode(code, name);
+  }
+}
+
+class CustomClassLoader extends ClassLoader {
+
+  Class findClass(String name) {
+    // 寻找字节码
+    byte[] code = findCodeFromSomewhere(name);
+    // 组装Class对象
+    return this.defineClass(code, name);
+  }
+}
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/er-cha-shu-xue-xi/">
+                  <h3 class="post-title">
+                    二叉树基本概念
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android架构演进 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android架构演进</h2>
+            <div class="post-date">2022-03-19</div>
+            
+            <div class="post-content">
+              <p>本文会介绍Android开发中的架构，以及演进过程，包括MVC、MVP、MVVM、MVI。</p>
+<p>什么是架构：<br>
+1.为了解决特定的问题而提出的；<br>
+2.按照特定的原则，将系统整体进行模块、组件、角色的划分；<br>
+3.建立模块、组件、角色间的沟通机制；</p>
+<p>MVC：<br>
+<img src="https://PaIn22152.github.io/post-images/1647768538516.webp" alt="" loading="lazy"><br>
+MVC需要解决的问题是：控制逻辑、数据处理逻辑和界面交互耦合。<br>
+Model模型，负责数据的加载和存储。如网络请求、数据库处理；<br>
+View视图，负责界面的展示；<br>
+Controller控制器，负责逻辑控制；</p>
+<p>优点：<br>
+结构清晰，职责划分清晰；<br>
+降低耦合；<br>
+有利于组件重用；</p>
+<p>缺点：<br>
+Android实际开发中，通常Activity/Fragment会承担View和Controller两个角色的工作，导致里面代码过多；<br>
+Model直接操作View，View的修改会导致Controller和Model都进行改动；<br>
+增加类代码结构的复杂性；</p>
+<p>MVP：<br>
+<img src="https://PaIn22152.github.io/post-images/1647769332504.webp" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1647770781005.webp" alt="" loading="lazy"><br>
+MVP是在MVC的基础上，将View和Model解耦。<br>
+Presenter：负责处理表现逻辑；</p>
+<p>优点：<br>
+同MVC；<br>
+将MVC中的View和Model解耦；</p>
+<p>缺点：<br>
+View和Presenter是双向依赖的，一旦View层做出改变，相应地Presenter页需要做出调整；<br>
+内存泄漏风险：Presenter持有View层的引用，当用户关闭类View层，但Model层仍然在进行耗时操作，就会有内存泄漏风险；<br>
+协议接口类膨胀：View层和Presenter层的交互需要定义接口方法，当交互非常复杂时，需要定义很多接口方法和回调方法，不利于维护；</p>
+<p>MVVM：<br>
+<img src="https://PaIn22152.github.io/post-images/1647771669565.webp" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1647771692306.webp" alt="" loading="lazy"><br>
+MVVM是在MVP的基础上，将Presenter和View解耦。<br>
+ViewModel：存储视图状态，负责处理表现逻辑，并将数据设置给可观察数据容器。<br>
+实现细节上，View和Presenter从双向依赖变成View可以向ViewModel发指令，但ViewModel不会直接向View回调，而是让View通过观察者的模式去监听数据的变化，有效规避类MVP双向依赖的缺点。</p>
+<p>缺点：<br>
+多数据流：View与ViewModel的交互分散，缺少唯一修改源，不易追踪；<br>
+LiveData膨胀：复杂的页面需要定义多个MutableLiveData，并且都需要暴露为不可变的LiveData。</p>
+<p>DataBinding、ViewModel和LiveData等组件，是Google为了帮助实现MVVM而提供的架构组件，他们并不是MVVM的本质，只是实现上的工具；</p>
+<p>MVI：<br>
+MVI是在MVVM的基础上，将View和ViewModel之间的多数据流改为基于ViewState的单数据流。<br>
+Intent：定义数据操作，是将数据传到Model的唯一来源；<br>
+ViewState：一个数据类，包含页面状态和对应的数据；</p>
+<p>实现细节上，View和ViewModel之间的多个交互（多LiveData数据流）变成类单数据流。无论View有多少个视图状态，只需要订阅一个ViewState便可以获取所有状态，再根据ViewState去响应。</p>
+<p>https://juejin.cn/post/7022624191723601928</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-mian-shi-zhi-shi-dian-su-ji/">
+                  <h3 class="post-title">
+                    Android面试知识点速记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
