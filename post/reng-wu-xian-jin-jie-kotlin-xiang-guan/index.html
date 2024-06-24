@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Kotlin相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Kotlin相关</h2>
+            <div class="post-date">2024-04-22</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。Kotlin相关</p>
+<!-- more -->
+<h2 id="kotlin基础">Kotlin基础</h2>
+<h3 id="函数声明">函数声明</h3>
+<p>声明函数要用「fun」关键字，就像声明类要用「class」关键字一样<br>
+函数参数的参数类型是在参数名的右边，用「:」隔开<br>
+函数的返回值在函数参数的右边使用「:」隔开，没有返回值时可以省略</p>
+<h3 id="变量声明">变量声明</h3>
+<p>声明变量需要使用关键字「var」或者「val」，var声明可读可写变量，val声明只读变量</p>
+<p>类型在变量名的右边，用「:」隔开，同时如果满足类型推断，类型可以省略<br>
+创建对象直接调用构造器，不需要「new」关键字</p>
+<h3 id="类型推断">类型推断</h3>
+<p>在变量声明的基础上，如果表达式右边的类型时可以推断出来的，那么类型可以省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713755819728.png" alt="" loading="lazy"></p>
+<h3 id="继承类实现接口">继承类/实现接口</h3>
+<p>继承类和实现接口都是用「:」，如果类中没有构造器(constructor)，需要在父类类名后面加上「():」<br>
+<img src="https://PaIn22152.github.io/post-images/1713756081048.png" alt="" loading="lazy"></p>
+<h3 id="空安全设计">空安全设计</h3>
+<p>kotlin中的类型分为可空类型和不可空类型，不可空类型不能接受null值<br>
+<img src="https://PaIn22152.github.io/post-images/1713756131098.png" alt="" loading="lazy"><br>
+对于可空类型，有下面两种调用符调用方法或者属性<br>
+?.安全调用符<br>
+!!强行调用符</p>
+<h3 id="lateinit关键字">lateinit关键字</h3>
+<p>使用lateinit关键字，变量在定义时不需要初始化。<br>
+lateinit只能修饰var可读可写变量<br>
+lateinit关键字声明的变量必须是不可空类型<br>
+lateinit声明的变量不能有初始值<br>
+lateint声明的变量不能是基本数据类型<br>
+lateinit不能修饰 基本数据类型 比如 Int  Byte Short Float Double Boolean Char Long类型<br>
+在构造器中初始化的属性不需要lateinit关键字</p>
+<h3 id="平台类型">平台类型</h3>
+<p>在类型后面加上一个感叹号的类型是平台类型<br>
+Java中可以通过注解减少平台类型的产生<br>
+@Nullable 表示可空类型<br>
+@NotNull @NonNull 表示不可空类型</p>
+<h3 id="类型判断">类型判断</h3>
+<p>is判断属于某类型<br>
+!is判断不属于某类型<br>
+as类型强转，支持类型智能转换，失败时抛出类型强转失败异常<br>
+as?类型强转，失败时不会抛出异常，而是返回null</p>
+<h3 id="获取class对象">获取Class对象</h3>
+<p>使用 「类名::class」获取的是kotlin的类型KClass<br>
+使用 「类名::class.java」获取的是Java的类型</p>
+<h3 id="settergetter">setter/getter</h3>
+<p>在kotlin声明属性的时候（没有使用private修饰），会自动生成一个私有属性和一对公开的setter/getter函数<br>
+在重写setter/getter的时候，使用「field」来代替内部的私有属性，防止递归调用<br>
+使用「@JvmField」注解可以让编译器只生成一个public的成员属性，不生成对应的setter/getter函数</p>
+<h3 id="构造器">构造器</h3>
+<p>使用constructor关键字声明构造器<br>
+<img src="https://PaIn22152.github.io/post-images/1713756552061.png" alt="" loading="lazy"><br>
+如果我们在构造器自动调用了父类构造，那么在继承类的时候就不能在类的后面加上小括号<br>
+<img src="https://PaIn22152.github.io/post-images/1713757085924.png" alt="" loading="lazy"></p>
+<h3 id="any和unit">Any和Unit</h3>
+<p>kotlin的顶层父类是Any，对应java中的Object，但是比Object少了wait()/notify()等函数<br>
+Kotlin中的Unit对应java中的void</p>
+<h3 id="数组">数组</h3>
+<p>使用arrayof()来创建数组，基本数据类型使用对应的intArrayOf()等</p>
+<h3 id="静态函数和属性">静态函数和属性</h3>
+<p>kotlin中实现静态函数的方式有：<br>
+顶层函数（或者包级函数）<br>
+object<br>
+companion object（伴生对象）</p>
+<p>其中，顶层函数直接在文件中定义函数和属性，会直接生成静态函数，在java中通过 「文件名Kt 」来访问，同时可以通过 「@file:JvmName」 来注解修改这个类名<br>
+object 和 companion object都是生成单例对象，然后通过单例对象访问函数和属性<br>
+通过注解「@JvmStatic」 可以将object 和companion object的内部函数和属性，真正生成为静态</p>
+<h3 id="单例模式匿名内部类">单例模式/匿名内部类</h3>
+<p>通过object关键字实现<br>
+<img src="https://PaIn22152.github.io/post-images/1713757863379.png" alt="" loading="lazy"></p>
+<h3 id="字符串">字符串</h3>
+<p>通过「${}」的形式来作为字符串模板<br>
+<img src="https://PaIn22152.github.io/post-images/1713757928187.png" alt="" loading="lazy"><br>
+多行字符串<br>
+<img src="https://PaIn22152.github.io/post-images/1713757952294.png" alt="" loading="lazy"></p>
+<h3 id="区间">区间</h3>
+<p>200..299表示[200,299]的区间</p>
+<h3 id="when关键字">when关键字</h3>
+<p>java中的switch的高级版，分支条件上可以支持表达式</p>
+<h3 id="声明接口抽象类枚举注解">声明接口/抽象类/枚举/注解</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1713758092059.png" alt="" loading="lazy"></figure>
+<h3 id="编译器常量">编译器常量</h3>
+<p>在静态变量上加上const关键字变成编译器常量</p>
+<h3 id="标签">标签</h3>
+<p>在java 中通过「类名.this」 (例如Outer.this)获取目标类引用<br>
+在kotlin中通过「this@类名」(例如this@Outer)获取类引用</p>
+<h3 id="内部类">内部类</h3>
+<p>在kotlin当中，内部类默认是静态内部类<br>
+通过inner关键字声明为嵌套内部类</p>
+<h3 id="可见性修饰符">可见性修饰符</h3>
+<p>kotlin中默认的可见性修饰符是public<br>
+新增的可见性修饰符internal表示当前模块可见</p>
+<h3 id="openfinal">open/final</h3>
+<p>kotlin中的类和函数，默认是被final修饰的（abstract和overide例外）<br>
+使用open、abstract、override关键字修饰的类才可以被继承</p>
+<h2 id="kotlin进阶">Kotlin进阶</h2>
+<h3 id="构造函数">构造函数</h3>
+<p>次级构造<br>
+<img src="https://PaIn22152.github.io/post-images/1713854258842.png" alt="" loading="lazy"><br>
+主构造器<br>
+<img src="https://PaIn22152.github.io/post-images/1713854276052.png" alt="" loading="lazy"><br>
+成员变量初始化可以直接访问到主构造参数<br>
+<img src="https://PaIn22152.github.io/post-images/1713854307849.png" alt="" loading="lazy"></p>
+<h3 id="init代码块">init代码块</h3>
+<p>init代码块下的代码，会按照在文件中出现的顺序添加到每一个构造方法的前面<br>
+kotlin代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713854937450.png" alt="" loading="lazy"><br>
+反编译后代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713855014046.png" alt="" loading="lazy"></p>
+<h3 id="构造属性">构造属性</h3>
+<p>在主构造器参数前面加上var/val，使构造参数同时成为成员变量<br>
+<img src="https://PaIn22152.github.io/post-images/1713855088428.png" alt="" loading="lazy"></p>
+<h3 id="data-class">data class</h3>
+<p>用data class修饰的数据类，同时会生成以下方法：toString()  hashCode()  equals()  copy()  componentN()<br>
+其中copy是浅拷贝，kotlin代码和反编译后的代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713855907097.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713855940821.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>浅拷贝指的是如果要拷贝A对象，则会重新创建一个B对象，并将其内部变量全部赋值给B对象，所以我们称之为浅拷贝。<br>
+深拷贝指的是：拷贝后，如果B对象中存在引用对象，此时更改这个引用对象不会影响到原有A对象中的引用对象，因为它两所操作的内存并不是同一块内存。而浅拷贝则相反，当你操作B对象中的某个引用对象时，就会影响到A对象。对于基本类型，深拷贝与浅拷贝都是直接赋值，并没有什么区别。</p>
+</blockquote>
+<h3 id="相等性">相等性</h3>
+<p>==结构相等（调用equals()比较）<br>
+===引用（地址值）相等</p>
+<h3 id="解构">解构</h3>
+<p>可以把一个对象「解构」成很多变量，依靠componentN()方法实现<br>
+<img src="https://PaIn22152.github.io/post-images/1713856317131.png" alt="" loading="lazy"><br>
+等同于以下代码<br>
+<img src="https://PaIn22152.github.io/post-images/1713856365718.png" alt="" loading="lazy"></p>
+<h3 id="elvis操作符">Elvis操作符</h3>
+<p>kotlin中的Elvis操作符特定是跟null进行比较<br>
+<img src="https://PaIn22152.github.io/post-images/1713856557451.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713856608241.png" alt="" loading="lazy"><br>
+一般常用来简化if null的操作<br>
+<img src="https://PaIn22152.github.io/post-images/1713856658314.png" alt="" loading="lazy"></p>
+<h3 id="when操作符">when操作符</h3>
+<p>when表达式可以接受返回值，多个分支相同的处理方式可以放在一起，用逗号分隔<br>
+<img src="https://PaIn22152.github.io/post-images/1713856696842.png" alt="" loading="lazy"><br>
+when表达式可以用来取代if-else-if链，如果不提供参数，所有的分支条件都是布尔表达式<br>
+<img src="https://PaIn22152.github.io/post-images/1713856722016.png" alt="" loading="lazy"></p>
+<h3 id="operator">operator</h3>
+<p>通过operator修饰「特定函数名」的函数，例如plus、get，可以达到重载运算符的效果<br>
+<img src="https://PaIn22152.github.io/post-images/1713856760305.png" alt="" loading="lazy"><br>
+示例：<br>
+<img src="https://PaIn22152.github.io/post-images/1713857331554.png" alt="" loading="lazy"></p>
+<h3 id="lambda">lambda</h3>
+<p>如果函数的最后一个参数是lambda，那么lambda表达式可以放在圆括号之外：<br>
+<img src="https://PaIn22152.github.io/post-images/1713857437936.png" alt="" loading="lazy"><br>
+如果函数传入参数只有一个lambda的话，那么小括号可以省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713857457146.png" alt="" loading="lazy"><br>
+如果lambda表达式只有一个参数，那么可以省略，通过隐式的it来访问<br>
+<img src="https://PaIn22152.github.io/post-images/1713857479657.png" alt="" loading="lazy"></p>
+<h3 id="循环">循环</h3>
+<p>通过标准函数repeat()<br>
+<img src="https://PaIn22152.github.io/post-images/1713857515863.png" alt="" loading="lazy"><br>
+通过区间<br>
+<img src="https://PaIn22152.github.io/post-images/1713857534803.png" alt="" loading="lazy"></p>
+<h3 id="infix函数">infix函数</h3>
+<p>即中缀函数，他可以使用中缀方式调用（省略点号和小括号的调用方式）<br>
+<img src="https://PaIn22152.github.io/post-images/1713858088473.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713858108502.png" alt="" loading="lazy"><br>
+条件：<br>
+只有一个参数，且不能有默认值<br>
+在方法前必须加infix关键字<br>
+必须是成员方法或者扩展方法</p>
+<h3 id="嵌套函数">嵌套函数</h3>
+<p>在kotlin中，可以在函数中继续声明函数，称为嵌套函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713858463992.png" alt="" loading="lazy"><br>
+内部函数可以访问外部函数的参数<br>
+每次调用时，会产生一个额外的函数对象，需要考虑性能问题</p>
+<h3 id="注解使用处目标">注解使用处目标</h3>
+<p>当某个元素可能包含多种内容（例如构造函数，成员函数），使用注解时可以通过「注解使用处目标」，让注解对目标发生作用，例如「@file: 」 「@get: 」「@set: 」<br>
+示例代码会修改java调用时的get方法名<br>
+<img src="https://PaIn22152.github.io/post-images/1713858603570.png" alt="" loading="lazy"></p>
+<h3 id="函数简化">函数简化</h3>
+<p>可以通过符号=简化原来直接return的函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713858688473.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713858694144.png" alt="" loading="lazy"></p>
+<h3 id="函数参数默认值">函数参数默认值</h3>
+<p>可以通过函数参数默认值来代替java的函数重载<br>
+<img src="https://PaIn22152.github.io/post-images/1713858875374.png" alt="" loading="lazy"><br>
+反编译代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713858939454.png" alt="" loading="lazy"><br>
+如果不用@JvmOverloads注解修饰，反编译代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713858998847.png" alt="" loading="lazy"></p>
+<h3 id="扩展函数">扩展函数</h3>
+<p>扩展函数可以在不修改类源码的情况下，为任何类添加上一个函数，从而代替工具类<br>
+<img src="https://PaIn22152.github.io/post-images/1713859241884.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713859304281.png" alt="" loading="lazy"></p>
+<p>扩展函数和成员函数相同时，成员函数优先被调用<br>
+扩展函数是静态解析的，在编译时就确定了调用函数（没有多态）</p>
+<p>同理可以给类添加成员属性<br>
+<img src="https://PaIn22152.github.io/post-images/1713859567136.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713859591494.png" alt="" loading="lazy"></p>
+<h3 id="函数类型">函数类型</h3>
+<p>函数类型由「传入参数类型」和「返回参数类型」组成，用「-&gt;」连接，传入参数需要用「()」，如果返回值为Unit不能省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713859674754.png" alt="" loading="lazy"><br>
+函数类型实际是一个接口，且kotlin已经预定义好了（1个参数到22个参数的接口），我们传递函数的时候可以通过「::函数名」或者「匿名函数」或者使用「lambda」<br>
+「::函数名」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859759767.png" alt="" loading="lazy"><br>
+「匿名函数」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859772040.png" alt="" loading="lazy"><br>
+「lambda」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859784023.png" alt="" loading="lazy"></p>
+<h3 id="内联函数">内联函数</h3>
+<p>使用inline关键字声明的函数是内联函数，在编译时会将内联函数中的函数体直接复制粘贴到调用处</p>
+<p><a href="https://juejin.cn/post/6844904201353429006">详细文章</a></p>
+<p>在 Kotlin 中，内联函数是用来弥补高阶函数中 Lambda 带来的额外运行开销的。对于普通函数，没有必要使用内联，因为 JVM 已经提供了一定的内联支持。<br>
+对指定的 Lambda 参数使用 noinline ，可以避免该 Lambda 被内联。<br>
+普通的 Lambda 不支持非局部返回，内联之后允许非局部返回。既要内联，又要禁止非局部返回，请使用 crossinline 。</p>
+<p>inline的其他使用，具体化的类型参数<br>
+因为内联函数的存在，我们可以通过配合inline + reified达到「真泛型」的效果<br>
+<img src="https://PaIn22152.github.io/post-images/1713861187086.png" alt="" loading="lazy"></p>
+<h3 id="抽象属性">抽象属性</h3>
+<p>在kotlin中，我们可以在接口声明抽象属性，子类对抽象属性重写的时候需要重写对应的setter/getter<br>
+<img src="https://PaIn22152.github.io/post-images/1713861694937.png" alt="" loading="lazy"></p>
+<h3 id="委托">委托</h3>
+<p><strong>属性委托</strong><br>
+将属性的set、get操作，委托给另外一个对象实现<br>
+好处是可以将一些常见的属性操作，通过委托的方式，只需要做一次实现<br>
+kotlin提供了以下的标准委托：lazy()、Delegates.observable()、</p>
+<p>lazy() 是接受一个 lambda 并返回一个 Lazy <T> 实例的函数，返回的实例可以作为实现延迟属性的委托。 第一次调用 get() 会执行已传递给 lazy() 的 lambda 表达式并记录结果。 后续调用 get() 只是返回记录的结果。<br>
+<img src="https://PaIn22152.github.io/post-images/1713864923355.png" alt="" loading="lazy"></p>
+<p>Delegates.observable() 接受两个参数：初始值与修改时处理程序（handler）<br>
+每当我们给属性赋值时会调用该处理程序（在赋值后执行）。它有三个参数：被赋值的属性、旧值与新值<br>
+<img src="https://PaIn22152.github.io/post-images/1713865017581.png" alt="" loading="lazy"></p>
+<p>自定义属性委托<br>
+对于一个只读（val）属性，委托对象必须提供一个名为getValue()的函数<br>
+对于一个可读写（var）属性，委托对象必须同时提供setValue()和getValue()函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713865270364.png" alt="" loading="lazy"></p>
+<p><strong>类委托</strong><br>
+可以通过类委托的模式来减少继承<br>
+类委托的，编译器会优先使用自身重写的函数，而不是委托对象的函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713865378537.png" alt="" loading="lazy"></p>
+<h3 id="kotlin标准函数">kotlin标准函数</h3>
+<p>也叫作用域函数，通过它们可以将一些逻辑连贯的代码放在同一作用域中，提高代码可读性<br>
+apply、also、let、run、with<br>
+返回自身，apply和also，作用域中使用this作为参数，选择apply，使用it作为参数使用also<br>
+不需要返回自身，run和let，作用域中使用this作为参数，选择run，使用it作为参数使用let<br>
+apply适合对一个对象做附加操作的时候<br>
+let适合配合空判断的时候<br>
+示例代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713866666023.png" alt="" loading="lazy"></p>
+<p>kotlin官方文档的作用域函数选择建议：<br>
+<img src="https://PaIn22152.github.io/post-images/1713866522588.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/f7xKeGACt/" class="tag">
+                    Kotlin
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-http-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-HTTP相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,2296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://PaIn22152.github.io</id>
+    <title>Payne的小站</title>
+    <updated>2024-06-24T09:27:33.258Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://PaIn22152.github.io"/>
+    <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
+    <subtitle>克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注</subtitle>
+    <logo>https://PaIn22152.github.io/images/avatar.png</logo>
+    <icon>https://PaIn22152.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, Payne的小站</rights>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-RxJava3原理解析]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-rxjava3-yuan-li-jie-xi/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-rxjava3-yuan-li-jie-xi/">
+        </link>
+        <updated>2024-06-24T08:51:09.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="rxjava3简单使用">RxJava3简单使用：</h3>
+<p>配合retrofit：<br>
+定义retrofit接口：<img src="https://PaIn22152.github.io/post-images/1719219527951.png" alt="" loading="lazy"><br>
+retofit初始化添加rxjava支持：<img src="https://PaIn22152.github.io/post-images/1719219584148.png" alt="" loading="lazy"><br>
+使用rxjava实现线程切换：<br>
+<img src="https://PaIn22152.github.io/post-images/1719219681691.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1719219704525.png" alt="" loading="lazy"></p>
+<h3 id="disposable">Disposable</h3>
+<p>可以通过dispose()方法来让上游或者内部调度器（或者两者都有）停止工作，达到丢弃任务的效果</p>
+<h3 id="subscribeon">subscribeOn</h3>
+<p>原理：在Scheduler指定的线程里启动subscribe()<br>
+效果：切换源数据的线程；当多次调用时，只有最上面的会起作用</p>
+<h3 id="observeon">observeOn</h3>
+<p>原理：在内部创建的Observer的onNext(),onError(),onSuccess()等回调方法里，通过Scheduler指定的线程来调用下级Observer的对应回调方法<br>
+效果：切换observeOn下面的Observer的回调所在线程；当多次调用时，每一个都会进行一次线程切换，影响范围是他的下面的每个Observer</p>
+<p>线程切换影响效果图：<img src="https://PaIn22152.github.io/post-images/1719220441355.png" alt="" loading="lazy"></p>
+<h3 id="scheduler">Scheduler</h3>
+<p>Schedulers.newThread()和Schedulers.io()<br>
+newThread每次都会新建一个Worker，worker新建一个Executor，由Executor来完成线程切换，io和newThread相比，会创建一个Worker缓存池，每次都是从缓存池里面获取worker，达到复用Executor的效果</p>
+<p>AndroidSchedulers.mainThread()<br>
+通过内部的handler把任务放到主线程</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-线程相关]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-xian-cheng-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-xian-cheng-xiang-guan/">
+        </link>
+        <updated>2024-06-15T07:42:10.000Z</updated>
+        <content type="html"><![CDATA[<p>线程和进程：<br>
+进程是操作系统中的独立区域，进程间数据不共享；<br>
+线程是一个进程中最小的执行单位，同一个进程中的多个线程可以共享数据；</p>
+<p>如何调度进程和线程，完全由操作系统决定，程序自己不能决定什么时候执行，执行多长时间。</p>
+<h2 id="线程的使用">线程的使用</h2>
+<p>创建线程的方式有：</p>
+<ol>
+<li>直接使用new Thread().start();<br>
+不推荐使用这种方式</li>
+<li>使用ThreadPoolExecutor创建线程池；<br>
+推荐这种方式，可以复用线程，避免反复创建和关闭线程所带来的开销，并且会统一管理创建出来的线程。</li>
+<li>使用HandlerThread；<br>
+Android中如果是长期执行的线程，而且需要往这个线程发数据时推荐使用</li>
+</ol>
+<p>小tip，使用多线程时给每个线程一个命名，方便排查问题，特别是长期执行的子线程（试想一下，在分析CPU占用时，如果发现Thread-88在大量占用CPU，怎么定位这个Thread-88在哪里，所以每个线程有一个单独的命名，是很有必要的）</p>
+<h2 id="线程的状态">线程的状态</h2>
+<p>下图是线程的生命周期，表示各个状态之间的流转：<br>
+<img src="https://PaIn22152.github.io/post-images/1718437806873.png" alt="" loading="lazy"></p>
+<p>下图说明了线程运行后，可能遇到的阻塞状态：<br>
+<img src="https://PaIn22152.github.io/post-images/1718441730704.png" alt="" loading="lazy"></p>
+<p>调用Object.wait方法，线程会释放锁资源以及CPU资源<br>
+调用Thread.sleep方法，线程释放CPU资源，不释放锁资源</p>
+<p>线程中断：<br>
+调用Thread.interrupt方法，会将线程设置为中断状态，如果这个线程当前是阻塞状态，那么会在阻塞方法出抛出InterruptedException异常（注，synchronized在获锁的过程中是不能被中断的），目的是为了告知线程，后续需要线程自己决定如何处理</p>
+<h2 id="线程安全">线程安全</h2>
+<p>开发过程中，对线程安全需要考虑的是在保证线程安全的前提下，提升效率和性能</p>
+<p>线程安全三要素：原子性、可见性、有序性</p>
+<h3 id="synchronized">synchronized</h3>
+<p>synchronized可以用来修饰方法或者代码块，目的是让被他修饰的代码块内的资源互斥访问，他的原理是为代码块添加一个Monitor监视器，同一时间最多只能有一个线程访问，可以保证线程安全。但是带来的性能损耗较大。</p>
+<p>wait和notify的使用，需要在synchronized修饰的代码块中，通过调用Monitor.wait，让出锁资源，进入阻塞状态，等其他线程调用Monitor.notify后，会将线程唤醒。（注意wait和notify都是通过synchronized的Monitor调用）</p>
+<h3 id="volatile">volatile</h3>
+<p>volatile关键字修饰的变量，数据发生改变时虚拟机会将线程高速缓存中的数据强制刷新到主内存，同时这个写操作会导致其他线程缓存中的数据无效，需要重新从主内存获取，这保证了数据的可见性。虚拟机对volatile修饰的变量不会做指令重排，这保证了数据的有序性。不能保证原子性。性能优于synchronized</p>
+<h3 id="cas">CAS</h3>
+<p>CAS全称compare and swap，是一种用于在多线程环境下实现同步功能的机制。CAS 操作包含三个操作数 -- 内存位置、预期数值和新值。CAS 的实现逻辑是将内存位置处的数值与预期数值想比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作。可以保证操作的原子性。</p>
+<h3 id="原子类">原子类</h3>
+<p>Java中的原子类实现原理就是volatile+CAS+自旋，通过无线循环操作CAS，如果成功就返回，失败就继续循环。比如AtomicInteger</p>
+<h3 id="reentrantlock">ReentrantLock</h3>
+<p>可重入锁，相比于使用synchronized，使用方法更复杂一点，需要手动加锁和解锁，可以手动指定公平锁和非公平锁，性能略优于synchronized。</p>
+<h3 id="reentrantreadwritelock">ReentrantReadWriteLock</h3>
+<p>多个线程访问一份数据，如果一个线程写一个线程读，或者两个线程都在写，会导致数据错乱，线程不安全。但是如果两个线程都是在读，那么是安全的。所以需要将读数据和写数据分开加锁，不允许多线程读写，但是允许多线程同时读，提高效率，使用ReentrantReadWriteLock读写分离锁实现。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-ConstraintLayout上手使用]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-constraintlayout-shang-shou-shi-yong/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-constraintlayout-shang-shou-shi-yong/">
+        </link>
+        <updated>2024-06-12T03:36:04.000Z</updated>
+        <content type="html"><![CDATA[<p>使用ContraintLayout，可以灵活地实现复杂UI，同时可以减少布局嵌套，提升UI性能（层级过深会增加绘制界面时间，影响用户体验）</p>
+<p>ConstraintLayout中的子view，至少需要添加两个约束，一个垂直方向，一个水平方向</p>
+<p>使用start和end来代替left和right，可以很好地适配中东地区的从右到左布局（阿拉伯语语言是从右到左RTL）。</p>
+<p>以下示例，ConstraintLayout作为父容器，白色底，宽高300dp</p>
+<h2 id="布局">布局：</h2>
+<h3 id="居中父容器">居中父容器：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718171688064.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintBottom_toBottomOf=&quot;parent&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+</code></pre>
+<h3 id="居中于控件">居中于控件：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718172111586.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintStart_toStartOf=&quot;@id/view1&quot;
+      app:layout_constraintEnd_toEndOf=&quot;@id/view1&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/view1&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/view1&quot;
+</code></pre>
+<h3 id="填充">填充：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718172490939.png" alt="" loading="lazy"><br>
+使用0dp（match_constraint）或者match_parent<br>
+代码：</p>
+<pre><code class="language-xml">    &lt;View
+      android:id=&quot;@+id/view1&quot;
+      android:layout_width=&quot;match_parent&quot;  //或者0dp
+      android:layout_height=&quot;100dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+      /&gt;
+</code></pre>
+<h3 id="权重">权重：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718173080266.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      //v1
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;1&quot;
+
+      //v2
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;2&quot;
+
+      //v3
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;1&quot;
+</code></pre>
+<h3 id="文字基准线对齐">文字基准线对齐：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718173659281.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintBaseline_toBaselineOf=&quot;@id/tv1&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot; 
+</code></pre>
+<h3 id="圆形定位">圆形定位</h3>
+<p>通过【圆心】【角度】【半径】设置圆形定位<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718174024960.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintCircle=&quot;@id/tv1&quot;
+      app:layout_constraintCircleAngle=&quot;30&quot;
+      app:layout_constraintCircleRadius=&quot;100dp&quot;
+</code></pre>
+<h2 id="特殊属性">特殊属性</h2>
+<h3 id="约束限制">约束限制</h3>
+<p>限制控件大小不会超过约束范围<br>
+效果图：<br>
+不约束的效果：<img src="https://PaIn22152.github.io/post-images/1718174447480.png" alt="" loading="lazy"><br>
+宽度超过了约束范围<br>
+约束后效果：<img src="https://PaIn22152.github.io/post-images/1718174504859.png" alt="" loading="lazy"><br>
+宽度在约束范围内<br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constrainedHeight=&quot;true&quot;
+</code></pre>
+<h3 id="偏向">偏向</h3>
+<p>控制控件在水平方向20%的位置<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718174825124.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0.2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+</code></pre>
+<p>还可以用于配合【约束限制】下，不需要居中的情况使用<br>
+效果图：<br>
+<img src="https://PaIn22152.github.io/post-images/1718175198900.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1718175296845.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv1&quot; 
+</code></pre>
+<h3 id="gonemargin">goneMargin</h3>
+<p>当约束的view不显示时（gone），设置为这个margin<br>
+效果图：<br>
+显示时：<img src="https://PaIn22152.github.io/post-images/1718175638106.png" alt="" loading="lazy"><br>
+不显示时：<img src="https://PaIn22152.github.io/post-images/1718175690662.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      android:layout_marginStart=&quot;10dp&quot;
+      app:layout_goneMarginLeft=&quot;30dp&quot;
+
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+</code></pre>
+<h3 id="约束链">约束链</h3>
+<p>在约束链的第一个控件加上chainStyle，可以改变一组控件的布局方式：<br>
+spread（扩散，默认值）、packed（打包）、spread_inside（内部扩散）<br>
+效果图：<br>
+扩散：<img src="https://PaIn22152.github.io/post-images/1718176123832.png" alt="" loading="lazy"><br>
+打包：<img src="https://PaIn22152.github.io/post-images/1718176187456.png" alt="" loading="lazy"><br>
+内部扩散：<img src="https://PaIn22152.github.io/post-images/1718176263063.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintHorizontal_chainStyle=&quot;packed&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv3&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv2&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="宽高比">宽高比</h3>
+<p>至少需要一个方向的值为0dp<br>
+使用app:layout_constraintDimensionRatio=&quot;1:2&quot;设置宽比高为1:2</p>
+<h3 id="百分比布局">百分比布局</h3>
+<p>需要对应方向的值为0dp<br>
+百分比是parent的百分比，而不是约束区域的百分比<br>
+使用app:layout_constraintWidth_percent=&quot;0.8&quot;</p>
+<h2 id="辅助控件">辅助控件</h2>
+<h3 id="guideline-参考线">GuideLine 参考线</h3>
+<p>添加一条虚拟的参考线，别的控件可以以这条线作为约束<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718177790885.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;androidx.constraintlayout.widget.Guideline
+      android:id=&quot;@+id/guideline1&quot;
+      app:layout_constraintGuide_percent=&quot;0.5&quot;
+      android:orientation=&quot;vertical&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+
+    &lt;TextView
+      android:layout_marginTop=&quot;50dp&quot;
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;账号名称：&quot;
+      android:textSize=&quot;20sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/guideline1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;androidx.appcompat.widget.AppCompatEditText
+      android:hint=&quot;输入账号&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv1&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/tv1&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/guideline1&quot;
+      android:id=&quot;@+id/et1&quot;
+      android:textSize=&quot;15sp&quot;
+      android:layout_width=&quot;150dp&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:textSize=&quot;20sp&quot;
+      android:text=&quot;密码：&quot;
+      app:layout_constraintEnd_toEndOf=&quot;@id/guideline1&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/tv1&quot;/&gt;
+
+    &lt;androidx.appcompat.widget.AppCompatEditText
+      android:hint=&quot;输入密码&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv2&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/guideline1&quot;
+      android:id=&quot;@+id/et2&quot;
+      android:textSize=&quot;15sp&quot;
+      android:layout_width=&quot;150dp&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+    
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="group-组">Group 组</h3>
+<p>通过constraint_referenced_ids使用引用的方式来避免布局嵌套，可以统一控制一组控件的隐藏和显示（只能设置可见度，不能设置点击事件）<br>
+代码：</p>
+<pre><code class="language-xml">    &lt;androidx.constraintlayout.widget.Group
+      android:id=&quot;@+id/group&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2,et1,et2&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+      
+      findViewById&lt;View&gt;(R.id.group).visibility = View.GONE
+</code></pre>
+<h3 id="layer-层布局">Layer 层布局</h3>
+<p>和Group类似，为一组控件统一设置旋转、缩放、位移<br>
+todo</p>
+<h3 id="barrier-屏障">Barrier 屏障</h3>
+<p>设置一组控件某个方向的屏障<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718180135704.png" alt="" loading="lazy"><br>
+上图中，左边两个标题一长一短，且谁长谁短不定，右边的文字需要按照标题做约束，这时就需要给两个标题添加end方向的屏障，然后右边文字按照屏障做约束<br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;TextView
+      android:background=&quot;@color/teal_200&quot;
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:text=&quot;长一点的标题&quot;
+      android:textSize=&quot;15sp&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:background=&quot;@color/teal_200&quot;
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:text=&quot;短标题&quot;
+      android:textSize=&quot;15sp&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/tv1&quot; /&gt;
+
+    &lt;androidx.constraintlayout.widget.Barrier
+      android:id=&quot;@+id/barrier&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      app:barrierDirection=&quot;end&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2&quot; /&gt;
+
+    &lt;TextView
+      android:background=&quot;#e33&quot;
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:layout_marginStart=&quot;10dp&quot;
+      android:layout_marginEnd=&quot;30dp&quot;
+      android:text=&quot;很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长的文字测试&quot;
+      android:textSize=&quot;10sp&quot;
+      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/barrier&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="placeholder-占位符">Placeholder 占位符</h3>
+<p>Placeholder的作用就是占位，它可以在布局中占好位置，然后通过setContentId()来设置内容，将某个控件移动到此占位符中。<br>
+可以配合TransitionManager.beginDelayedTransition(constraint_root)来实现过渡动画<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718181787235.gif" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:id=&quot;@+id/constraint_root&quot;
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;androidx.constraintlayout.widget.Placeholder
+      android:id=&quot;@+id/placeholder&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;parent&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;1&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      android:text=&quot;2&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv3&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#3e3&quot;
+      android:text=&quot;3&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv4&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv2&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv4&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;4&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv3&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+
+
+        findViewById&lt;View&gt;(R.id.tv1).setOnClickListener {
+            TransitionManager.beginDelayedTransition(constraint_root)
+            placeholder.setContentId(R.id.tv1)
+        }
+        
+</code></pre>
+<h3 id="flow-流式虚拟布局">Flow 流式虚拟布局</h3>
+<p>Flow的constraint_referenced_ids关联的控件是没有设置约束的<br>
+通过流式的方式对关联的控件进行布局，有3种flow_wrapMode（排列方式）可选：none（默认值）、chain、aligned。下面分别介绍每种排列方式：<br>
+none：所有引用的view形成一条链，水平居中，超出屏幕两侧的view不可见，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183782016.png" alt="" loading="lazy"><br>
+chain：所有引用的view形成一条链，超出部分自动换行，同行的view会平分宽度，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183881711.png" alt="" loading="lazy"><br>
+aligned：所有引用的view形成一条链，但view会在同行同列，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183975095.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:id=&quot;@+id/constraint_root&quot;
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;!--flow test code  start--&gt;
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;140dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;1&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;140dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      android:text=&quot;2&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#3e3&quot;
+      android:text=&quot;3&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv4&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;4&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv5&quot;
+      android:layout_width=&quot;40dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;5&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+
+    &lt;androidx.constraintlayout.helper.widget.Flow
+      app:flow_horizontalStyle=&quot;packed&quot;
+      android:id=&quot;@+id/flow&quot;
+      app:flow_wrapMode=&quot;chain&quot;
+      android:layout_width=&quot;match_parent&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:orientation=&quot;horizontal&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2,tv3,tv4,tv5&quot;
+      app:flow_horizontalGap=&quot;2dp&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;/&gt;
+    &lt;!--flow test code  start--&gt;
+    
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="constraintset">ConstraintSet</h3>
+<p>在传统布局中，如果想改变某个控件的位置，需要获取LayoutParams，然后修改属性值，但是在约束布局中，要改变控件的约束条件，需要使用ConstraintSet<br>
+使用步骤：</p>
+<ol>
+<li>创建ConstraintSet</li>
+<li>需要复制一份父布局的约束（也可以从已有的xml文件中复制）</li>
+<li>设置组件之间的约束（或者移除之前的约束）</li>
+<li>设置过渡动画</li>
+<li>apply更新约束条件<br>
+代码：</li>
+</ol>
+<pre><code class="language-kotlin">        val constraint_root = findViewById&lt;ConstraintLayout&gt;(R.id.constraint_root)
+        val v1 = findViewById&lt;View&gt;(R.id.v1)
+        v1.setOnClickListener {
+            val constraintSet = ConstraintSet().apply {
+                isForceId = false//防止布局中有无id控件时报错，需要设置isForceId=false
+                //clone(this@ConstraintActivity,R.layout.activity_constraint2)  //从xml中复制约束条件
+                clone(constraint_root)
+                clear(R.id.v1, ConstraintSet.START)//移除约束
+                clear(R.id.v1, ConstraintSet.TOP)
+                connect(//重新建立约束
+                    R.id.v1,
+                    ConstraintSet.BOTTOM,
+                    ConstraintSet.PARENT_ID,
+                    ConstraintSet.BOTTOM
+                )
+                connect(
+                    R.id.v1,
+                    ConstraintSet.END,
+                    ConstraintSet.PARENT_ID,
+                    ConstraintSet.END
+                )
+            }
+            TransitionManager.beginDelayedTransition(constraint_root)//过渡动画
+            constraintSet.applyTo(constraint_root)//约束条件更新
+        }
+</code></pre>
+<h3 id="constrainthelper">ConstraintHelper</h3>
+<p>以上的Group、Barrier、Layer、Flow都是继承自ConstraintHelper，ConstraintHelper 继承自 View，因此它可以在 xml 中使用和预览。但它通常没有自己的 UI 样式，只是通过特定的逻辑，去控制其他相关 View 的约束。</p>
+<p>它有一个constraint_referenced_ids属性，也就是我们在用Group的时候指定相关 View id 的属性。此类主要作用就是将 xml 中赋值的 id 字符串（如&quot;v1, v2, v3&quot;）解析成一组真正的 int 类型的 View id（定义在 R.java 文件中），然后通过getReferencedIds()方法提供给子类使用。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-自定义view相关]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zi-ding-yi-view-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zi-ding-yi-view-xiang-guan/">
+        </link>
+        <updated>2024-05-11T06:11:59.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。自定义view相关</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。自定义view相关</p>
+<!-- more -->
+<h2 id="绘制">绘制</h2>
+<p>自定义view时需要重新onDraw方法，绘制过程需要用到canvas画布和paint画笔<br>
+view的坐标系：<br>
+<img src="https://PaIn22152.github.io/post-images/1715408400417.png" alt="" loading="lazy"><br>
+绘制时使用的尺寸单位是px像素<br>
+dp转px的代码实现：</p>
+<pre><code class="language-kotlin">//dp 2 px
+val Float.dp
+    get() = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this,
+        Resources.getSystem().displayMetrics
+    )
+</code></pre>
+<p>当view大小发生变化时，会回调onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int)方法<br>
+path的方向有两种，Path.Direction.CW（clockwise）和Path.Direction.CCW（counter-clockwise），代表顺时针和逆时针<br>
+多个图形相交时，path的填充规则有4种：Path.FillType.WINDING（默认），Path.FillType.EVEN_ODD，Path.FillType.INVERSE_WINDING，Path.FillType.INVERSE_EVEN_ODD，后面两个是前面两个的反规则<br>
+具体怎么填充会结合方向和填充规则来判断，WINDING时，如果方向相反的穿插次数相等则为内部，不等为外部<br>
+双圆同向：<br>
+<img src="https://PaIn22152.github.io/post-images/1715409144404.png" alt="" loading="lazy"><br>
+双圆不同向<br>
+<img src="https://PaIn22152.github.io/post-images/1715409179090.png" alt="" loading="lazy"><br>
+EVEN_ODD时，不考虑方向，穿插奇数次则为内部，偶数次为外部<br>
+<img src="https://PaIn22152.github.io/post-images/1715409228071.png" alt="" loading="lazy"></p>
+<h3 id="绘制仪表盘">绘制仪表盘</h3>
+<p>canvas.drawArc()绘制弧形<br>
+使用PathEffect设置path的效果，PathDashPathEffect设置的是虚线的效果，来实现仪表盘上的刻度，方法如下<br>
+path.setPathEffect(PathDashPathEffect(path,advance,phase,style))<br>
+其中参数path表示刻度，advance表示两个刻度的间隔，phase表示提前量，是否提前移动一段距离，style表示拐角处风格。（advance和phase的字面意思和实际含义相反了）<br>
+使用PathMeasure计算弧长：pathMeasure.setPath(path1, false)<br>
+为了能使用PathMeasure，需要使用canvas.drawPath()绘制弧形：path.reset();path.addArc()<br>
+绘制过程需要使用到三角函数，已知角度和长度，可以通过cos方法和sin方法确定点的坐标，但是要注意，cos和sin传入的是弧度而不是角度，要先将角度转成弧度：Math.toRadians(angle)</p>
+<h3 id="绘制饼图">绘制饼图</h3>
+<p>canvas.drawArc()绘制扇形<br>
+canvas.transate结合canvas.save和canvas.restore来实现扇形偏移，使用cos和sin计算偏移位置</p>
+<p>已知点的坐标，计算相对于原点的角度时，使用atan计算出角度的取值范围是[-90,90]，atan2计算出角度的取值范围是(-180,180]，使用acos和asin计算出的值都不准确，所以这种情况应该使用atan2计算。测试代码和运行结果如下：</p>
+<pre><code class="language-kotlin">    private val points = arrayOf(
+        Point(5, 0),//0 x正轴，0°
+        Point(5, 5),//1 第一象限，45°
+        Point(0, 5),//2 y正轴，90°
+        Point(-5, 5),//3 第二象限，135°
+        Point(-500000, 1),//4 接近180，179.99°
+        Point(-5, 0),//5 x负轴，180°
+        Point(-500000, -1),//6 接近-180，-179.99°
+        Point(-5, -5),//7 第三象限，-135°
+        Point(0, -5),//8 y负轴，-90°
+        Point(5, -5),//9 第四象限，-45°
+    )
+    init {
+        for ((i, p) in points.withIndex()) {
+            val angle1 = Math.toDegrees(atan(p.y.toFloat() / p.x).toDouble())
+            val angle2 = Math.toDegrees(atan2(p.y.toDouble(), p.x.toDouble()))
+            val len = Math.sqrt((p.x * p.x + p.y * p.y).toDouble())
+            val acos = Math.toDegrees(acos(p.x / len))
+            val asin = Math.toDegrees(asin(p.y / len))
+            println(&quot;i=$i  angle1=${angle1}  angle2=${angle2}&quot;)
+            println(&quot;i=$i  acos=${acos}  asin=${asin}&quot;)
+        }
+    }
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1715419927707.png" alt="" loading="lazy"></figure>
+<h3 id="xfermode使用">Xfermode使用</h3>
+<p>加载图片到bitmap时，可以先获取图片的实际大小，根据实际大小和需要加载的大小设置缩放比，然后再进行加载，可以优化图片加载的性能，示例代码如下：</p>
+<pre><code class="language-kotlin">        fun getAvatar(res: Resources, width: Int): Bitmap {
+            //获取options对象
+            val options = BitmapFactory.Options()
+            //配置中设置属性获取图片的长宽设置
+            options.inJustDecodeBounds = true
+            //对图片进行解码
+            BitmapFactory.decodeResource(res, R.drawable.test, options)
+            //取消获取图片的长宽的设置
+            options.inJustDecodeBounds = false
+            options.inDensity = options.outWidth   //实际宽度
+            options.inTargetDensity = width   //目标宽度
+            return BitmapFactory.decodeResource(res, R.drawable.test, options)
+        }
+</code></pre>
+<p>使用Xfermode，一般需要配合离屏缓冲使用，具体过程如下：<br>
+Canvs.saveLayer()把绘制区域拉到单独的离屏缓冲<br>
+绘制 A 图形<br>
+Paint.setXfermode()设置 Xfermode<br>
+绘制 B 图形<br>
+Paint.setXfermode(null)恢复 Xfermode<br>
+Canvas.restoreToCount()把离屏缓冲中的合成后的图形放回绘制区域</p>
+<p>使用saveLayer是为了把互相作用的图形放在单独的位置绘制，不受View本身的影响，如果不使用saveLayer，那么绘制的目标区域将总是整个View的范围，两个图形的交叉区域就错了。</p>
+<p>canvas.save()和canvas.saveLayer()<br>
+save是保存坐标系状态，在save之后无论经过多少的坐标系变换，只要调用restore就能回到save的状态；示例代码：</p>
+<pre><code class="language-kotlin">        canvas.save()//保存当前状态A
+        canvas.clipPath(circulePath)//裁剪区域
+        canvas.drawBitmap(bitmap, MARGING, MARGING, paint)
+        canvas.restore()//恢复到状态A
+        canvas.drawOval(0f,0f,100.dp,100.dp,paint)//如果没有上面的save和restore，这一行的绘制没有效果
+</code></pre>
+<p>saveLayer会保存坐标系状态，并创建一个透明图层（离屏缓冲），后续的绘图操作都在新建的layer上面进行，当调用restore或者restoreToCount时更新到对应的图层和画布上；使用saveLayer时应该选择尽量小的区域，以优化性能</p>
+<h3 id="文字测量">文字测量</h3>
+<p>纵向的文字居中：<br>
+如果文字内容是静态的，可以使用textPaint.getTextBounds(textContent, 0, textContent.length, textBounds)获取到文字区域范围，然后减去偏移量(textBounds.top + textBounds.bottom) / 2，这个范围由文字大小和文字内容确定<br>
+如果文字内容是动态的，使用上面的方法会出现跳动现象，而应该使用textPaint.getFontMetrics(fontMetrics)，然后减去偏移量(fontMetrics.descent + fontMetrics.ascent) / 2f，这个范围跟文字内容无关，而是由文字大小和字体确定，其中top和bottom表示极限位置，ascent和descent表示核心位置</p>
+<p>文字左对齐时，可以使用getTextBounds() 之后的 left 来计算</p>
+<h3 id="范围裁切和几何变换">范围裁切和几何变换</h3>
+<p>使用canvas.clip相关api来实现范围裁切<br>
+范围裁切时会有毛边（锯齿），且无法去掉</p>
+<p>canvas几何变换，常用方法有：translate(x,y)  rotate(degree)   scale(x,y)   skew(x,y)<br>
+canvas做几何变换时，改变的是坐标系，后续的绘制都会受影响，需要注意</p>
+<p>使用camera来做三维效果，实际上是用二维变换来模拟出三维效果<br>
+有一个虚拟的camera在负Z轴，照射虚拟的三维物体生成一个二维的投影，来模拟出三维效果<br>
+camera相对平面的位置不可变，通过移动图像来达到移动轴心的效果<br>
+camera使用setlocation来调整放缩的视觉幅度，避免不同像素手机效果不一致，<br>
+camera.setlocation(0,0,-6*resources.displayMetrics.density)//xy值默认0，用处未知<br>
+对camera变换之后，使用camera.applyToCanval来应用到canvas</p>
+<h3 id="属性动画和硬件加速">属性动画和硬件加速</h3>
+<p>什么是属性动画？就是不断地一点一点地改变view的属性，从而改变显示效果而形成一个动画效果<br>
+ViewPropertyAnimator<br>
+使用方式：</p>
+<pre><code class="language-kotlin">        myview.animate()
+            .translationX(100f)
+            .translationYBy(100f)
+            .start()
+</code></pre>
+<p>可以连续调用来设置多个动画<br>
+本质上就是不断地修改属性值，每隔10ms调用一次</p>
+<p>ObjectAnimator<br>
+使用方式：</p>
+<pre><code class="language-kotlin">        val animator = ObjectAnimator.ofFloat(myview, &quot;radius&quot;, 5f, 10f)
+        animator.start()
+</code></pre>
+<p>优势在于可以为自定义属性设置动画<br>
+自定义属性需要设置getter和setter方法，并且需要在setter里调用invalidate()来触发重绘</p>
+<p>AnimatorSet，对多个动画进行合成，先后顺序或者并列顺序都可以</p>
+<p>PropertyValuesHolder，用于设置更加详细的动画，例如多个属性应用于同一对象<br>
+或者配合KeyFrame，对一个属性分多个段，示例代码:</p>
+<pre><code class="language-kotlin">        val len = 200f
+        val keyFrame1 = Keyframe.ofFloat(0.2f, 0.2f * len)//参数0 fraction表示时间完成度，参数1 value表示对应属性的值
+        val keyFrame2 = Keyframe.ofFloat(0.4f, 0.6f * len)
+        val keyFrame3 = Keyframe.ofFloat(1f, 1f * len)
+        val holer1 = PropertyValuesHolder.ofKeyframe(&quot;radius&quot;, keyFrame1, keyFrame2, keyFrame3)
+        val holer2 = PropertyValuesHolder.ofKeyframe(&quot;scaleX&quot;, keyFrame1, keyFrame2, keyFrame3)
+        val animator = ObjectAnimator.ofPropertyValuesHolder(myview, holer1, holer2)
+        animator.start()
+</code></pre>
+<p>Interpolator，插值器，用于设置时间完成度到动画完成度的计算公式，直白地说即设置动画的速度曲线，常用的有： AccelerateDecelerateInterpolator 、AccelerateInterpolator、DecelerateInterpolator 、LinearInterpolator 。</p>
+<p>TypeEvaluator，估值器，用于设置动画完成度到属性具体值的计算公式，对于指定类型的属性，精确计算出每一刻的属性值。默认的ofInt ofFloat已经有了自带的IntEvaluator FloatEvaluator，有的时候需要自己设置Evaluator。例如对于颜色，需要为int类型的颜色设置ArgbEvaluator，而不是IntEvaluator。对于不支持的类型，也可以使用ofObject来创建Animator的同时就设置上Evaluator</p>
+<p>ValueAnimator，这是最基本的Animator，不和具体的某个对象联动，而是直接对两个数值进行渐变计算，使用很少</p>
+<h3 id="硬件加速">硬件加速</h3>
+<p>硬件加速是什么？<br>
+软件绘制，把要绘制的内容写进一个 Bitmap，然后在之后的渲染过程中，这个 Bitmap 的像素内容被直接用于渲染到屏幕。这种绘制方式的主要计算工作在于把绘制操作转换为像素的过程（例如由一句 Canvas.drawCircle() 来获得一个具体的圆的像素信息），这个过程的计算是由 CPU 来完成的，大致流程如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1715679981496.png" alt="" loading="lazy"></p>
+<p>硬件绘制，把绘制的内容转换为 GPU 的操作保存了下来，然后就把它交给 GPU，最终由 GPU 来完成实际的显示工作，硬件绘制可以使绘制流程加速，所以也叫硬件加速，大致流程如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1715680097798.png" alt="" loading="lazy"></p>
+<p>为什么能加速？<br>
+1、GPU分摊了工作<br>
+2、GPU设计之初就是为了做绘制，所以绘制简单图形有先天的优势，使得绘制更快<br>
+3、由于绘制流程的不同，硬件加速在界面内容发生重绘的时候绘制流程可以得到优化，避免了一些重复操作，从而大幅提升绘制效率</p>
+<blockquote>
+<p>关于第三点的详细说明<br>
+前面说到，在硬件加速关闭时，绘制内容会被 CPU 转换成实际的像素，然后直接渲染到屏幕。具体来说，这个「实际的像素」，它是由 Bitmap 来承载的。在界面中的某个 View 由于内容发生改变而调用 invalidate() 方法时，如果没有开启硬件加速，那么为了正确计算 Bitmap 的像素，这个 View 的父 View、父 View 的父 View 乃至一直向上直到最顶级 View，以及所有和它相交的兄弟 View，都需要被调用 invalidate()来重绘。一个 View 的改变使得大半个界面甚至整个界面都重绘一遍，这个工作量是非常大的。<br>
+而在硬件加速开启时，前面说过，绘制的内容会被转换成 GPU 的操作保存下来（承载的形式称为 display list，对应的类也叫做 DisplayList），再转交给 GPU。由于所有的绘制内容都没有变成最终的像素，所以它们之间是相互独立的，那么在界面内容发生改变的时候，只要把发生了改变的 View 调用 invalidate() 方法以更新它所对应的 GPU 操作就好，至于它的父 View 和兄弟 View，只需要保持原样。那么这个工作量就很小了。<br>
+正是由于上面的原因，硬件加速不仅是由于 GPU 的引入而提高了绘制效率，还由于绘制机制的改变，而极大地提高了界面内容改变时的刷新效率。</p>
+</blockquote>
+<p>硬件加速的缺陷？<br>
+兼容性。由于使用GPU的绘制无法完成某些复杂绘制，因此对于一些特定的api，需要关闭硬件加速来使用CPU进行绘制。具体的 API 限制和 API 版本的关系如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1715680620497.png" alt="" loading="lazy"></p>
+<p>离屏缓冲<br>
+指单独的一个绘制view的区域</p>
+<p>setLayerType和saveLayer<br>
+setLayerType是对整个view，不能针对onDraw里面的某一具体过程，他的作用是为绘制设置一个离屏缓冲，让后面的绘制都单独写在这个离屏缓冲内。如果参数填写LAYER_TYPE_SOFTWARE，会把离屏缓冲设置为一个bitmap，即 使用软件绘制来进行缓冲，这样就导致在设置离屏缓冲的同时，将硬件加速关闭了。所以这个方法常用来关闭view级别的硬件加速。<br>
+自带属性做动画时withlayer，在动画过程中开启view级别的离屏缓冲，可以优化动画性能。需要注意的是，View Layer 可以加速无 invalidate() 时的刷新效率，但对于需要调用 invalidate() 的刷新无法加速。View Layer 绘制所消耗的实际时间是比不使用 View Layer 时要高的，所以要慎重使用。<br>
+SaveLayer是针对canvas的，可以圈出哪一部分绘制要用离屏缓冲。</p>
+<h3 id="bitmap和drawable">Bitmap和Drawable</h3>
+<p>Bitmap和Drawable互转代码：</p>
+<pre><code class="language-kotlin">public inline fun Bitmap.toDrawable(
+    resources: Resources
+): BitmapDrawable = BitmapDrawable(resources, this)
+
+public fun Drawable.toBitmap(
+    @Px width: Int = intrinsicWidth,
+    @Px height: Int = intrinsicHeight,
+    config: Bitmap.Config? = null
+): Bitmap {
+    if (this is BitmapDrawable) {
+        //如果Drawable是BitmapDrawable类型，且config相同（使用equals比较），直接使用BitmapDrawable的Bitmap属性
+        if (config == null || bitmap.config == config) {
+            //如果图片的宽高相等，直接返回
+            if (width == bitmap.width &amp;&amp; height == bitmap.height) {
+                return bitmap
+            }
+            //宽高不等，缩放后返回
+            return Bitmap.createScaledBitmap(bitmap, width, height, true)
+        }
+    }
+    
+    val (oldLeft, oldTop, oldRight, oldBottom) = bounds
+    
+    //创建出bitmap对象
+    val bitmap = Bitmap.createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
+    setBounds(0, 0, width, height)
+    draw(Canvas(bitmap))//创建出Canvas对象，并使用Drawable通过Canvas把内容绘制到Bitmap中
+    
+    setBounds(oldLeft, oldTop, oldRight, oldBottom)
+    return bitmap
+}
+</code></pre>
+<p>实际上Bitmap和Drawable是两个不同的概念，所谓的互转，其实是使用其中一个获得另外一个对象</p>
+<p>Bitmap是什么？字面意思是位图，是图片信息的存储，表示像素数据的映射，把实际的像素数据映射到内存对象，对每个像素的颜色做一一记录<br>
+Drawable是什么？是一个绘制工具，调⽤Drawable.draw(Canvas) 可以把 Drawable 设置的绘制内容绘制到 Canvas中。Drawable 内部存储的是绘制规则，这个规则可以是⼀个具体的 Bitmap，也可以是⼀个纯粹的颜⾊，甚⾄可以是⼀个抽象的、灵活的描述，比如定义形状、颜色、边界、渐变等。由于 Drawable 存储的只是绘制规则，因此在它的 draw() ⽅法被调⽤前，需要先调⽤Drawable.setBounds() 来为它设置绘制边界。</p>
+<p>自定义Drawable<br>
+重新以下方法，在draw(canvas: Canvas)方法中做具体绘制</p>
+<pre><code class="language-kotlin">    override fun draw(canvas: Canvas) {
+        //具体内容绘制
+    }
+    
+    override fun setAlpha(alpha: Int) {
+        paint.alpha = alpha
+    }
+    
+    override fun getAlpha(): Int {
+        return paint.alpha
+    }
+    
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        paint.colorFilter = colorFilter
+    }
+    
+    override fun getColorFilter(): ColorFilter? {
+        return paint.colorFilter
+    }
+    
+    override fun getOpacity(): Int {
+        return when (paint.alpha) {
+            0 -&gt; PixelFormat.TRANSPARENT
+            0xff -&gt; PixelFormat.OPAQUE
+            else -&gt; PixelFormat.TRANSLUCENT
+        }
+    }
+</code></pre>
+<p>自定义Drawable是一个更加抽象和专注的、仅仅用来绘制的自定义view模块，可以用来做代码复用，需要共享在多个View之间的绘制代码，可以写在自定义Drawable里，然后再多个自定义View里引用Drawable实现绘制，而不用互相粘贴代码。</p>
+<h3 id="自定义属性">自定义属性</h3>
+<p>在value/attrs中增加自定义属性字段</p>
+<pre><code class="language-html">&lt;resources&gt;
+  &lt;declare-styleable name=&quot;MaterialEditText&quot;&gt;
+    &lt;attr name=&quot;showFloatText&quot; format=&quot;boolean&quot;/&gt;
+    &lt;attr name=&quot;testName&quot; format=&quot;string&quot;/&gt;
+  &lt;/declare-styleable&gt;
+&lt;/resources&gt;
+</code></pre>
+<p>然后就可以在xml中给view设置属性：app:showFloatText=&quot;false&quot;<br>
+在自定义view 中通过一下代码获取自定义属性：</p>
+<pre><code class="language-kotlin">        val attr = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText)
+        floatHintAble = attr.getBoolean(R.styleable.MaterialEditText_showFloatText, true)
+        attr.recycle()
+</code></pre>
+<p>可以更加灵活地获取：</p>
+<pre><code class="language-kotlin">        val attrRes = intArrayOf(R.attr.showFloatText, R.attr.testName)//表示需要过滤出来的数组
+        val attr = context.obtainStyledAttributes(attrs, attrRes)//把在数组中的属性过滤出来
+        val showFloatText = attr.getBoolean(0, true)//根据数组索引获取值
+        val testName = attr.getString(1)
+        attr.recycle()//使用完后资源回收
+</code></pre>
+<h2 id="布局">布局</h2>
+<p>布局过程：确定每个view的位置和尺寸。作用是为绘制和触摸范围做支持，让绘制知道往哪里绘制，让触摸反馈知道用户点的是哪里</p>
+<h3 id="流程">流程</h3>
+<h4 id="整体">整体</h4>
+<p>从整体看，分为测量流程和布局流程，测量流程是从根view递归调用每一级子view的measure方法，对它们进行测量。布局流程是从根view递归调用每一级子view的layout方法，把测量过程得出的子view的位置和尺寸传给子view保存。为什么需要分两个流程，是因为测量过程比较复杂，可能会重复测量。</p>
+<h4 id="个体">个体</h4>
+<p>从个体看，对每个view：</p>
+<ol>
+<li>运行前，开发者在xml文件里写入对view的布局要求layout_xxx；</li>
+<li>父view在自己的onMeasure中，根据开发者在xml中写的对子view的要求，和自己的可用空间，得出对子view的具体尺寸要求；</li>
+<li>子view在自己的onMeasure中，根据父view的要求和自己的特性算出自己的期望尺寸；<br>
+如果是viewGroup，还会在这里调用每个子view的measure进行测量；</li>
+<li>父view在子view计算出期望尺寸后，得出子view的实际尺寸和位置；</li>
+<li>子view在自己的layout方法中，将父view传进来的自己的实际尺寸和位置保存<br>
+如果是viewGroup，还会在onLayout里调用每个子view的layout把它们的尺寸位置传给它们；</li>
+</ol>
+<h3 id="自定义布局">自定义布局</h3>
+<p>自定义布局分类：</p>
+<ol>
+<li>继承已有的view，简单改写它们的尺寸，重写onMeasure；</li>
+<li>对自定义view完成进行自定义尺寸计算，重写onMeasure；</li>
+<li>自定义Layout，重写onMeasure和onLayout；</li>
+</ol>
+<p>1：重写 onMeasure()<br>
+⽤ getMeasuredWidth() 和 getMeasuredHeight() 获取到测量出的尺⼨<br>
+计算出最终要的尺⼨<br>
+⽤ setMeasuredDimension(width, height) 把结果保存<br>
+为什么不重写 layout()？<br>
+因为重新 layout() 会导致「不听话」父view不知道子view的实际测量和布局，导致结果不可控</p>
+<p>2：重写 onMeasure()<br>
+计算出⾃⼰的尺⼨<br>
+⽤ resolveSize() 或者 resolveSizeAndState() 修正结果<br>
+使⽤ setMeasuredDimension(width, height) 保存结果</p>
+<p>3：重写onMeasure和onLayout<br>
+measureChildWithMargins方法测量子view，并重写generateLayoutParams</p>
+<pre><code class="language-kotlin">    override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
+        return MarginLayoutParams(context, attrs)
+    }
+</code></pre>
+<h2 id="触摸反馈">触摸反馈</h2>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[给Android开发者的RxJava详解]]></title>
+        <id>https://PaIn22152.github.io/post/gei-android-kai-fa-zhe-de-rxjava-xiang-jie/</id>
+        <link href="https://PaIn22152.github.io/post/gei-android-kai-fa-zhe-de-rxjava-xiang-jie/">
+        </link>
+        <updated>2024-04-25T03:02:22.000Z</updated>
+        <summary type="html"><![CDATA[<p>转载。作者：扔物线（朱凯）</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>转载。作者：扔物线（朱凯）</p>
+<!-- more -->
+<h1 id="前言">前言</h1>
+<p>我从去年开始使用 RxJava ，到现在一年多了。今年加入了 Flipboard 后，看到 Flipboard 的 Android 项目也在使用 RxJava ，并且使用的场景越来越多 。而最近这几个月，我也发现国内越来越多的人开始提及 RxJava 。有人说『RxJava 真是太好用了』，有人说『RxJava 真是太难用了』，另外更多的人表示：我真的百度了也谷歌了，但我还是想问： RxJava 到底是什么？</p>
+<p>鉴于 RxJava 目前这种既火爆又神秘的现状，而我又在一年的使用过程中对 RxJava 有了一些理解，我决定写下这篇文章来对 RxJava 做一个相对详细的、针对 Android 开发者的介绍。</p>
+<p>这篇文章的目的有两个： 1. 给对 RxJava 感兴趣的人一些入门的指引 2. 给正在使用 RxJava 但仍然心存疑惑的人一些更深入的解析</p>
+<p>在正文开始之前的最后，放上 GitHub 链接和引入依赖的 gradle 代码： Github：</p>
+<ul>
+<li>https://github.com/ReactiveX/RxJava</li>
+<li>https://github.com/ReactiveX/RxAndroid</li>
+</ul>
+<p>引入依赖：</p>
+<pre><code class="language-gradle">// 版本号是文章发布时的最新稳定版
+compile 'io.reactivex:rxjava:1.0.14'
+compile 'io.reactivex:rxandroid:1.0.1'
+</code></pre>
+<p>另外，感谢 RxJava 核心成员流火枫林的技术支持和内测读者代码家、鲍永章、drakeet、马琳、有时放纵、程序亦非猿、大头鬼、XZoomEye、席德雨、TCahead、Tiiime、Ailurus、宅学长、妖孽、大大大大大臣哥、NicodeLee的帮助，以及周伯通招聘的赞助。</p>
+<h1 id="1-rxjava-到底是什么">1. RxJava 到底是什么</h1>
+<p>一个词：异步。</p>
+<p>RxJava 在 GitHub 主页上的自我介绍是 &quot;a library for composing asynchronous and event-based programs using observable sequences for the Java VM&quot;（一个在 Java VM 上使用可观测的序列来组成异步的、基于事件的程序的库）。这就是 RxJava ，概括得非常精准。</p>
+<p>然而，对于初学者来说，这太难看懂了。因为它是一个『总结』，而初学者更需要一个『引言』。</p>
+<p>其实， RxJava 的本质可以压缩为异步这一个词。说到根上，它就是一个实现异步操作的库，而别的定语都是基于这之上的。</p>
+<h1 id="2-rxjava-好在哪">2. RxJava 好在哪</h1>
+<p>换句话说，『同样是做异步，为什么人们用它，而不用现成的 AsyncTask / Handler / XXX / ... ？』</p>
+<p>一个词：简洁。</p>
+<p>异步操作很关键的一点是程序的简洁性，因为在调度过程比较复杂的情况下，异步代码经常会既难写也难被读懂。 Android 创造的 AsyncTask 和Handler ，其实都是为了让异步代码更加简洁。RxJava 的优势也是简洁，但它的简洁的与众不同之处在于，随着程序逻辑变得越来越复杂，它依然能够保持简洁。<br>
+<img src="https://PaIn22152.github.io/post-images/1714014343286.png" alt="" loading="lazy"><br>
+假设有这样一个需求：界面上有一个自定义的视图 imageCollectorView ，它的作用是显示多张图片，并能使用 addImage(Bitmap) 方法来任意增加显示的图片。现在需要程序将一个给出的目录数组 File[] folders 中每个目录下的 png 图片都加载出来并显示在 imageCollectorView 中。需要注意的是，由于读取图片的这一过程较为耗时，需要放在后台执行，而图片的显示则必须在 UI 线程执行。常用的实现方式有多种，我这里贴出其中一种：</p>
+<pre><code class="language-java">new Thread() {
+    @Override
+    public void run() {
+        super.run();
+        for (File folder : folders) {
+            File[] files = folder.listFiles();
+            for (File file : files) {
+                if (file.getName().endsWith(&quot;.png&quot;)) {
+                    final Bitmap bitmap = getBitmapFromFile(file);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageCollectorView.addImage(bitmap);
+                        }
+                    });
+                }
+            }
+        }
+    }
+}.start();
+</code></pre>
+<p>而如果使用 RxJava ，实现方式是这样的：</p>
+<pre><code class="language-java">Observable.from(folders)
+    .flatMap(new Func1&lt;File, Observable&lt;File&gt;&gt;() {
+        @Override
+        public Observable&lt;File&gt; call(File file) {
+            return Observable.from(file.listFiles());
+        }
+    })
+    .filter(new Func1&lt;File, Boolean&gt;() {
+        @Override
+        public Boolean call(File file) {
+            return file.getName().endsWith(&quot;.png&quot;);
+        }
+    })
+    .map(new Func1&lt;File, Bitmap&gt;() {
+        @Override
+        public Bitmap call(File file) {
+            return getBitmapFromFile(file);
+        }
+    })
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Action1&lt;Bitmap&gt;() {
+        @Override
+        public void call(Bitmap bitmap) {
+            imageCollectorView.addImage(bitmap);
+        }
+    });
+</code></pre>
+<p>那位说话了：『你这代码明明变多了啊！简洁个毛啊！』大兄弟你消消气，我说的是逻辑的简洁，不是单纯的代码量少（逻辑简洁才是提升读写代码速度的必杀技对不？）。观察一下你会发现， RxJava 的这个实现，是一条从上到下的链式调用，没有任何嵌套，这在逻辑的简洁性上是具有优势的。当需求变得复杂时，这种优势将更加明显（试想如果还要求只选取前 10 张图片，常规方式要怎么办？如果有更多这样那样的要求呢？再试想，在这一大堆需求实现完两个月之后需要改功能，当你翻回这里看到自己当初写下的那一片迷之缩进，你能保证自己将迅速看懂，而不是对着代码重新捋一遍思路？）。</p>
+<p>另外，如果你的 IDE 是 Android Studio ，其实每次打开某个 Java 文件的时候，你会看到被自动 Lambda 化的预览，这将让你更加清晰地看到程序逻辑：</p>
+<pre><code class="language-java">Observable.from(folders)
+    .flatMap((Func1) (folder) -&gt; { Observable.from(file.listFiles()) })
+    .filter((Func1) (file) -&gt; { file.getName().endsWith(&quot;.png&quot;) })
+    .map((Func1) (file) -&gt; { getBitmapFromFile(file) })
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe((Action1) (bitmap) -&gt; { imageCollectorView.addImage(bitmap) });
+</code></pre>
+<blockquote>
+<p>如果你习惯使用 Retrolambda ，你也可以直接把代码写成上面这种简洁的形式。而如果你看到这里还不知道什么是 Retrolambda ，我不建议你现在就去学习它。原因有两点：</p>
+<ol>
+<li>Lambda 是把双刃剑，它让你的代码简洁的同时，降低了代码的可读性，因此同时学习 RxJava 和 Retrolambda 可能会让你忽略 RxJava 的一些技术细节；</li>
+<li>Retrolambda 是 Java 6/7 对 Lambda 表达式的非官方兼容方案，它的向后兼容性和稳定性是无法保障的，因此对于企业项目，使用 Retrolambda 是有风险的。所以，与很多 RxJava 的推广者不同，我并不推荐在学习 RxJava 的同时一起学习 Retrolambda。事实上，我个人虽然很欣赏 Retrolambda，但我从来不用它。</li>
+</ol>
+</blockquote>
+<p>在Flipboard 的 Android 代码中，有一段逻辑非常复杂，包含了多次内存操作、本地文件操作和网络操作，对象分分合合，线程间相互配合相互等待，一会儿排成人字，一会儿排成一字。如果使用常规的方法来实现，肯定是要写得欲仙欲死，然而在使用 RxJava 的情况下，依然只是一条链式调用就完成了。它很长，但很清晰。</p>
+<p>所以， RxJava 好在哪？就好在简洁，好在那把什么复杂逻辑都能穿成一条线的简洁。</p>
+<h1 id="3-api-介绍和原理简析">3. API 介绍和原理简析</h1>
+<p>这个我就做不到一个词说明了……因为这一节的主要内容就是一步步地说明 RxJava 到底怎样做到了异步，怎样做到了简洁。</p>
+<h2 id="31-概念扩展的观察者模式">3.1 概念：扩展的观察者模式</h2>
+<p>RxJava 的异步实现，是通过一种扩展的观察者模式来实现的。</p>
+<h3 id="观察者模式">观察者模式</h3>
+<p>先简述一下观察者模式，已经熟悉的可以跳过这一段。</p>
+<p>观察者模式面向的需求是：A 对象（观察者）对 B 对象（被观察者）的某种变化高度敏感，需要在 B 变化的一瞬间做出反应。举个例子，新闻里喜闻乐见的警察抓小偷，警察需要在小偷伸手作案的时候实施抓捕。在这个例子里，警察是观察者，小偷是被观察者，警察需要时刻盯着小偷的一举一动，才能保证不会漏过任何瞬间。程序的观察者模式和这种真正的『观察』略有不同，观察者不需要时刻盯着被观察者（例如 A 不需要每过 2ms 就检查一次 B 的状态），而是采用注册(Register)或者称为订阅(Subscribe)的方式，告诉被观察者：我需要你的某某状态，你要在它变化的时候通知我。 Android 开发中一个比较典型的例子是点击监听器 OnClickListener 。对设置 OnClickListener 来说， View 是被观察者， OnClickListener 是观察者，二者通过 setOnClickListener() 方法达成订阅关系。订阅之后用户点击按钮的瞬间，Android Framework 就会将点击事件发送给已经注册的 OnClickListener 。采取这样被动的观察方式，既省去了反复检索状态的资源消耗，也能够得到最高的反馈速度。当然，这也得益于我们可以随意定制自己程序中的观察者和被观察者，而警察叔叔明显无法要求小偷『你在作案的时候务必通知我』。</p>
+<p>OnClickListener 的模式大致如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1714014384682.png" alt="" loading="lazy"><br>
+如图所示，通过 setOnClickListener() 方法，Button 持有 OnClickListener 的引用（这一过程没有在图上画出）；当用户点击时，Button 自动调用 OnClickListener 的 onClick() 方法。另外，如果把这张图中的概念抽象出来（Button -&gt; 被观察者、OnClickListener -&gt; 观察者、setOnClickListener() -&gt; 订阅，onClick() -&gt; 事件），就由专用的观察者模式（例如只用于监听控件点击）转变成了通用的观察者模式。如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1714014409957.png" alt="" loading="lazy"><br>
+而 RxJava 作为一个工具库，使用的就是通用形式的观察者模式。</p>
+<p>RxJava 的观察者模式</p>
+<p>RxJava 有四个基本概念：Observable (可观察者，即被观察者)、 Observer (观察者)、 subscribe (订阅)、事件。Observable 和 Observer 通过 subscribe() 方法实现订阅关系，从而 Observable 可以在需要的时候发出事件来通知 Observer。</p>
+<p>与传统观察者模式不同， RxJava 的事件回调方法除了普通事件 onNext() （相当于 onClick() / onEvent()）之外，还定义了两个特殊的事件：onCompleted() 和 onError()。</p>
+<p>onCompleted(): 事件队列完结。RxJava 不仅把每个事件单独处理，还会把它们看做一个队列。RxJava 规定，当不会再有新的 onNext() 发出时，需要触发 onCompleted() 方法作为标志。</p>
+<p>onError(): 事件队列异常。在事件处理过程中出异常时，onError() 会被触发，同时队列自动终止，不允许再有事件发出。<br>
+在一个正确运行的事件序列中, onCompleted() 和 onError() 有且只有一个，并且是事件序列中的最后一个。需要注意的是，onCompleted() 和 onError() 二者也是互斥的，即在队列中调用了其中一个，就不应该再调用另一个。</p>
+<p>RxJava 的观察者模式大致如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1714014437841.jpg" alt="" loading="lazy"></p>
+<h2 id="32-基本实现">3.2 基本实现</h2>
+<p>基于以上的概念， RxJava 的基本实现主要有三点：</p>
+<h3 id="1-创建-observer">1) 创建 Observer</h3>
+<p>Observer 即观察者，它决定事件触发的时候将有怎样的行为。 RxJava 中的 Observer 接口的实现方式：</p>
+<pre><code class="language-java">Observer&lt;String&gt; observer = new Observer&lt;String&gt;() {
+    @Override
+    public void onNext(String s) {
+        Log.d(tag, &quot;Item: &quot; + s);
+    }
+
+    @Override
+    public void onCompleted() {
+        Log.d(tag, &quot;Completed!&quot;);
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Log.d(tag, &quot;Error!&quot;);
+    }
+};
+</code></pre>
+<p>除了 Observer 接口之外，RxJava 还内置了一个实现了 Observer 的抽象类：Subscriber。 Subscriber 对 Observer 接口进行了一些扩展，但他们的基本使用方式是完全一样的：</p>
+<pre><code class="language-java">Subscriber&lt;String&gt; subscriber = new Subscriber&lt;String&gt;() {
+    @Override
+    public void onNext(String s) {
+        Log.d(tag, &quot;Item: &quot; + s);
+    }
+
+    @Override
+    public void onCompleted() {
+        Log.d(tag, &quot;Completed!&quot;);
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Log.d(tag, &quot;Error!&quot;);
+    }
+};
+</code></pre>
+<p>不仅基本使用方式一样，实质上，在 RxJava 的 subscribe 过程中，Observer 也总是会先被转换成一个 Subscriber 再使用。所以如果你只想使用基本功能，选择 Observer 和 Subscriber 是完全一样的。它们的区别对于使用者来说主要有两点：</p>
+<p>onStart(): 这是 Subscriber 增加的方法。它会在 subscribe 刚开始，而事件还未发送之前被调用，可以用于做一些准备工作，例如数据的清零或重置。这是一个可选方法，默认情况下它的实现为空。需要注意的是，如果对准备工作的线程有要求（例如弹出一个显示进度的对话框，这必须在主线程执行）， onStart() 就不适用了，因为它总是在 subscribe 所发生的线程被调用，而不能指定线程。要在指定的线程来做准备工作，可以使用 doOnSubscribe() 方法，具体可以在后面的文中看到。</p>
+<p>unsubscribe(): 这是 Subscriber 所实现的另一个接口 Subscription 的方法，用于取消订阅。在这个方法被调用后，Subscriber 将不再接收事件。一般在这个方法调用前，可以使用 isUnsubscribed() 先判断一下状态。 unsubscribe() 这个方法很重要，因为在 subscribe() 之后， Observable 会持有 Subscriber 的引用，这个引用如果不能及时被释放，将有内存泄露的风险。所以最好保持一个原则：要在不再使用的时候尽快在合适的地方（例如 onPause() onStop() 等方法中）调用 unsubscribe() 来解除引用关系，以避免内存泄露的发生。</p>
+<h3 id="2-创建-observable">2) 创建 Observable</h3>
+<p>Observable 即被观察者，它决定什么时候触发事件以及触发怎样的事件。 RxJava 使用 create() 方法来创建一个 Observable ，并为它定义事件触发规则：</p>
+<pre><code class="language-java">Observable observable = Observable.create(new Observable.OnSubscribe&lt;String&gt;() {
+    @Override
+    public void call(Subscriber&lt;? super String&gt; subscriber) {
+        subscriber.onNext(&quot;Hello&quot;);
+        subscriber.onNext(&quot;Hi&quot;);
+        subscriber.onNext(&quot;Aloha&quot;);
+        subscriber.onCompleted();
+    }
+});
+</code></pre>
+<p>可以看到，这里传入了一个 OnSubscribe 对象作为参数。OnSubscribe 会被存储在返回的 Observable 对象中，它的作用相当于一个计划表，当 Observable 被订阅的时候，OnSubscribe 的 call() 方法会自动被调用，事件序列就会依照设定依次触发（对于上面的代码，就是观察者 Subscriber 将会被调用三次 onNext() 和一次 onCompleted()）。这样，由被观察者调用了观察者的回调方法，就实现了由被观察者向观察者的事件传递，即观察者模式。</p>
+<blockquote>
+<p>这个例子很简单：事件的内容是字符串，而不是一些复杂的对象；事件的内容是已经定好了的，而不像有的观察者模式一样是待确定的（例如网络请求的结果在请求返回之前是未知的）；所有事件在一瞬间被全部发送出去，而不是夹杂一些确定或不确定的时间间隔或者经过某种触发器来触发的。总之，这个例子看起来毫无实用价值。但这是为了便于说明，实质上只要你想，各种各样的事件发送规则你都可以自己来写。至于具体怎么做，后面都会讲到，但现在不行。只有把基础原理先说明白了，上层的运用才能更容易说清楚。</p>
+</blockquote>
+<p>create() 方法是 RxJava 最基本的创造事件序列的方法。基于这个方法， RxJava 还提供了一些方法用来快捷创建事件队列，例如：</p>
+<ul>
+<li>just(T...): 将传入的参数依次发送出来。</li>
+</ul>
+<pre><code class="language-java">Observable observable = Observable.just(&quot;Hello&quot;, &quot;Hi&quot;, &quot;Aloha&quot;);
+// 将会依次调用：
+// onNext(&quot;Hello&quot;);
+// onNext(&quot;Hi&quot;);
+// onNext(&quot;Aloha&quot;);
+// onCompleted();
+</code></pre>
+<ul>
+<li>from(T[]) / from(Iterable&lt;? extends T&gt;) : 将传入的数组或 Iterable 拆分成具体对象后，依次发送出来。</li>
+</ul>
+<pre><code class="language-java">String[] words = {&quot;Hello&quot;, &quot;Hi&quot;, &quot;Aloha&quot;};
+Observable observable = Observable.from(words);
+// 将会依次调用：
+// onNext(&quot;Hello&quot;);
+// onNext(&quot;Hi&quot;);
+// onNext(&quot;Aloha&quot;);
+// onCompleted();
+</code></pre>
+<p>上面 just(T...) 的例子和 from(T[]) 的例子，都和之前的 create(OnSubscribe) 的例子是等价的。</p>
+<h3 id="3-subscribe-订阅">3) Subscribe (订阅)</h3>
+<p>创建了 Observable 和 Observer 之后，再用 subscribe() 方法将它们联结起来，整条链子就可以工作了。代码形式很简单：</p>
+<pre><code class="language-java">observable.subscribe(observer);
+// 或者：
+observable.subscribe(subscriber);
+</code></pre>
+<blockquote>
+<p>有人可能会注意到， subscribe() 这个方法有点怪：它看起来是『observalbe 订阅了 observer / subscriber』而不是『observer / subscriber 订阅了 observalbe』，这看起来就像『杂志订阅了读者』一样颠倒了对象关系。这让人读起来有点别扭，不过如果把 API 设计成 observer.subscribe(observable) / subscriber.subscribe(observable) ，虽然更加符合思维逻辑，但对流式 API 的设计就造成影响了，比较起来明显是得不偿失的。</p>
+</blockquote>
+<pre><code class="language-java">Observable.subscribe(Subscriber) 的内部实现是这样的（仅核心代码）：
+
+// 注意：这不是 subscribe() 的源码，而是将源码中与性能、兼容性、扩展性有关的代码剔除后的核心代码。
+// 如果需要看源码，可以去 RxJava 的 GitHub 仓库下载。
+public Subscription subscribe(Subscriber subscriber) {
+    subscriber.onStart();
+    onSubscribe.call(subscriber);
+    return subscriber;
+}
+</code></pre>
+<p>可以看到，subscriber() 做了3件事：</p>
+<ol>
+<li>调用 Subscriber.onStart() 。这个方法在前面已经介绍过，是一个可选的准备方法。</li>
+<li>调用 Observable 中的 OnSubscribe.call(Subscriber) 。在这里，事件发送的逻辑开始运行。从这也可以看出，在 RxJava 中， Observable 并不是在创建的时候就立即开始发送事件，而是在它被订阅的时候，即当 subscribe() 方法执行的时候。</li>
+<li>将传入的 Subscriber 作为 Subscription 返回。这是为了方便 unsubscribe().</li>
+</ol>
+<p>整个过程中对象间的关系如下图：</p>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1714014514262.png" alt="" loading="lazy"></figure>
+<p>或者可以看动图：</p>
+<figure data-type="image" tabindex="2"><img src="https://PaIn22152.github.io/post-images/1714014533722.gif" alt="" loading="lazy"></figure>
+<p>除了 subscribe(Observer) 和 subscribe(Subscriber) ，subscribe() 还支持不完整定义的回调，RxJava 会自动根据定义创建出 Subscriber 。形式如下：</p>
+<pre><code class="language-java">Action1&lt;String&gt; onNextAction = new Action1&lt;String&gt;() {
+    // onNext()
+    @Override
+    public void call(String s) {
+        Log.d(tag, s);
+    }
+};
+Action1&lt;Throwable&gt; onErrorAction = new Action1&lt;Throwable&gt;() {
+    // onError()
+    @Override
+    public void call(Throwable throwable) {
+        // Error handling
+    }
+};
+Action0 onCompletedAction = new Action0() {
+    // onCompleted()
+    @Override
+    public void call() {
+        Log.d(tag, &quot;completed&quot;);
+    }
+};
+
+// 自动创建 Subscriber ，并使用 onNextAction 来定义 onNext()
+observable.subscribe(onNextAction);
+// 自动创建 Subscriber ，并使用 onNextAction 和 onErrorAction 来定义 onNext() 和 onError()
+observable.subscribe(onNextAction, onErrorAction);
+// 自动创建 Subscriber ，并使用 onNextAction、 onErrorAction 和 onCompletedAction 来定义 onNext()、 onError() 和 onCompleted()
+observable.subscribe(onNextAction, onErrorAction, onCompletedAction);
+</code></pre>
+<p>简单解释一下这段代码中出现的 Action1 和 Action0。 Action0 是 RxJava 的一个接口，它只有一个方法 call()，这个方法是无参无返回值的；由于 onCompleted() 方法也是无参无返回值的，因此 Action0 可以被当成一个包装对象，将 onCompleted() 的内容打包起来将自己作为一个参数传入 subscribe() 以实现不完整定义的回调。这样其实也可以看做将 onCompleted() 方法作为参数传进了 subscribe()，相当于其他某些语言中的『闭包』。 Action1 也是一个接口，它同样只有一个方法 call(T param)，这个方法也无返回值，但有一个参数；与 Action0 同理，由于 onNext(T obj) 和 onError(Throwable error) 也是单参数无返回值的，因此 Action1 可以将 onNext(obj) 和 onError(error) 打包起来传入 subscribe() 以实现不完整定义的回调。事实上，虽然 Action0 和 Action1 在 API 中使用最广泛，但 RxJava 是提供了多个 ActionX 形式的接口 (例如 Action2, Action3) 的，它们可以被用以包装不同的无返回值的方法。</p>
+<blockquote>
+<p>注：正如前面所提到的，Observer 和 Subscriber 具有相同的角色，而且 Observer 在 subscribe() 过程中最终会被转换成 Subscriber 对象，因此，从这里开始，后面的描述我将用 Subscriber 来代替 Observer ，这样更加严谨。</p>
+</blockquote>
+<h3 id="4-场景示例">4) 场景示例</h3>
+<p>下面举两个例子：</p>
+<blockquote>
+<p>为了把原理用更清晰的方式表述出来，本文中挑选的都是功能尽可能简单的例子，以至于有些示例代码看起来会有『画蛇添足』『明明不用 RxJava 可以更简便地解决问题』的感觉。当你看到这种情况，不要觉得是因为 RxJava 太啰嗦，而是因为在过早的时候举出真实场景的例子并不利于原理的解析，因此我刻意挑选了简单的情景。</p>
+</blockquote>
+<p>a. 打印字符串数组</p>
+<p>将字符串数组 names 中的所有字符串依次打印出来：</p>
+<pre><code class="language-java">String[] names = ...;
+Observable.from(names)
+    .subscribe(new Action1&lt;String&gt;() {
+        @Override
+        public void call(String name) {
+            Log.d(tag, name);
+        }
+    });
+</code></pre>
+<p>b. 由 id 取得图片并显示</p>
+<p>由指定的一个 drawable 文件 id drawableRes 取得图片，并显示在 ImageView 中，并在出现异常的时候打印 Toast 报错：</p>
+<pre><code class="language-java">int drawableRes = ...;
+ImageView imageView = ...;
+Observable.create(new OnSubscribe&lt;Drawable&gt;() {
+    @Override
+    public void call(Subscriber&lt;? super Drawable&gt; subscriber) {
+        Drawable drawable = getTheme().getDrawable(drawableRes));
+        subscriber.onNext(drawable);
+        subscriber.onCompleted();
+    }
+}).subscribe(new Observer&lt;Drawable&gt;() {
+    @Override
+    public void onNext(Drawable drawable) {
+        imageView.setImageDrawable(drawable);
+    }
+
+    @Override
+    public void onCompleted() {
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Toast.makeText(activity, &quot;Error!&quot;, Toast.LENGTH_SHORT).show();
+    }
+});
+</code></pre>
+<p>正如上面两个例子这样，创建出 Observable 和 Subscriber ，再用 subscribe() 将它们串起来，一次 RxJava 的基本使用就完成了。非常简单。</p>
+<p>然而，</p>
+<figure data-type="image" tabindex="3"><img src="https://PaIn22152.github.io/post-images/1714014572535.png" alt="" loading="lazy"></figure>
+<p>在 RxJava 的默认规则中，事件的发出和消费都是在同一个线程的。也就是说，如果只用上面的方法，实现出来的只是一个同步的观察者模式。观察者模式本身的目的就是『后台处理，前台回调』的异步机制，因此异步对于 RxJava 是至关重要的。而要实现异步，则需要用到 RxJava 的另一个概念： Scheduler 。</p>
+<h2 id="33-线程控制-scheduler-一">3.3 线程控制 —— Scheduler (一)</h2>
+<p>在不指定线程的情况下， RxJava 遵循的是线程不变的原则，即：在哪个线程调用 subscribe()，就在哪个线程生产事件；在哪个线程生产事件，就在哪个线程消费事件。如果需要切换线程，就需要用到 Scheduler （调度器）。</p>
+<h3 id="1-scheduler-的-api-一">1) Scheduler 的 API (一)</h3>
+<p>在RxJava 中，Scheduler ——调度器，相当于线程控制器，RxJava 通过它来指定每一段代码应该运行在什么样的线程。RxJava 已经内置了几个 Scheduler ，它们已经适合大多数的使用场景：</p>
+<ul>
+<li>Schedulers.immediate(): 直接在当前线程运行，相当于不指定线程。这是默认的 Scheduler。</li>
+<li>Schedulers.newThread(): 总是启用新线程，并在新线程执行操作。</li>
+<li>Schedulers.io(): I/O 操作（读写文件、读写数据库、网络信息交互等）所使用的 Scheduler。行为模式和 newThread() 差不多，区别在于 io() 的内部实现是是用一个无数量上限的线程池，可以重用空闲的线程，因此多数情况下 io() 比 newThread() 更有效率。不要把计算工作放在 io() 中，可以避免创建不必要的线程。</li>
+<li>Schedulers.computation(): 计算所使用的 Scheduler。这个计算指的是 CPU 密集型计算，即不会被 I/O 等操作限制性能的操作，例如图形的计算。这个 Scheduler 使用的固定的线程池，大小为 CPU 核数。不要把 I/O 操作放在 computation() 中，否则 I/O 操作的等待时间会浪费 CPU。</li>
+<li>另外， Android 还有一个专用的 AndroidSchedulers.mainThread()，它指定的操作将在 Android 主线程运行。</li>
+</ul>
+<p>有了这几个 Scheduler ，就可以使用 subscribeOn() 和 observeOn() 两个方法来对线程进行控制了。subscribeOn(): 指定 subscribe() 所发生的线程，即 Observable.OnSubscribe 被激活时所处的线程。或者叫做事件产生的线程。observeOn(): 指定 Subscriber 所运行在的线程。或者叫做事件消费的线程。</p>
+<p>文字叙述总归难理解，上代码：</p>
+<pre><code class="language-java">Observable.just(1, 2, 3, 4)
+    .subscribeOn(Schedulers.io()) // 指定 subscribe() 发生在 IO 线程
+    .observeOn(AndroidSchedulers.mainThread()) // 指定 Subscriber 的回调发生在主线程
+    .subscribe(new Action1&lt;Integer&gt;() {
+        @Override
+        public void call(Integer number) {
+            Log.d(tag, &quot;number:&quot; + number);
+        }
+    });
+</code></pre>
+<p>上面这段代码中，由于 subscribeOn(Schedulers.io()) 的指定，被创建的事件的内容 1、2、3、4 将会在 IO 线程发出；而由于 observeOn(AndroidScheculers.mainThread()) 的指定，因此 subscriber 数字的打印将发生在主线程 。事实上，这种在 subscribe() 之前写上两句 subscribeOn(Scheduler.io()) 和 observeOn(AndroidSchedulers.mainThread()) 的使用方式非常常见，它适用于多数的 『后台线程取数据，主线程显示』的程序策略。</p>
+<p>而前面提到的由图片 id 取得图片并显示的例子，如果也加上这两句：</p>
+<pre><code class="language-java">int drawableRes = ...;
+ImageView imageView = ...;
+Observable.create(new OnSubscribe&lt;Drawable&gt;() {
+    @Override
+    public void call(Subscriber&lt;? super Drawable&gt; subscriber) {
+        Drawable drawable = getTheme().getDrawable(drawableRes));
+        subscriber.onNext(drawable);
+        subscriber.onCompleted();
+    }
+})
+.subscribeOn(Schedulers.io()) // 指定 subscribe() 发生在 IO 线程
+.observeOn(AndroidSchedulers.mainThread()) // 指定 Subscriber 的回调发生在主线程
+.subscribe(new Observer&lt;Drawable&gt;() {
+    @Override
+    public void onNext(Drawable drawable) {
+        imageView.setImageDrawable(drawable);
+    }
+
+    @Override
+    public void onCompleted() {
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Toast.makeText(activity, &quot;Error!&quot;, Toast.LENGTH_SHORT).show();
+    }
+});
+</code></pre>
+<p>那么，加载图片将会发生在 IO 线程，而设置图片则被设定在了主线程。这就意味着，即使加载图片耗费了几十甚至几百毫秒的时间，也不会造成丝毫界面的卡顿。</p>
+<h3 id="2-scheduler-的原理-一">2) Scheduler 的原理 (一)</h3>
+<p>RxJava 的 Scheduler API 很方便，也很神奇（加了一句话就把线程切换了，怎么做到的？而且 subscribe() 不是最外层直接调用的方法吗，它竟然也能被指定线程？）。然而 Scheduler 的原理需要放在后面讲，因为它的原理是以下一节《变换》的原理作为基础的。</p>
+<p>好吧这一节其实我屁也没说，只是为了让你安心，让你知道我不是忘了讲原理，而是把它放在了更合适的地方。</p>
+<h2 id="34-变换">3.4 变换</h2>
+<p>终于要到牛逼的地方了，不管你激动不激动，反正我是激动了。</p>
+<p>RxJava 提供了对事件序列进行变换的支持，这是它的核心功能之一，也是大多数人说『RxJava 真是太好用了』的最大原因。所谓变换，就是将事件序列中的对象或整个序列进行加工处理，转换成不同的事件或事件序列。概念说着总是模糊难懂的，来看 API。</p>
+<h3 id="1-api">1) API</h3>
+<p>首先看一个 map() 的例子：</p>
+<pre><code class="language-java">Observable.just(&quot;images/logo.png&quot;) // 输入类型 String
+    .map(new Func1&lt;String, Bitmap&gt;() {
+        @Override
+        public Bitmap call(String filePath) { // 参数类型 String
+            return getBitmapFromPath(filePath); // 返回类型 Bitmap
+        }
+    })
+    .subscribe(new Action1&lt;Bitmap&gt;() {
+        @Override
+        public void call(Bitmap bitmap) { // 参数类型 Bitmap
+            showBitmap(bitmap);
+        }
+    });
+</code></pre>
+<p>这里出现了一个叫做 Func1 的类。它和 Action1 非常相似，也是 RxJava 的一个接口，用于包装含有一个参数的方法。 Func1 和 Action 的区别在于， Func1 包装的是有返回值的方法。另外，和 ActionX 一样， FuncX 也有多个，用于不同参数个数的方法。FuncX 和 ActionX 的区别在 FuncX 包装的是有返回值的方法。</p>
+<p>可以看到，map() 方法将参数中的 String 对象转换成一个 Bitmap 对象后返回，而在经过 map() 方法后，事件的参数类型也由 String 转为了 Bitmap。这种直接变换对象并返回的，是最常见的也最容易理解的变换。不过 RxJava 的变换远不止这样，它不仅可以针对事件对象，还可以针对整个事件队列，这使得 RxJava 变得非常灵活。我列举几个常用的变换：</p>
+<ul>
+<li>map(): 事件对象的直接变换，具体功能上面已经介绍过。它是 RxJava 最常用的变换。 map() 的示意图：</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://PaIn22152.github.io/post-images/1714014619004.png" alt="" loading="lazy"></figure>
+<ul>
+<li>flatMap(): 这是一个很有用但非常难理解的变换，因此我决定花多些篇幅来介绍它。 首先假设这么一种需求：假设有一个数据结构『学生』，现在需要打印出一组学生的名字。实现方式很简单：</li>
+</ul>
+<pre><code class="language-java">Student[] students = ...;
+Subscriber&lt;String&gt; subscriber = new Subscriber&lt;String&gt;() {
+    @Override
+    public void onNext(String name) {
+        Log.d(tag, name);
+    }
+    ...
+};
+Observable.from(students)
+    .map(new Func1&lt;Student, String&gt;() {
+        @Override
+        public String call(Student student) {
+            return student.getName();
+        }
+    })
+    .subscribe(subscriber);
+</code></pre>
+<p>很简单。那么再假设：如果要打印出每个学生所需要修的所有课程的名称呢？（需求的区别在于，每个学生只有一个名字，但却有多个课程。）首先可以这样实现：</p>
+<pre><code class="language-java">Student[] students = ...;
+Subscriber&lt;Student&gt; subscriber = new Subscriber&lt;Student&gt;() {
+    @Override
+    public void onNext(Student student) {
+        List&lt;Course&gt; courses = student.getCourses();
+        for (int i = 0; i &lt; courses.size(); i++) {
+            Course course = courses.get(i);
+            Log.d(tag, course.getName());
+        }
+    }
+    ...
+};
+
+Observable.from(students).subscribe(subscriber);
+</code></pre>
+<p>依然很简单。那么如果我不想在 Subscriber 中使用 for 循环，而是希望 Subscriber 中直接传入单个的 Course 对象呢（这对于代码复用很重要）？用 map() 显然是不行的，因为 map() 是一对一的转化，而我现在的要求是一对多的转化。那怎么才能把一个 Student 转化成多个 Course 呢？</p>
+<p>这个时候，就需要用 flatMap() 了：</p>
+<pre><code class="language-java">Student[] students = ...;
+Subscriber&lt;Course&gt; subscriber = new Subscriber&lt;Course&gt;() {
+    @Override
+    public void onNext(Course course) {
+        Log.d(tag, course.getName());
+    }
+    ...
+};
+Observable.from(students)
+    .flatMap(new Func1&lt;Student, Observable&lt;Course&gt;&gt;() {
+        @Override
+        public Observable&lt;Course&gt; call(Student student) {
+            return Observable.from(student.getCourses());
+        }
+    })
+    .subscribe(subscriber);
+</code></pre>
+<p>从上面的代码可以看出， flatMap() 和 map() 有一个相同点：它也是把传入的参数转化之后返回另一个对象。但需要注意，和 map() 不同的是， flatMap() 中返回的是个 Observable 对象，并且这个 Observable 对象并不是被直接发送到了 Subscriber 的回调方法中。 flatMap() 的原理是这样的：</p>
+<ol>
+<li>使用传入的事件对象创建一个 Observable 对象；</li>
+<li>并不发送这个 Observable, 而是将它激活，于是它开始发送事件；</li>
+<li>每一个创建出来的 Observable 发送的事件，都被汇入同一个 Observable ，而这个 Observable 负责将这些事件统一交给 Subscriber 的回调方法。这三个步骤，把事件拆成了两级，通过一组新创建的 Observable 将初始的对象『铺平』之后通过统一路径分发了下去。而这个『铺平』就是 flatMap() 所谓的 flat。</li>
+</ol>
+<p>flatMap() 示意图：</p>
+<figure data-type="image" tabindex="5"><img src="https://PaIn22152.github.io/post-images/1714014638190.png" alt="" loading="lazy"></figure>
+<p>扩展：由于可以在嵌套的 Observable 中添加异步代码， flatMap() 也常用于嵌套的异步操作，例如嵌套的网络请求。示例代码（Retrofit + RxJava）：</p>
+<pre><code class="language-java">networkClient.token() // 返回 Observable&lt;String&gt;，在订阅时请求 token，并在响应后发送 token
+    .flatMap(new Func1&lt;String, Observable&lt;Messages&gt;&gt;() {
+        @Override
+        public Observable&lt;Messages&gt; call(String token) {
+            // 返回 Observable&lt;Messages&gt;，在订阅时请求消息列表，并在响应后发送请求到的消息列表
+            return networkClient.messages();
+        }
+    })
+    .subscribe(new Action1&lt;Messages&gt;() {
+        @Override
+        public void call(Messages messages) {
+            // 处理显示消息列表
+            showMessages(messages);
+        }
+    });
+</code></pre>
+<p>传统的嵌套请求需要使用嵌套的 Callback 来实现。而通过 flatMap() ，可以把嵌套的请求写在一条链中，从而保持程序逻辑的清晰。</p>
+<ul>
+<li>throttleFirst(): 在每次事件触发后的一定时间间隔内丢弃新的事件。常用作去抖动过滤，例如按钮的点击监听器： RxView.clickEvents(button) // RxBinding 代码，后面的文章有解释 .throttleFirst(500, TimeUnit.MILLISECONDS) // 设置防抖间隔为 500ms .subscribe(subscriber); 妈妈再也不怕我的用户手抖点开两个重复的界面啦。</li>
+</ul>
+<p>此外， RxJava 还提供很多便捷的方法来实现事件序列的变换，这里就不一一举例了。</p>
+<h3 id="2-变换的原理lift">2) 变换的原理：lift()</h3>
+<p>这些变换虽然功能各有不同，但实质上都是针对事件序列的处理和再发送。而在 RxJava 的内部，它们是基于同一个基础的变换方法： lift(Operator)。首先看一下 lift() 的内部实现（仅核心代码）：</p>
+<pre><code class="language-java">// 注意：这不是 lift() 的源码，而是将源码中与性能、兼容性、扩展性有关的代码剔除后的核心代码。
+// 如果需要看源码，可以去 RxJava 的 GitHub 仓库下载。
+public &lt;R&gt; Observable&lt;R&gt; lift(Operator&lt;? extends R, ? super T&gt; operator) {
+    return Observable.create(new OnSubscribe&lt;R&gt;() {
+        @Override
+        public void call(Subscriber subscriber) {
+            Subscriber newSubscriber = operator.call(subscriber);
+            newSubscriber.onStart();
+            onSubscribe.call(newSubscriber);
+        }
+    });
+}
+</code></pre>
+<p>这段代码很有意思：它生成了一个新的 Observable 并返回，而且创建新 Observable 所用的参数 OnSubscribe 的回调方法 call() 中的实现竟然看起来和前面讲过的 Observable.subscribe() 一样！然而它们并不一样哟，不一样的地方关键就在于第二行 onSubscribe.call(subscriber) 中的 onSubscribe 所指代的对象不同（高能预警：接下来的几句话可能会导致身体的严重不适）</p>
+<ul>
+<li>subscribe() 中这句话的 onSubscribe 指的是 Observable 中的 onSubscribe 对象，这个没有问题，但是 lift() 之后的情况就复杂了点。</li>
+</ul>
+<p>当含有 lift() 时：</p>
+<ol>
+<li>
+<p>lift() 创建了一个 Observable 后，加上之前的原始 Observable，已经有两个 Observable 了；</p>
+</li>
+<li>
+<p>而同样地，新 Observable 里的新 OnSubscribe 加上之前的原始 Observable 中的原始 OnSubscribe，也就有了两个 OnSubscribe；</p>
+</li>
+<li>
+<p>当用户调用经过 lift() 后的 Observable 的 subscribe() 的时候，使用的是 lift() 所返回的新的 Observable ，于是它所触发的 onSubscribe.call(subscriber)，也是用的新 Observable 中的新 OnSubscribe，即在 lift() 中生成的那个 OnSubscribe；</p>
+</li>
+<li>
+<p>而这个新 OnSubscribe 的 call() 方法中的 onSubscribe ，就是指的原始 Observable 中的原始 OnSubscribe ，在这个 call() 方法里，新 OnSubscribe 利用 operator.call(subscriber) 生成了一个新的 Subscriber（Operator 就是在这里，通过自己的 call() 方法将新 Subscriber 和原始 Subscriber 进行关联，并插入自己的『变换』代码以实现变换），然后利用这个新 Subscriber 向原始 Observable 进行订阅。</p>
+<p>这样就实现了 lift() 过程，有点像一种代理机制，通过事件拦截和处理实现事件序列的变换。</p>
+</li>
+</ol>
+<p>精简掉细节的话，也可以这么说：在 Observable 执行了 lift(Operator) 方法之后，会返回一个新的 Observable，这个新的 Observable 会像一个代理一样，负责接收原始的 Observable 发出的事件，并在处理后发送给 Subscriber。</p>
+<p>如果你更喜欢具象思维，可以看图：</p>
+<figure data-type="image" tabindex="6"><img src="https://PaIn22152.github.io/post-images/1714014682850.png" alt="" loading="lazy"></figure>
+<p>或者可以看动图：</p>
+<figure data-type="image" tabindex="7"><img src="https://PaIn22152.github.io/post-images/1714014689404.gif" alt="" loading="lazy"></figure>
+<p>两次和多次的 lift() 同理，如下图：</p>
+<figure data-type="image" tabindex="8"><img src="https://PaIn22152.github.io/post-images/1714014695951.png" alt="" loading="lazy"></figure>
+<p>举一个具体的 Operator 的实现。下面这是一个将事件中的 Integer 对象转换成 String 的例子，仅供参考：</p>
+<pre><code class="language-java">observable.lift(new Observable.Operator&lt;String, Integer&gt;() {
+    @Override
+    public Subscriber&lt;? super Integer&gt; call(final Subscriber&lt;? super String&gt; subscriber) {
+        // 将事件序列中的 Integer 对象转换为 String 对象
+        return new Subscriber&lt;Integer&gt;() {
+            @Override
+            public void onNext(Integer integer) {
+                subscriber.onNext(&quot;&quot; + integer);
+            }
+
+            @Override
+            public void onCompleted() {
+                subscriber.onCompleted();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                subscriber.onError(e);
+            }
+        };
+    }
+});
+</code></pre>
+<blockquote>
+<p>讲述 lift() 的原理只是为了让你更好地了解 RxJava ，从而可以更好地使用它。然而不管你是否理解了 lift() 的原理，RxJava 都不建议开发者自定义 Operator 来直接使用 lift()，而是建议尽量使用已有的 lift() 包装方法（如 map() flatMap() 等）进行组合来实现需求，因为直接使用 lift() 非常容易发生一些难以发现的错误。</p>
+</blockquote>
+<h3 id="3-compose-对-observable-整体的变换">3) compose: 对 Observable 整体的变换</h3>
+<p>除了 lift() 之外， Observable 还有一个变换方法叫做 compose(Transformer)。它和 lift() 的区别在于， lift() 是针对事件项和事件序列的，而 compose() 是针对 Observable 自身进行变换。举个例子，假设在程序中有多个 Observable ，并且他们都需要应用一组相同的 lift() 变换。你可以这么写：</p>
+<pre><code class="language-java">observable1
+    .lift1()
+    .lift2()
+    .lift3()
+    .lift4()
+    .subscribe(subscriber1);
+observable2
+    .lift1()
+    .lift2()
+    .lift3()
+    .lift4()
+    .subscribe(subscriber2);
+observable3
+    .lift1()
+    .lift2()
+    .lift3()
+    .lift4()
+    .subscribe(subscriber3);
+observable4
+    .lift1()
+    .lift2()
+    .lift3()
+    .lift4()
+    .subscribe(subscriber1);
+</code></pre>
+<p>你觉得这样太不软件工程了，于是你改成了这样：</p>
+<pre><code class="language-java">private Observable liftAll(Observable observable) {
+    return observable
+        .lift1()
+        .lift2()
+        .lift3()
+        .lift4();
+}
+...
+liftAll(observable1).subscribe(subscriber1);
+liftAll(observable2).subscribe(subscriber2);
+liftAll(observable3).subscribe(subscriber3);
+liftAll(observable4).subscribe(subscriber4);
+</code></pre>
+<p>可读性、可维护性都提高了。可是 Observable 被一个方法包起来，这种方式对于 Observale 的灵活性似乎还是增添了那么点限制。怎么办？这个时候，就应该用 compose() 来解决了：</p>
+<pre><code class="language-java">public class LiftAllTransformer implements Observable.Transformer&lt;Integer, String&gt; {
+    @Override
+    public Observable&lt;String&gt; call(Observable&lt;Integer&gt; observable) {
+        return observable
+            .lift1()
+            .lift2()
+            .lift3()
+            .lift4();
+    }
+}
+...
+Transformer liftAll = new LiftAllTransformer();
+observable1.compose(liftAll).subscribe(subscriber1);
+observable2.compose(liftAll).subscribe(subscriber2);
+observable3.compose(liftAll).subscribe(subscriber3);
+observable4.compose(liftAll).subscribe(subscriber4);
+</code></pre>
+<p>像上面这样，使用 compose() 方法，Observable 可以利用传入的 Transformer 对象的 call 方法直接对自身进行处理，也就不必被包在方法的里面了。</p>
+<p>compose() 的原理比较简单，不附图喽。</p>
+<h2 id="35-线程控制scheduler-二">3.5 线程控制：Scheduler (二)</h2>
+<p>除了灵活的变换，RxJava 另一个牛逼的地方，就是线程的自由控制。</p>
+<h3 id="1-scheduler-的-api-二">1) Scheduler 的 API (二)</h3>
+<p>前面讲到了，可以利用 subscribeOn() 结合 observeOn() 来实现线程控制，让事件的产生和消费发生在不同的线程。可是在了解了 map() flatMap() 等变换方法后，有些好事的（其实就是当初刚接触 RxJava 时的我）就问了：能不能多切换几次线程？</p>
+<p>答案是：能。因为 observeOn() 指定的是 Subscriber 的线程，而这个 Subscriber 并不是（严格说应该为『不一定是』，但这里不妨理解为『不是』）subscribe() 参数中的 Subscriber ，而是 observeOn() 执行时的当前 Observable 所对应的 Subscriber ，即它的直接下级 Subscriber 。换句话说，observeOn() 指定的是它之后的操作所在的线程。因此如果有多次切换线程的需求，只要在每个想要切换线程的位置调用一次 observeOn() 即可。上代码：</p>
+<pre><code class="language-java">Observable.just(1, 2, 3, 4) // IO 线程，由 subscribeOn() 指定
+    .subscribeOn(Schedulers.io())
+    .observeOn(Schedulers.newThread())
+    .map(mapOperator) // 新线程，由 observeOn() 指定
+    .observeOn(Schedulers.io())
+    .map(mapOperator2) // IO 线程，由 observeOn() 指定
+    .observeOn(AndroidSchedulers.mainThread)
+    .subscribe(subscriber);  // Android 主线程，由 observeOn() 指定
+</code></pre>
+<p>如上，通过 observeOn() 的多次调用，程序实现了线程的多次切换。</p>
+<p>不过，不同于 observeOn() ， subscribeOn() 的位置放在哪里都可以，但它是只能调用一次的。</p>
+<p>又有好事的（其实还是当初的我）问了：如果我非要调用多次 subscribeOn() 呢？会有什么效果？</p>
+<p>这个问题先放着，我们还是从 RxJava 线程控制的原理说起吧。</p>
+<h3 id="2-scheduler-的原理二">2) Scheduler 的原理（二）</h3>
+<p>其实， subscribeOn() 和 observeOn() 的内部实现，也是用的 lift()。具体看图（不同颜色的箭头表示不同的线程）：</p>
+<p>subscribeOn() 原理图：</p>
+<figure data-type="image" tabindex="9"><img src="https://PaIn22152.github.io/post-images/1714014731726.png" alt="" loading="lazy"></figure>
+<p>observeOn() 原理图：</p>
+<figure data-type="image" tabindex="10"><img src="https://PaIn22152.github.io/post-images/1714014738222.png" alt="" loading="lazy"></figure>
+<p>从图中可以看出，subscribeOn() 和 observeOn() 都做了线程切换的工作（图中的 &quot;schedule...&quot; 部位）。不同的是， subscribeOn() 的线程切换发生在 OnSubscribe 中，即在它通知上一级 OnSubscribe 时，这时事件还没有开始发送，因此 subscribeOn() 的线程控制可以从事件发出的开端就造成影响；而 observeOn() 的线程切换则发生在它内建的 Subscriber 中，即发生在它即将给下一级 Subscriber 发送事件时，因此 observeOn() 控制的是它后面的线程。</p>
+<p>最后，我用一张图来解释当多个 subscribeOn() 和 observeOn() 混合使用时，线程调度是怎么发生的（由于图中对象较多，相对于上面的图对结构做了一些简化调整）：</p>
+<figure data-type="image" tabindex="11"><img src="https://PaIn22152.github.io/post-images/1714014754850.png" alt="" loading="lazy"></figure>
+<p>图中共有 5 处含有对事件的操作。由图中可以看出，①和②两处受第一个 subscribeOn() 影响，运行在红色线程；③和④处受第一个 observeOn() 的影响，运行在绿色线程；⑤处受第二个 onserveOn() 影响，运行在紫色线程；而第二个 subscribeOn() ，由于在通知过程中线程就被第一个 subscribeOn() 截断，因此对整个流程并没有任何影响。这里也就回答了前面的问题：当使用了多个 subscribeOn() 的时候，只有第一个 subscribeOn() 起作用。</p>
+<h3 id="3-延伸doonsubscribe">3) 延伸：doOnSubscribe()</h3>
+<p>然而，虽然超过一个的 subscribeOn() 对事件处理的流程没有影响，但在流程之前却是可以利用的。</p>
+<p>在前面讲 Subscriber 的时候，提到过 Subscriber 的 onStart() 可以用作流程开始前的初始化。然而 onStart() 由于在 subscribe() 发生时就被调用了，因此不能指定线程，而是只能执行在 subscribe() 被调用时的线程。这就导致如果 onStart() 中含有对线程有要求的代码（例如在界面上显示一个 ProgressBar，这必须在主线程执行），将会有线程非法的风险，因为有时你无法预测 subscribe() 将会在什么线程执行。</p>
+<p>而与 Subscriber.onStart() 相对应的，有一个方法 Observable.doOnSubscribe() 。它和 Subscriber.onStart() 同样是在 subscribe() 调用后而且在事件发送前执行，但区别在于它可以指定线程。默认情况下， doOnSubscribe() 执行在 subscribe() 发生的线程；而如果在 doOnSubscribe() 之后有 subscribeOn() 的话，它将执行在离它最近的 subscribeOn() 所指定的线程。</p>
+<p>示例代码：</p>
+<pre><code class="language-java">Observable.create(onSubscribe)
+    .subscribeOn(Schedulers.io())
+    .doOnSubscribe(new Action0() {
+        @Override
+        public void call() {
+            progressBar.setVisibility(View.VISIBLE); // 需要在主线程执行
+        }
+    })
+    .subscribeOn(AndroidSchedulers.mainThread()) // 指定主线程
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(subscriber);
+</code></pre>
+<p>如上，在 doOnSubscribe()的后面跟一个 subscribeOn() ，就能指定准备工作的线程了。</p>
+<h1 id="4-rxjava-的适用场景和使用方式">4. RxJava 的适用场景和使用方式</h1>
+<h2 id="41-与-retrofit-的结合">4.1 与 Retrofit 的结合</h2>
+<blockquote>
+<p>Retrofit 是 Square 的一个著名的网络请求库。没有用过 Retrofit 的可以选择跳过这一小节也没关系，我举的每种场景都只是个例子，而且例子之间并无前后关联，只是个抛砖引玉的作用，所以你跳过这里看别的场景也可以的。</p>
+</blockquote>
+<p>Retrofit 除了提供了传统的 Callback 形式的 API，还有 RxJava 版本的 Observable 形式 API。下面我用对比的方式来介绍 Retrofit 的 RxJava 版 API 和传统版本的区别。</p>
+<p>以获取一个 User 对象的接口作为例子。使用Retrofit 的传统 API，你可以用这样的方式来定义请求：</p>
+<pre><code class="language-java">@GET(&quot;/user&quot;)
+public void getUser(@Query(&quot;userId&quot;) String userId, Callback&lt;User&gt; callback);
+</code></pre>
+<p>在程序的构建过程中， Retrofit 会把自动把方法实现并生成代码，然后开发者就可以利用下面的方法来获取特定用户并处理响应：</p>
+<pre><code class="language-java">getUser(userId, new Callback&lt;User&gt;() {
+    @Override
+    public void success(User user) {
+        userView.setUser(user);
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        // Error handling
+        ...
+    }
+};
+</code></pre>
+<p>而使用 RxJava 形式的 API，定义同样的请求是这样的：</p>
+<pre><code class="language-java">@GET(&quot;/user&quot;)
+public Observable&lt;User&gt; getUser(@Query(&quot;userId&quot;) String userId);
+</code></pre>
+<p>使用的时候是这样的：</p>
+<pre><code class="language-java">getUser(userId)
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Observer&lt;User&gt;() {
+        @Override
+        public void onNext(User user) {
+            userView.setUser(user);
+        }
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable error) {
+            // Error handling
+            ...
+        }
+    });
+</code></pre>
+<p>看到区别了吗？</p>
+<p>当 RxJava 形式的时候，Retrofit 把请求封装进 Observable ，在请求结束后调用 onNext() 或在请求失败后调用 onError()。</p>
+<p>对比来看， Callback 形式和 Observable 形式长得不太一样，但本质都差不多，而且在细节上 Observable 形式似乎还比 Callback 形式要差点。那 Retrofit 为什么还要提供 RxJava 的支持呢？</p>
+<p>因为它好用啊！从这个例子看不出来是因为这只是最简单的情况。而一旦情景复杂起来， Callback 形式马上就会开始让人头疼。比如：</p>
+<p>假设这么一种情况：你的程序取到的 User 并不应该直接显示，而是需要先与数据库中的数据进行比对和修正后再显示。使用 Callback 方式大概可以这么写：</p>
+<pre><code class="language-java">getUser(userId, new Callback&lt;User&gt;() {
+    @Override
+    public void success(User user) {
+        processUser(user); // 尝试修正 User 数据
+        userView.setUser(user);
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        // Error handling
+        ...
+    }
+};
+</code></pre>
+<p>有问题吗？</p>
+<p>很简便，但不要这样做。为什么？因为这样做会影响性能。数据库的操作很重，一次读写操作花费 10~20ms 是很常见的，这样的耗时很容易造成界面的卡顿。所以通常情况下，如果可以的话一定要避免在主线程中处理数据库。所以为了提升性能，这段代码可以优化一下：</p>
+<pre><code class="language-java">getUser(userId, new Callback&lt;User&gt;() {
+    @Override
+    public void success(User user) {
+        new Thread() {
+            @Override
+            public void run() {
+                processUser(user); // 尝试修正 User 数据
+                runOnUiThread(new Runnable() { // 切回 UI 线程
+                    @Override
+                    public void run() {
+                        userView.setUser(user);
+                    }
+                });
+            }).start();
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        // Error handling
+        ...
+    }
+};
+</code></pre>
+<p>性能问题解决，但……这代码实在是太乱了，迷之缩进啊！杂乱的代码往往不仅仅是美观问题，因为代码越乱往往就越难读懂，而如果项目中充斥着杂乱的代码，无疑会降低代码的可读性，造成团队开发效率的降低和出错率的升高。</p>
+<p>这时候，如果用 RxJava 的形式，就好办多了。 RxJava 形式的代码是这样的：</p>
+<pre><code class="language-java">getUser(userId)
+    .doOnNext(new Action1&lt;User&gt;() {
+        @Override
+        public void call(User user) {
+            processUser(user);
+        })
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Observer&lt;User&gt;() {
+        @Override
+        public void onNext(User user) {
+            userView.setUser(user);
+        }
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable error) {
+            // Error handling
+            ...
+        }
+    });
+</code></pre>
+<p>后台代码和前台代码全都写在一条链中，明显清晰了很多。</p>
+<p>再举一个例子：假设 /user 接口并不能直接访问，而需要填入一个在线获取的 token ，代码应该怎么写？</p>
+<p>Callback 方式，可以使用嵌套的 Callback：</p>
+<pre><code class="language-java">@GET(&quot;/token&quot;)
+public void getToken(Callback&lt;String&gt; callback);
+
+@GET(&quot;/user&quot;)
+public void getUser(@Query(&quot;token&quot;) String token, @Query(&quot;userId&quot;) String userId, Callback&lt;User&gt; callback);
+
+...
+
+getToken(new Callback&lt;String&gt;() {
+    @Override
+    public void success(String token) {
+        getUser(token, userId, new Callback&lt;User&gt;() {
+            @Override
+            public void success(User user) {
+                userView.setUser(user);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                // Error handling
+                ...
+            }
+        };
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        // Error handling
+        ...
+    }
+});
+</code></pre>
+<p>倒是没有什么性能问题，可是迷之缩进毁一生，你懂我也懂，做过大项目的人应该更懂。</p>
+<p>而使用 RxJava 的话，代码是这样的：</p>
+<pre><code class="language-java">@GET(&quot;/token&quot;)
+public Observable&lt;String&gt; getToken();
+
+@GET(&quot;/user&quot;)
+public Observable&lt;User&gt; getUser(@Query(&quot;token&quot;) String token, @Query(&quot;userId&quot;) String userId);
+
+...
+
+getToken()
+    .flatMap(new Func1&lt;String, Observable&lt;User&gt;&gt;() {
+        @Override
+        public Observable&lt;User&gt; onNext(String token) {
+            return getUser(token, userId);
+        })
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Observer&lt;User&gt;() {
+        @Override
+        public void onNext(User user) {
+            userView.setUser(user);
+        }
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable error) {
+            // Error handling
+            ...
+        }
+    });
+</code></pre>
+<p>用一个 flatMap() 就搞定了逻辑，依然是一条链。看着就很爽，是吧？</p>
+<p>2016/03/31 更新，加上我写的一个 Sample 项目： <a href="https://github.com/rengwuxian/RxJavaSamples">rengwuxian RxJava Samples</a></p>
+<p>好，Retrofit 部分就到这里。</p>
+<h2 id="42-rxbinding">4.2 RxBinding</h2>
+<p><a href="https://github.com/JakeWharton/RxBinding">RxBinding</a> 是 Jake Wharton 的一个开源库，它提供了一套在 Android 平台上的基于 RxJava 的 Binding API。所谓 Binding，就是类似设置 OnClickListener 、设置 TextWatcher 这样的注册绑定对象的 API。</p>
+<p>举个设置点击监听的例子。使用 RxBinding ，可以把事件监听用这样的方法来设置：</p>
+<pre><code class="language-java">Button button = ...;
+RxView.clickEvents(button) // 以 Observable 形式来反馈点击事件
+    .subscribe(new Action1&lt;ViewClickEvent&gt;() {
+        @Override
+        public void call(ViewClickEvent event) {
+            // Click handling
+        }
+    });
+</code></pre>
+<p>看起来除了形式变了没什么区别，实质上也是这样。甚至如果你看一下它的源码，你会发现它连实现都没什么惊喜：它的内部是直接用一个包裹着的 setOnClickListener() 来实现的。然而，仅仅这一个形式的改变，却恰好就是 RxBinding 的目的：扩展性。通过 RxBinding 把点击监听转换成 Observable 之后，就有了对它进行扩展的可能。扩展的方式有很多，根据需求而定。一个例子是前面提到过的 throttleFirst() ，用于去抖动，也就是消除手抖导致的快速连环点击：</p>
+<pre><code class="language-java">RxView.clickEvents(button)
+    .throttleFirst(500, TimeUnit.MILLISECONDS)
+    .subscribe(clickAction);
+</code></pre>
+<p>如果想对 RxBinding 有更多了解，可以去它的 GitHub 项目 下面看看。</p>
+<h2 id="43-各种异步操作">4.3 各种异步操作</h2>
+<p>前面举的 Retrofit 和 RxBinding 的例子，是两个可以提供现成的 Observable 的库。而如果你有某些异步操作无法用这些库来自动生成 Observable，也完全可以自己写。例如数据库的读写、大图片的载入、文件压缩/解压等各种需要放在后台工作的耗时操作，都可以用 RxJava 来实现，有了之前几章的例子，这里应该不用再举例了。</p>
+<h2 id="44-rxbus">4.4 RxBus</h2>
+<p>RxBus 名字看起来像一个库，但它并不是一个库，而是一种模式，它的思想是使用 RxJava 来实现了 EventBus ，而让你不再需要使用 Otto 或者 GreenRobot 的 EventBus。至于什么是 RxBus，可以看这篇文章。顺便说一句，Flipboard 已经用 RxBus 替换掉了 Otto ，目前为止没有不良反应。</p>
+<h1 id="最后">最后</h1>
+<p>对于 Android 开发者来说， RxJava 是一个很难上手的库，因为它对于 Android 开发者来说有太多陌生的概念了。可是它真的很牛逼。因此，我写了这篇《给 Android 开发者的 RxJava 详解》，希望能给始终搞不明白什么是 RxJava 的人一些入门的指引，或者能让正在使用 RxJava 但仍然心存疑惑的人看到一些更深入的解析。无论如何，只要能给各位同为 Android 工程师的你们提供一些帮助，这篇文章的目的就达到了。</p>
+<h1 id="关于作者">关于作者</h1>
+<p>朱凯（扔物线）， Android 工程师。</p>
+<ul>
+<li>HenCoder：<a href="http://hencoder.com/">给高级 Android 工程师的进阶手册</a></li>
+<li>微博：<a href="http://weibo.com/rengwuxian">扔物线</a></li>
+<li>GitHub：<a href="https://github.com/rengwuxian">rengwuxian</a></li>
+</ul>
+<h1 id="为什么写这个">为什么写这个？</h1>
+<p>与两三年前的境况不同，中国现在已经不缺初级 Android 工程师，但中级和高级工程师严重供不应求。因此我决定从今天开始不定期地发布我的技术分享，只希望能够和大家共同提升，通过我们的成长来解决一点点国内互联网公司人才稀缺的困境，也提升各位技术党的收入。所以，不仅要写这篇，我还会写更多。至于内容的定位，我计划只定位真正的干货，一些边边角角的小技巧和炫酷的黑科技应该都不会写，总之希望每篇文章都能帮读者提升真正的实力。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-Retrofit+okhttp相关]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-retrofitokhttp-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-retrofitokhttp-xiang-guan/">
+        </link>
+        <updated>2024-04-24T09:20:29.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Retrofit+okhttp相关</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Retrofit+okhttp相关</p>
+<!-- more -->
+<h2 id="retrofit源码流程">Retrofit源码流程</h2>
+<p>使用retrofit时，通过Retrofit的构造器构造出Retrofit对象，然后调用create方法创建出自定义的service，再通过这个service对象去调用接口，使用enqueue方法将http请求放入队列，同时传入一个回调去异步处理调用结果。示例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950615046.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950621617.png" alt="" loading="lazy"></p>
+<p>其中构造retrofit对象是在配置一些默认参数，查看retrofit.create方法的源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950640910.png" alt="" loading="lazy"><br>
+可以看出是通过动态代理的方式创建并返回service对象，其中主要的代码是：loadServiceMethod(service, method).invoke(proxy, args);<br>
+先查看loadServiceMethod这个方法，最终会返回一个CallAdapted对象，CallAdapted的父类是HttpServiceMethod，CallAdapted没有实现invoke方法，所以去看HttpServiceMethod的invoke方法，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950658675.png" alt="" loading="lazy"></p>
+<p>代码逻辑为先创建出一个Call（实际类型为OkHttpCall）对象，然后再通过adapt方法生成一个新的Call对象，查看CallAdapted的adapt方法，调用的是CallAdapter的adapt方法，这个CallAdapter对象是在HttpServiceMethod中通过createCallAdapter方法创建的，实际调用的是retrofit的callAdapter方法，一直跟进去是通过callAdapterFactories.get(i)这个方法获取到的，然后再跟callAdapterFactories，发现是在BuiltInFactories中将DefaultCallAdapterFactory对象添加进去的，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950684440.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950688852.png" alt="" loading="lazy"></p>
+<p>DefaultCallAdapterFactory的get方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950708054.png" alt="" loading="lazy"><br>
+所以最终返回的Call对象实际为ExecutorCallbackCall，ExecutorCallbackCall的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950724780.png" alt="" loading="lazy"><br>
+可以看出主要做两件事，1执行真正的Call（前文提到的OkHttpCall）的enqueue方法；2将执行结果切换到另外一个线程回调（跟踪代码可以发现是主线程，详细过程不再写出）；<br>
+然后再去看OkHttpCall的enqueue方法，可以看到就是在通过OKHttp方式，将http请求放入队列，异步执行，关键代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950743575.png" alt="" loading="lazy"><br>
+请求成功返回后，再调用parseResponse方法去解析结果，parseResponse方法里面会调用responseConverter.convert去转换数据，而这个responseConverter的来源是在构建Retrofit对象时手动添加进去的<br>
+<img src="https://PaIn22152.github.io/post-images/1713950762758.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950768955.png" alt="" loading="lazy"></p>
+<p>以上就是Retrofit请求接口的源码实现</p>
+<h2 id="okhttp源码流程">okhttp源码流程</h2>
+<p>okhttp的简单使用代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964281294.png" alt="" loading="lazy"><br>
+首先创建出OkHttpClient对象和Request对象，然后通过newCall方法创建出call对象，调用enqueue方法异步执行网络请求，先看一下newcall源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964302903.png" alt="" loading="lazy"><br>
+可以看到就是创建了一个RealCall对象，再看RealCall的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964324339.png" alt="" loading="lazy"><br>
+实际调用的是dispatcher的enqueue方法，创建并传入一个AsyncCall对象，这个dispatcher是一个Dispatcher对象，他的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964349381.png" alt="" loading="lazy"><br>
+Dispatcher类负责异步任务的调度，其中有两个参数maxRequests和maxRequestsPerHost，分别表示最大同时请求数和每个主机的最大同时请求数，上面的enqueue方法中，先将call放到readyAsyncCalls队列中，然后调用promoteAndExecute，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964369239.png" alt="" loading="lazy"><br>
+在promoteAndExecute方法中，首先按照参数设置的最大请求数将call放到executableCalls队列中，然后遍历所有可以执行的call调用executeOn方法，如果同时发送的请求数大于了最大数，那么多出来的那些请求就会先放在readyAsyncCalls队列中，等有请求执行完成后，才会继续执行。再看AsyncCall的executeOn方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964388518.png" alt="" loading="lazy"><br>
+其中关键代码是executorService.execute(this)，实际就是通过executorService在一个新的线程中执行AsyncCall的run方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964408846.png" alt="" loading="lazy"><br>
+关键代码是val response = getResponseWithInterceptorChain()，到此，得到了http请求的response。</p>
+<p>接下来继续看getResponseWithInterceptorChain这个方法是怎么实现的，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964431683.png" alt="" loading="lazy"><br>
+这个方法是okhttp网络请求的关键，他会链式地调用各种Interceptor来得到最终结果，Interceptor就是拦截器，主要分为三部分，前置工作、中置工作、后置工作，除了最后一个拦截器外，其他所有拦截器的中置工作都是通过realChain.proceed(request)调用下一个拦截器的intercept方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964451934.png" alt="" loading="lazy"><br>
+接下来对所有拦截器逐个分析<br>
+第一个是RetryAndFollowUpInterceptor，这个拦截器的作用是请求出错时重试，或者是http返回重定向时，自动请求新的地址，前置工作是做连接准备（初始化ExchangeFinder），后置工作是判断是否出错或者重定向，如果出错或者重定向，组装新的request发起请求；<br>
+第二个是BridgeInterceptor，前置工作是对request增加header，比如Host、Content-Length、Content-Type、Cookie、Accept-Encoding等等，后置工作是解压缩返回的数据（如果数据被压缩了）；<br>
+第三个是CacheInterceptor，前置工作是判断磁盘文件中是否有可用缓存，如果有直接返回，后置工作是将返回的数据缓存到磁盘文件；（CacheInterceptor还有很多细节可以深入学习）；<br>
+第四个是ConnectInterceptor，前置工作是建立连接，没有后置工作，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964483956.png" alt="" loading="lazy"><br>
+关键代码是realChain.call.initExchange(chain)，一直跟下去会走到ExchangeFinder的findConnection方法，这个方法会返回一个可用连接，步骤如下：<br>
+1.从连接池里面获取一个不支持多路复用的连接（只有http2支持多路复用）<br>
+2.初始化routes路由，再从连接池里面获取一个不支持多路复用或者支持多路复用的连接<br>
+3.创建一个新的连接<br>
+4.从连接池里面获取一个只支持多路复用的连接，如果有，丢弃刚刚创建的连接，使用池里面的连接<br>
+5.重试或者重定向时，判断上一次的连接是否可用，如果可用直接使用，不可用就关闭</p>
+<p>创建连接时，关键代码是establishProtocol(connectionSpecSelector, pingIntervalMillis, call, eventListener)，establishProtocol源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964519896.png" alt="" loading="lazy"><br>
+不进行加密传输时，如果是http2，发送http2的握手数据<br>
+进行加密传输时，建立TLS加密连接，如果是http2，发送http2的握手数据<br>
+okhttp默认协议参数支持http2和http1.1，http请求时，先尝试使用http2，如果服务器不支持，回退到http1.1</p>
+<p>通过ExchangeFinder的findConnection方法得到一个健康的可用连接后，使用连接创建一个编码解码器，用于数据的组装和解析，并包装成一个Exchange对象</p>
+<p>最后一个拦截器是CallServerInterceptor，使用已经获取到的Exchange对象发送请求，获取响应。</p>
+<p>除了这几个okhttp定义的Interceptor外，还可以自定义Interceptor，一个是Interceptors，在所有拦截器之前执行，一般常用于添加header，比如token，还有一个是networkInterceptors，一般用于网络调试时打印日志，比如配合Stetho库使用时会用到。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-Kotlin相关]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-kotlin-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-kotlin-xiang-guan/">
+        </link>
+        <updated>2024-04-22T03:13:41.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Kotlin相关</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Kotlin相关</p>
+<!-- more -->
+<h2 id="kotlin基础">Kotlin基础</h2>
+<h3 id="函数声明">函数声明</h3>
+<p>声明函数要用「fun」关键字，就像声明类要用「class」关键字一样<br>
+函数参数的参数类型是在参数名的右边，用「:」隔开<br>
+函数的返回值在函数参数的右边使用「:」隔开，没有返回值时可以省略</p>
+<h3 id="变量声明">变量声明</h3>
+<p>声明变量需要使用关键字「var」或者「val」，var声明可读可写变量，val声明只读变量</p>
+<p>类型在变量名的右边，用「:」隔开，同时如果满足类型推断，类型可以省略<br>
+创建对象直接调用构造器，不需要「new」关键字</p>
+<h3 id="类型推断">类型推断</h3>
+<p>在变量声明的基础上，如果表达式右边的类型时可以推断出来的，那么类型可以省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713755819728.png" alt="" loading="lazy"></p>
+<h3 id="继承类实现接口">继承类/实现接口</h3>
+<p>继承类和实现接口都是用「:」，如果类中没有构造器(constructor)，需要在父类类名后面加上「():」<br>
+<img src="https://PaIn22152.github.io/post-images/1713756081048.png" alt="" loading="lazy"></p>
+<h3 id="空安全设计">空安全设计</h3>
+<p>kotlin中的类型分为可空类型和不可空类型，不可空类型不能接受null值<br>
+<img src="https://PaIn22152.github.io/post-images/1713756131098.png" alt="" loading="lazy"><br>
+对于可空类型，有下面两种调用符调用方法或者属性<br>
+?.安全调用符<br>
+!!强行调用符</p>
+<h3 id="lateinit关键字">lateinit关键字</h3>
+<p>使用lateinit关键字，变量在定义时不需要初始化。<br>
+lateinit只能修饰var可读可写变量<br>
+lateinit关键字声明的变量必须是不可空类型<br>
+lateinit声明的变量不能有初始值<br>
+lateint声明的变量不能是基本数据类型<br>
+lateinit不能修饰 基本数据类型 比如 Int  Byte Short Float Double Boolean Char Long类型<br>
+在构造器中初始化的属性不需要lateinit关键字</p>
+<h3 id="平台类型">平台类型</h3>
+<p>在类型后面加上一个感叹号的类型是平台类型<br>
+Java中可以通过注解减少平台类型的产生<br>
+@Nullable 表示可空类型<br>
+@NotNull @NonNull 表示不可空类型</p>
+<h3 id="类型判断">类型判断</h3>
+<p>is判断属于某类型<br>
+!is判断不属于某类型<br>
+as类型强转，支持类型智能转换，失败时抛出类型强转失败异常<br>
+as?类型强转，失败时不会抛出异常，而是返回null</p>
+<h3 id="获取class对象">获取Class对象</h3>
+<p>使用 「类名::class」获取的是kotlin的类型KClass<br>
+使用 「类名::class.java」获取的是Java的类型</p>
+<h3 id="settergetter">setter/getter</h3>
+<p>在kotlin声明属性的时候（没有使用private修饰），会自动生成一个私有属性和一对公开的setter/getter函数<br>
+在重写setter/getter的时候，使用「field」来代替内部的私有属性，防止递归调用<br>
+使用「@JvmField」注解可以让编译器只生成一个public的成员属性，不生成对应的setter/getter函数</p>
+<h3 id="构造器">构造器</h3>
+<p>使用constructor关键字声明构造器<br>
+<img src="https://PaIn22152.github.io/post-images/1713756552061.png" alt="" loading="lazy"><br>
+如果我们在构造器自动调用了父类构造，那么在继承类的时候就不能在类的后面加上小括号<br>
+<img src="https://PaIn22152.github.io/post-images/1713757085924.png" alt="" loading="lazy"></p>
+<h3 id="any和unit">Any和Unit</h3>
+<p>kotlin的顶层父类是Any，对应java中的Object，但是比Object少了wait()/notify()等函数<br>
+Kotlin中的Unit对应java中的void</p>
+<h3 id="数组">数组</h3>
+<p>使用arrayof()来创建数组，基本数据类型使用对应的intArrayOf()等</p>
+<h3 id="静态函数和属性">静态函数和属性</h3>
+<p>kotlin中实现静态函数的方式有：<br>
+顶层函数（或者包级函数）<br>
+object<br>
+companion object（伴生对象）</p>
+<p>其中，顶层函数直接在文件中定义函数和属性，会直接生成静态函数，在java中通过 「文件名Kt 」来访问，同时可以通过 「@file:JvmName」 来注解修改这个类名<br>
+object 和 companion object都是生成单例对象，然后通过单例对象访问函数和属性<br>
+通过注解「@JvmStatic」 可以将object 和companion object的内部函数和属性，真正生成为静态</p>
+<h3 id="单例模式匿名内部类">单例模式/匿名内部类</h3>
+<p>通过object关键字实现<br>
+<img src="https://PaIn22152.github.io/post-images/1713757863379.png" alt="" loading="lazy"></p>
+<h3 id="字符串">字符串</h3>
+<p>通过「${}」的形式来作为字符串模板<br>
+<img src="https://PaIn22152.github.io/post-images/1713757928187.png" alt="" loading="lazy"><br>
+多行字符串<br>
+<img src="https://PaIn22152.github.io/post-images/1713757952294.png" alt="" loading="lazy"></p>
+<h3 id="区间">区间</h3>
+<p>200..299表示[200,299]的区间</p>
+<h3 id="when关键字">when关键字</h3>
+<p>java中的switch的高级版，分支条件上可以支持表达式</p>
+<h3 id="声明接口抽象类枚举注解">声明接口/抽象类/枚举/注解</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1713758092059.png" alt="" loading="lazy"></figure>
+<h3 id="编译器常量">编译器常量</h3>
+<p>在静态变量上加上const关键字变成编译器常量</p>
+<h3 id="标签">标签</h3>
+<p>在java 中通过「类名.this」 (例如Outer.this)获取目标类引用<br>
+在kotlin中通过「this@类名」(例如this@Outer)获取类引用</p>
+<h3 id="内部类">内部类</h3>
+<p>在kotlin当中，内部类默认是静态内部类<br>
+通过inner关键字声明为嵌套内部类</p>
+<h3 id="可见性修饰符">可见性修饰符</h3>
+<p>kotlin中默认的可见性修饰符是public<br>
+新增的可见性修饰符internal表示当前模块可见</p>
+<h3 id="openfinal">open/final</h3>
+<p>kotlin中的类和函数，默认是被final修饰的（abstract和overide例外）<br>
+使用open、abstract、override关键字修饰的类才可以被继承</p>
+<h2 id="kotlin进阶">Kotlin进阶</h2>
+<h3 id="构造函数">构造函数</h3>
+<p>次级构造<br>
+<img src="https://PaIn22152.github.io/post-images/1713854258842.png" alt="" loading="lazy"><br>
+主构造器<br>
+<img src="https://PaIn22152.github.io/post-images/1713854276052.png" alt="" loading="lazy"><br>
+成员变量初始化可以直接访问到主构造参数<br>
+<img src="https://PaIn22152.github.io/post-images/1713854307849.png" alt="" loading="lazy"></p>
+<h3 id="init代码块">init代码块</h3>
+<p>init代码块下的代码，会按照在文件中出现的顺序添加到每一个构造方法的前面<br>
+kotlin代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713854937450.png" alt="" loading="lazy"><br>
+反编译后代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713855014046.png" alt="" loading="lazy"></p>
+<h3 id="构造属性">构造属性</h3>
+<p>在主构造器参数前面加上var/val，使构造参数同时成为成员变量<br>
+<img src="https://PaIn22152.github.io/post-images/1713855088428.png" alt="" loading="lazy"></p>
+<h3 id="data-class">data class</h3>
+<p>用data class修饰的数据类，同时会生成以下方法：toString()  hashCode()  equals()  copy()  componentN()<br>
+其中copy是浅拷贝，kotlin代码和反编译后的代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713855907097.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713855940821.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>浅拷贝指的是如果要拷贝A对象，则会重新创建一个B对象，并将其内部变量全部赋值给B对象，所以我们称之为浅拷贝。<br>
+深拷贝指的是：拷贝后，如果B对象中存在引用对象，此时更改这个引用对象不会影响到原有A对象中的引用对象，因为它两所操作的内存并不是同一块内存。而浅拷贝则相反，当你操作B对象中的某个引用对象时，就会影响到A对象。对于基本类型，深拷贝与浅拷贝都是直接赋值，并没有什么区别。</p>
+</blockquote>
+<h3 id="相等性">相等性</h3>
+<p>==结构相等（调用equals()比较）<br>
+===引用（地址值）相等</p>
+<h3 id="解构">解构</h3>
+<p>可以把一个对象「解构」成很多变量，依靠componentN()方法实现<br>
+<img src="https://PaIn22152.github.io/post-images/1713856317131.png" alt="" loading="lazy"><br>
+等同于以下代码<br>
+<img src="https://PaIn22152.github.io/post-images/1713856365718.png" alt="" loading="lazy"></p>
+<h3 id="elvis操作符">Elvis操作符</h3>
+<p>kotlin中的Elvis操作符特定是跟null进行比较<br>
+<img src="https://PaIn22152.github.io/post-images/1713856557451.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713856608241.png" alt="" loading="lazy"><br>
+一般常用来简化if null的操作<br>
+<img src="https://PaIn22152.github.io/post-images/1713856658314.png" alt="" loading="lazy"></p>
+<h3 id="when操作符">when操作符</h3>
+<p>when表达式可以接受返回值，多个分支相同的处理方式可以放在一起，用逗号分隔<br>
+<img src="https://PaIn22152.github.io/post-images/1713856696842.png" alt="" loading="lazy"><br>
+when表达式可以用来取代if-else-if链，如果不提供参数，所有的分支条件都是布尔表达式<br>
+<img src="https://PaIn22152.github.io/post-images/1713856722016.png" alt="" loading="lazy"></p>
+<h3 id="operator">operator</h3>
+<p>通过operator修饰「特定函数名」的函数，例如plus、get，可以达到重载运算符的效果<br>
+<img src="https://PaIn22152.github.io/post-images/1713856760305.png" alt="" loading="lazy"><br>
+示例：<br>
+<img src="https://PaIn22152.github.io/post-images/1713857331554.png" alt="" loading="lazy"></p>
+<h3 id="lambda">lambda</h3>
+<p>如果函数的最后一个参数是lambda，那么lambda表达式可以放在圆括号之外：<br>
+<img src="https://PaIn22152.github.io/post-images/1713857437936.png" alt="" loading="lazy"><br>
+如果函数传入参数只有一个lambda的话，那么小括号可以省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713857457146.png" alt="" loading="lazy"><br>
+如果lambda表达式只有一个参数，那么可以省略，通过隐式的it来访问<br>
+<img src="https://PaIn22152.github.io/post-images/1713857479657.png" alt="" loading="lazy"></p>
+<h3 id="循环">循环</h3>
+<p>通过标准函数repeat()<br>
+<img src="https://PaIn22152.github.io/post-images/1713857515863.png" alt="" loading="lazy"><br>
+通过区间<br>
+<img src="https://PaIn22152.github.io/post-images/1713857534803.png" alt="" loading="lazy"></p>
+<h3 id="infix函数">infix函数</h3>
+<p>即中缀函数，他可以使用中缀方式调用（省略点号和小括号的调用方式）<br>
+<img src="https://PaIn22152.github.io/post-images/1713858088473.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713858108502.png" alt="" loading="lazy"><br>
+条件：<br>
+只有一个参数，且不能有默认值<br>
+在方法前必须加infix关键字<br>
+必须是成员方法或者扩展方法</p>
+<h3 id="嵌套函数">嵌套函数</h3>
+<p>在kotlin中，可以在函数中继续声明函数，称为嵌套函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713858463992.png" alt="" loading="lazy"><br>
+内部函数可以访问外部函数的参数<br>
+每次调用时，会产生一个额外的函数对象，需要考虑性能问题</p>
+<h3 id="注解使用处目标">注解使用处目标</h3>
+<p>当某个元素可能包含多种内容（例如构造函数，成员函数），使用注解时可以通过「注解使用处目标」，让注解对目标发生作用，例如「@file: 」 「@get: 」「@set: 」<br>
+示例代码会修改java调用时的get方法名<br>
+<img src="https://PaIn22152.github.io/post-images/1713858603570.png" alt="" loading="lazy"></p>
+<h3 id="函数简化">函数简化</h3>
+<p>可以通过符号=简化原来直接return的函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713858688473.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713858694144.png" alt="" loading="lazy"></p>
+<h3 id="函数参数默认值">函数参数默认值</h3>
+<p>可以通过函数参数默认值来代替java的函数重载<br>
+<img src="https://PaIn22152.github.io/post-images/1713858875374.png" alt="" loading="lazy"><br>
+反编译代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713858939454.png" alt="" loading="lazy"><br>
+如果不用@JvmOverloads注解修饰，反编译代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713858998847.png" alt="" loading="lazy"></p>
+<h3 id="扩展函数">扩展函数</h3>
+<p>扩展函数可以在不修改类源码的情况下，为任何类添加上一个函数，从而代替工具类<br>
+<img src="https://PaIn22152.github.io/post-images/1713859241884.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713859304281.png" alt="" loading="lazy"></p>
+<p>扩展函数和成员函数相同时，成员函数优先被调用<br>
+扩展函数是静态解析的，在编译时就确定了调用函数（没有多态）</p>
+<p>同理可以给类添加成员属性<br>
+<img src="https://PaIn22152.github.io/post-images/1713859567136.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713859591494.png" alt="" loading="lazy"></p>
+<h3 id="函数类型">函数类型</h3>
+<p>函数类型由「传入参数类型」和「返回参数类型」组成，用「-&gt;」连接，传入参数需要用「()」，如果返回值为Unit不能省略<br>
+<img src="https://PaIn22152.github.io/post-images/1713859674754.png" alt="" loading="lazy"><br>
+函数类型实际是一个接口，且kotlin已经预定义好了（1个参数到22个参数的接口），我们传递函数的时候可以通过「::函数名」或者「匿名函数」或者使用「lambda」<br>
+「::函数名」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859759767.png" alt="" loading="lazy"><br>
+「匿名函数」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859772040.png" alt="" loading="lazy"><br>
+「lambda」<br>
+<img src="https://PaIn22152.github.io/post-images/1713859784023.png" alt="" loading="lazy"></p>
+<h3 id="内联函数">内联函数</h3>
+<p>使用inline关键字声明的函数是内联函数，在编译时会将内联函数中的函数体直接复制粘贴到调用处</p>
+<p><a href="https://juejin.cn/post/6844904201353429006">详细文章</a></p>
+<p>在 Kotlin 中，内联函数是用来弥补高阶函数中 Lambda 带来的额外运行开销的。对于普通函数，没有必要使用内联，因为 JVM 已经提供了一定的内联支持。<br>
+对指定的 Lambda 参数使用 noinline ，可以避免该 Lambda 被内联。<br>
+普通的 Lambda 不支持非局部返回，内联之后允许非局部返回。既要内联，又要禁止非局部返回，请使用 crossinline 。</p>
+<p>inline的其他使用，具体化的类型参数<br>
+因为内联函数的存在，我们可以通过配合inline + reified达到「真泛型」的效果<br>
+<img src="https://PaIn22152.github.io/post-images/1713861187086.png" alt="" loading="lazy"></p>
+<h3 id="抽象属性">抽象属性</h3>
+<p>在kotlin中，我们可以在接口声明抽象属性，子类对抽象属性重写的时候需要重写对应的setter/getter<br>
+<img src="https://PaIn22152.github.io/post-images/1713861694937.png" alt="" loading="lazy"></p>
+<h3 id="委托">委托</h3>
+<p><strong>属性委托</strong><br>
+将属性的set、get操作，委托给另外一个对象实现<br>
+好处是可以将一些常见的属性操作，通过委托的方式，只需要做一次实现<br>
+kotlin提供了以下的标准委托：lazy()、Delegates.observable()、</p>
+<p>lazy() 是接受一个 lambda 并返回一个 Lazy <T> 实例的函数，返回的实例可以作为实现延迟属性的委托。 第一次调用 get() 会执行已传递给 lazy() 的 lambda 表达式并记录结果。 后续调用 get() 只是返回记录的结果。<br>
+<img src="https://PaIn22152.github.io/post-images/1713864923355.png" alt="" loading="lazy"></p>
+<p>Delegates.observable() 接受两个参数：初始值与修改时处理程序（handler）<br>
+每当我们给属性赋值时会调用该处理程序（在赋值后执行）。它有三个参数：被赋值的属性、旧值与新值<br>
+<img src="https://PaIn22152.github.io/post-images/1713865017581.png" alt="" loading="lazy"></p>
+<p>自定义属性委托<br>
+对于一个只读（val）属性，委托对象必须提供一个名为getValue()的函数<br>
+对于一个可读写（var）属性，委托对象必须同时提供setValue()和getValue()函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713865270364.png" alt="" loading="lazy"></p>
+<p><strong>类委托</strong><br>
+可以通过类委托的模式来减少继承<br>
+类委托的，编译器会优先使用自身重写的函数，而不是委托对象的函数<br>
+<img src="https://PaIn22152.github.io/post-images/1713865378537.png" alt="" loading="lazy"></p>
+<h3 id="kotlin标准函数">kotlin标准函数</h3>
+<p>也叫作用域函数，通过它们可以将一些逻辑连贯的代码放在同一作用域中，提高代码可读性<br>
+apply、also、let、run、with<br>
+返回自身，apply和also，作用域中使用this作为参数，选择apply，使用it作为参数使用also<br>
+不需要返回自身，run和let，作用域中使用this作为参数，选择run，使用it作为参数使用let<br>
+apply适合对一个对象做附加操作的时候<br>
+let适合配合空判断的时候<br>
+示例代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1713866666023.png" alt="" loading="lazy"></p>
+<p>kotlin官方文档的作用域函数选择建议：<br>
+<img src="https://PaIn22152.github.io/post-images/1713866522588.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-HTTP相关]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-http-xiang-guan/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-http-xiang-guan/">
+        </link>
+        <updated>2024-04-19T02:36:28.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。HTTP相关</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。HTTP相关</p>
+<!-- more -->
+<h2 id="http工作原理">HTTP工作原理</h2>
+<p>HTTP，HyperText Transfer Protocol超文本传输协议 ，基于TCP协议实现的一种应用层协议<br>
+客户端发送请求报文request，服务端返回响应报文response<br>
+URL格式，三部分：协议类型、服务器地址（和端口）、路径<br>
+如：https://hencoder.com/user?gender=male</p>
+<h3 id="报文格式">报文格式</h3>
+<p>请求报文：<br>
+<img src="https://PaIn22152.github.io/post-images/1713494440072.png" alt="" loading="lazy"><br>
+响应报文：<br>
+<img src="https://PaIn22152.github.io/post-images/1713494477506.png" alt="" loading="lazy"></p>
+<h2 id="请求方法和状态码">请求方法和状态码</h2>
+<h3 id="请求方法">请求方法</h3>
+<p>GET 获取资源，没有body，幂等<br>
+POST 增加或者修改资源，有body，不具有幂等性<br>
+PUT 修改资源，有body，具有幂等性<br>
+DELETE 删除资源，没有body，幂等<br>
+HEAD 使用方法和GET相同，返回响应没有body，用于获取信息（header），比如下载文件前先使用HEAD方法获取文件大小、是否支持断线续传等信息<br>
+幂等性，多次调用和一次调用结果一致</p>
+<h3 id="状态码">状态码</h3>
+<p>状态码，对响应结果做简单描述<br>
+1XX：临时性消息  100继续发送、101正在切换协议<br>
+2XX：成功 200 OK<br>
+3XX：重定向 301永久移动、302暂时移动<br>
+4XX：客户端错误 404找不到内容、403被禁止<br>
+5XX：服务器错误 500服务器内部错误</p>
+<h2 id="header和body">HEADER和BODY</h2>
+<h3 id="header">HEADER</h3>
+<p>HEADER是HTTP消息的元数据<br>
+<strong>Host</strong>   目标主机地址，不是用来寻址的，而是在目标服务器上用于定位子服务器的<br>
+<strong>Content-Legth</strong>  指定body的长度<br>
+<strong>Location</strong>   指定重定向的目标URL<br>
+<strong>User-Agent</strong>   用户代理，即是谁实际发送请求、接受响应，例如手机浏览器、某款手机App<br>
+<strong>Accept-Range:bytes</strong>  响应报文中出现，表示服务器支持按字节来取范围数据<br>
+<strong>Range:bytes=&lt;start&gt;-&lt;end&gt;</strong>  请求报文中出现，表示要取哪段数据<br>
+<strong>Content-Range:&lt;start&gt;-&lt;end&gt;/total</strong>   响应报文中出现，表示发送的是哪段数据<br>
+作用：断点续传、多线程下载<br>
+<strong>Cache</strong>   在客户端或者中间网络节点缓存数据，减低从服务器取数据的频率，以提高网络性能<br>
+<strong>Transfer-Encoding: chunked</strong> 分块传输编码，当响应发起时，内容长度还没能确定的情况下使用，和Content-Length不可同时使用，目的时尽早给出响应，减少用户等待，格式如下<br>
+<img src="https://PaIn22152.github.io/post-images/1713495469213.png" alt="" loading="lazy"><br>
+<strong>Content-Type</strong>  指定Body的类型，主要有以下几类：<strong>text/html</strong> 、  <strong>application/x-www-form-urlencoded</strong> 、  <strong>multipart/from-data  application/json</strong> 、<strong>image/jepg</strong>  、 <strong>application/zip</strong></p>
+<h3 id="body">BODY</h3>
+<p><strong>text/html</strong>  请求web页面时返回响应的类型，body中返回html文本，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495278555.png" alt="" loading="lazy"><br>
+<strong>application/x-www-form-urlencoded</strong>  普通表单，web页面纯文本表单的提交方式，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495307176.png" alt="" loading="lazy"><br>
+<strong>multipart/form-data</strong>  web页面含有二进制文件时的提交方式，boundary表示分界，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495354398.png" alt="" loading="lazy"><br>
+<strong>application/json</strong>  json格式传输文本，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495384799.png" alt="" loading="lazy"><br>
+<strong>image/jpeg</strong>   <strong>application/zip</strong>  单文件，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495421187.png" alt="" loading="lazy"></p>
+<h2 id="restful-api">RESTful api</h2>
+<p>RESTful api，即正确使用HTTP规范实现的接口，包括以下：<br>
+使用资源的格式来定义URL<br>
+规范地使用method来定义网络请求操作<br>
+规范地使用status code来响应状态<br>
+其他符合HTTP规范的设计准则</p>
+<h2 id="编码-加密-hash-序列化和字符集">编码、加密、hash、序列化和字符集</h2>
+<h3 id="对称加密和非对称加密">对称加密和非对称加密</h3>
+<p><strong>对称加密</strong><br>
+通信双方使用同一个秘钥，使用加密算法配合秘钥来加密，解密时使用加密过程的完全逆过程来进行解密。经典算法有DES、AES。<br>
+作用：加密通信，防止信息在不安全网络上被截获后，信息被人读取或篡改<br>
+缺点：不能在不安全网络上传输秘钥，一旦秘钥泄露则加密通信失败<br>
+<img src="https://PaIn22152.github.io/post-images/1713495790800.png" alt="" loading="lazy"></p>
+<p><strong>非对称加密</strong><br>
+原理：使用公钥对数据进行加密得到密文，使用私钥对密文进行解密得到原数据。使用的是复杂的数学技巧实现，经典算法有RSA（可用于加密和签名）、DSA（仅用于签名，但速度更快）<br>
+使用非对称加密通信，可以在不可信网络上将双方的公钥传给对方，然后在发消息前分别对数据使用对方的公钥来加密和使用自己的私钥来签名，做到不可信网络上的可靠秘钥传播及加密通信<br>
+<img src="https://PaIn22152.github.io/post-images/1713495830814.png" alt="" loading="lazy"><br>
+私钥和公钥互相可解，因此非对称加密还可以用于数字签名，通常会对原数据hash以后签名，然后附加在原数据的后面作为签名，为了让数据更小<br>
+<img src="https://PaIn22152.github.io/post-images/1713495864057.png" alt="" loading="lazy"><br>
+优缺点：优点：可以在不安全网络上传输秘钥。缺点：计算复杂，因此性能相比对称加密差很多<br>
+破解思路，穷举法找到一个私钥，可以解密所有经过公钥加密过的密文</p>
+<h3 id="base64">Base64</h3>
+<p>将二进制数据转换成由64个字符组成的字符串编码算法。<br>
+算法：将原数据每6位对应成Base64索引表中的一个字符编排成一个字符串（每个字符串8位）<br>
+用途：使用文本形式传输文件、图片<br>
+缺点：数据量会增大，所以会影响存储和传输性能</p>
+<h3 id="压缩和解压缩">压缩和解压缩</h3>
+<p>压缩：将数据使用具有存储优势的编码算法进行编码<br>
+解压缩：将压缩数据解码还原成原来的形式<br>
+目的是减少数据占用的存储空间，常见压缩算法DEFLATE、JPEG、MP3<br>
+有损压缩：压缩后数据有损失，无法完全恢复成原数据，不可逆。媒体数据（音视频、图片）跟感官交互的数据，是接受有损压缩的。</p>
+<h3 id="序列化">序列化</h3>
+<p>把数据对象（一般是内存中，例如JVM中的对象）转换成字节序列的过程。对象在程序内存里的存放形式是散乱的，通过序列化可以把内存中的对象转换成一个字节序列，从而使用byte[]等形式进行本地存储或网络传输，在需要的时候重新组装（反序列化）来使用<br>
+目的：让内存中的对象可以存储和传输</p>
+<h3 id="hash哈希">Hash哈希</h3>
+<p>把任意数据转换成指定大小范围的数据。相当于从数据中提出摘要信息，主要用途是数字指纹。经典算法MD5、SHA-1、SHA-256<br>
+用途：数据完整性验证（下载文件时确认文件是否有损坏）、快速查找（HashMap）、隐私保护（用户密码保存hash值）<br>
+破解：彩虹表，将常见密码生成密码和hash值的映射<br>
+反破解：加盐，保存Hash（密码+盐）</p>
+<h2 id="登录和授权">登录和授权</h2>
+<p>http中确认授权（或登录）的两种方式<br>
+1.通过Cookie<br>
+2.通过Authorization Header</p>
+<h3 id="cookie">Cookie</h3>
+<p><strong>Cookie工作机制</strong><br>
+服务器需要客户端保存的内容，放在Set-Cookie header里面返回，客户端自动保存<br>
+客户端保存的Cookie，会在之后的所有请求里都携带进Cookie header里面发送给服务器<br>
+客户端保存Cookie是按照服务器域名来分类的<br>
+客户端保存的Cookie在超时后会被删除，没有设置超时时间的Cookie在浏览器关闭后会自动删除，服务器也可以主动删除还未过期的客户端Cookie</p>
+<p><strong>Cookie的作用</strong><br>
+会话管理：登录状态、购物车<br>
+个性化：用户偏好、主题<br>
+Tracking：分析用户行为</p>
+<h3 id="authorization">Authorization</h3>
+<p>两种主流方式：Basic和Bearer</p>
+<p><strong>Basic</strong><br>
+格式：Authorization:Basic &lt;username:pwd(Base64ed)&gt;</p>
+<p><strong>Bearer</strong><br>
+格式：Authorization:Bearer&lt;bearer token&gt;<br>
+OAuth2流程，第三方App通过微信登录的流程就是一个OAuth2流程<br>
+0.第三方App向腾讯申请授权合作，拿到client id和client secret<br>
+1.用户在使用第三方App时，点击【通过微信登录】，第三方App将使用微信SDK跳转到微信，并传入自己的client id作为自己的身份标识<br>
+2.微信通过和服务器交互，拿到第三方app的信息，并显示在界面中，询问用户是否同意授权该app使用微信来登录<br>
+3.用户点击【使用微信登录】后，微信和服务器交互将授权信息提交，然后跳转回第三方app，并传入Authorization code作为用户认可的凭证<br>
+4.第三方app调用自己服务器api，传入Authorization code<br>
+5.服务器使用Authorization code去向微信的第三方授权接口发送请求，将Authorization code和自己的client sceret传给微信服务器，微信服务器验证通过后，返回access token<br>
+6.服务器收到access token后，向微信的用户信息接口发送请求，微信服务器验证通过后，返回用户信息<br>
+7.服务器收到用户信息后，保存信息到数据库，并将用户id和用户的微信id做关联<br>
+8.用户创建后，服务器向客户端app的请求发送响应，传回用户信息<br>
+9.客户端收到服务器响应，登录成功</p>
+<p><strong>Refresh token</strong><br>
+三方登录时服务器返回refresh token和access token以及有效时间，当access token失效后，使用refresh token获取新的access token<br>
+目的：安全。当access token失窃，由于有失效时间，所以别人只能在一定时间内使用access token，同时由于refresh token值存在于第三方服务的服务器中，因此refresh token几乎没有失窃的风险</p>
+<h2 id="tcpip协议族">TCP/IP协议族</h2>
+<p>TCP/IP指一系列协议所组成的网络分层模型<br>
+为什么需要分层？因为网络不稳定</p>
+<p>分层：<br>
+应用层：HTTP、FTP、DNS<br>
+传输层：TCP、UDP<br>
+网络层：IP<br>
+数据链路层：以太网、wifi</p>
+<p>连接：通信双方建立确认可以通信，不会将对方的消息丢弃，即为建立连接<br>
+长连接：网络是连接在运营商的内网，不具有真正的公网IP，因此当某个TCP连接在一段时间不通信之后，网关会出于网络性能考虑而关闭这条TCP连接和公网的连接通道，导致这个TCP连接被动关闭。使用心跳的方式保持长连接。</p>
+<p>简述 TCP 连接建立时的「三次（三向）握手」<br>
+简述 TCP 连接关闭时的「四次挥手」<br>
+为什么 TCP 连接在断开时是四次挥手而不是三次？</p>
+<h2 id="https">HTTPS</h2>
+<p>HTTPS，全称HTTP over SSL（或者HTTP over TLS），即工作在SSL上的HTTP，就是加密通信的HTTP<br>
+工作原理：在客户端和服务器之间使用非对称加密协商出一套对称秘钥，每次发送消息之前将内容加密，收到之后解密，达到数据的加密传输<br>
+为什么不直接用非对称加密？是因为非对称加密计算复杂，会影响网络通信的性能</p>
+<h3 id="https连接建立过程">HTTPS连接建立过程</h3>
+<p>1.Client hello  C-&gt;S 可选的TLS版本、可选的加密套件、客户端随机数<br>
+2.Server Hello   S-&gt;C  TLS版本、加密套件、服务器随机数<br>
+3.服务器证书信任建立  S-&gt;C<br>
+4.Pre-master Secret  C-&gt;S  使用服务器公钥加密<br>
+5.客户端通知：将使用加密通信  C-&gt;S<br>
+6.客户端发送：Finished   C-&gt;S<br>
+7.服务器通知：将使用加密通信   S-&gt;C<br>
+8.服务器发送：Finished   S-&gt;C</p>
+<p><strong>证书验证过程</strong><br>
+服务器发送自己的证书链到客户端（带有服务器的公钥、域名）<br>
+公钥+签名+证书签发机构公钥+签名... ... 根证书（操作系统自带）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Zygote为什么使用Socket，而不是Binder]]></title>
+        <id>https://PaIn22152.github.io/post/zygote-wei-shi-me-shi-yong-socketer-bu-shi-binder/</id>
+        <link href="https://PaIn22152.github.io/post/zygote-wei-shi-me-shi-yong-socketer-bu-shi-binder/">
+        </link>
+        <updated>2024-03-21T09:26:12.000Z</updated>
+        <content type="html"><![CDATA[<p>Zygote进程为什么用Socket而不是Binder?</p>
+<ol>
+<li>先后时序问题：Binder驱动是早于init进程加载的。而init进程是安卓系统启动的第一个进程。安卓中一般使用的Binder引用，都是保存在ServiceManager进程中的，而如果想从ServiceManager中获取到对应的Binder引用，前提是需要注册。init进程是先创建ServiceManager，后创建Zygote进程的。虽然Zygote更晚创建，但是也不能保证Zygote进程去注册binder的时候，ServiceManager已经初始化好了。注册时间点无法保证，AMS无法获取到Zygote的binder引用。</li>
+<li>多线程问题：Linux中fork进程是不推荐fork一个多线程的进程的，因为如果存在锁的情况下，会导致锁异常。而如果自身作为Binder机制的接收者，就会创建一个额外的线程来进行处理（发送者进程是无影响的）。所以，如果使用Binder机制，就会导致去fork一个多线程的进程。</li>
+<li>效率问题：AMS和Zygote之间使用的LocalSocket，相对于网络Socket，减少了数据验证等环节，所以其实效率相对于正常的网络Socket会大幅的提升。虽然还是要经过两次拷贝，但是由于数据量并不大，所以其实影响并不明显。</li>
+<li>Binder拷贝问题：如果使用Binder机制的话，从Zygote中fork出子进程会拷贝Zygote中Binder对象。从而多占用了一块无用的内存区域。而Binder对象不能释放。Binder的特殊性在于其是成对存在的，其分为Client端对象和Server端对象。假设我们使用Binder，如果要释放掉Server端Binder引用对象，就必须释放掉AMS中的Client端Binder对象，那这样就会导致AMS失去Binder从而无法正常向Zygote发送消息。而使用Socket通讯的话，fork出APP进程之后，APP进程会去主动的关闭掉这个Socket，从而释放这块区域。使用Binder会造成额外的内存占用。</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Surface详解]]></title>
+        <id>https://PaIn22152.github.io/post/surface-xiang-jie/</id>
+        <link href="https://PaIn22152.github.io/post/surface-xiang-jie/">
+        </link>
+        <updated>2024-03-15T07:44:49.000Z</updated>
+        <content type="html"><![CDATA[<p>test</p>
+]]></content>
+    </entry>
+</feed>

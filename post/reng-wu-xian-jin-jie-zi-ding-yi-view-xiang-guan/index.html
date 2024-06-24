@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-自定义view相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-自定义view相关</h2>
+            <div class="post-date">2024-05-11</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。自定义view相关</p>
+<!-- more -->
+<h2 id="绘制">绘制</h2>
+<p>自定义view时需要重新onDraw方法，绘制过程需要用到canvas画布和paint画笔<br>
+view的坐标系：<br>
+<img src="https://PaIn22152.github.io/post-images/1715408400417.png" alt="" loading="lazy"><br>
+绘制时使用的尺寸单位是px像素<br>
+dp转px的代码实现：</p>
+<pre><code class="language-kotlin">//dp 2 px
+val Float.dp
+    get() = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this,
+        Resources.getSystem().displayMetrics
+    )
+</code></pre>
+<p>当view大小发生变化时，会回调onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int)方法<br>
+path的方向有两种，Path.Direction.CW（clockwise）和Path.Direction.CCW（counter-clockwise），代表顺时针和逆时针<br>
+多个图形相交时，path的填充规则有4种：Path.FillType.WINDING（默认），Path.FillType.EVEN_ODD，Path.FillType.INVERSE_WINDING，Path.FillType.INVERSE_EVEN_ODD，后面两个是前面两个的反规则<br>
+具体怎么填充会结合方向和填充规则来判断，WINDING时，如果方向相反的穿插次数相等则为内部，不等为外部<br>
+双圆同向：<br>
+<img src="https://PaIn22152.github.io/post-images/1715409144404.png" alt="" loading="lazy"><br>
+双圆不同向<br>
+<img src="https://PaIn22152.github.io/post-images/1715409179090.png" alt="" loading="lazy"><br>
+EVEN_ODD时，不考虑方向，穿插奇数次则为内部，偶数次为外部<br>
+<img src="https://PaIn22152.github.io/post-images/1715409228071.png" alt="" loading="lazy"></p>
+<h3 id="绘制仪表盘">绘制仪表盘</h3>
+<p>canvas.drawArc()绘制弧形<br>
+使用PathEffect设置path的效果，PathDashPathEffect设置的是虚线的效果，来实现仪表盘上的刻度，方法如下<br>
+path.setPathEffect(PathDashPathEffect(path,advance,phase,style))<br>
+其中参数path表示刻度，advance表示两个刻度的间隔，phase表示提前量，是否提前移动一段距离，style表示拐角处风格。（advance和phase的字面意思和实际含义相反了）<br>
+使用PathMeasure计算弧长：pathMeasure.setPath(path1, false)<br>
+为了能使用PathMeasure，需要使用canvas.drawPath()绘制弧形：path.reset();path.addArc()<br>
+绘制过程需要使用到三角函数，已知角度和长度，可以通过cos方法和sin方法确定点的坐标，但是要注意，cos和sin传入的是弧度而不是角度，要先将角度转成弧度：Math.toRadians(angle)</p>
+<h3 id="绘制饼图">绘制饼图</h3>
+<p>canvas.drawArc()绘制扇形<br>
+canvas.transate结合canvas.save和canvas.restore来实现扇形偏移，使用cos和sin计算偏移位置</p>
+<p>已知点的坐标，计算相对于原点的角度时，使用atan计算出角度的取值范围是[-90,90]，atan2计算出角度的取值范围是(-180,180]，使用acos和asin计算出的值都不准确，所以这种情况应该使用atan2计算。测试代码和运行结果如下：</p>
+<pre><code class="language-kotlin">    private val points = arrayOf(
+        Point(5, 0),//0 x正轴，0°
+        Point(5, 5),//1 第一象限，45°
+        Point(0, 5),//2 y正轴，90°
+        Point(-5, 5),//3 第二象限，135°
+        Point(-500000, 1),//4 接近180，179.99°
+        Point(-5, 0),//5 x负轴，180°
+        Point(-500000, -1),//6 接近-180，-179.99°
+        Point(-5, -5),//7 第三象限，-135°
+        Point(0, -5),//8 y负轴，-90°
+        Point(5, -5),//9 第四象限，-45°
+    )
+    init {
+        for ((i, p) in points.withIndex()) {
+            val angle1 = Math.toDegrees(atan(p.y.toFloat() / p.x).toDouble())
+            val angle2 = Math.toDegrees(atan2(p.y.toDouble(), p.x.toDouble()))
+            val len = Math.sqrt((p.x * p.x + p.y * p.y).toDouble())
+            val acos = Math.toDegrees(acos(p.x / len))
+            val asin = Math.toDegrees(asin(p.y / len))
+            println(&quot;i=$i  angle1=${angle1}  angle2=${angle2}&quot;)
+            println(&quot;i=$i  acos=${acos}  asin=${asin}&quot;)
+        }
+    }
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1715419927707.png" alt="" loading="lazy"></figure>
+<h3 id="xfermode使用">Xfermode使用</h3>
+<p>加载图片到bitmap时，可以先获取图片的实际大小，根据实际大小和需要加载的大小设置缩放比，然后再进行加载，可以优化图片加载的性能，示例代码如下：</p>
+<pre><code class="language-kotlin">        fun getAvatar(res: Resources, width: Int): Bitmap {
+            //获取options对象
+            val options = BitmapFactory.Options()
+            //配置中设置属性获取图片的长宽设置
+            options.inJustDecodeBounds = true
+            //对图片进行解码
+            BitmapFactory.decodeResource(res, R.drawable.test, options)
+            //取消获取图片的长宽的设置
+            options.inJustDecodeBounds = false
+            options.inDensity = options.outWidth   //实际宽度
+            options.inTargetDensity = width   //目标宽度
+            return BitmapFactory.decodeResource(res, R.drawable.test, options)
+        }
+</code></pre>
+<p>使用Xfermode，一般需要配合离屏缓冲使用，具体过程如下：<br>
+Canvs.saveLayer()把绘制区域拉到单独的离屏缓冲<br>
+绘制 A 图形<br>
+Paint.setXfermode()设置 Xfermode<br>
+绘制 B 图形<br>
+Paint.setXfermode(null)恢复 Xfermode<br>
+Canvas.restoreToCount()把离屏缓冲中的合成后的图形放回绘制区域</p>
+<p>使用saveLayer是为了把互相作用的图形放在单独的位置绘制，不受View本身的影响，如果不使用saveLayer，那么绘制的目标区域将总是整个View的范围，两个图形的交叉区域就错了。</p>
+<p>canvas.save()和canvas.saveLayer()<br>
+save是保存坐标系状态，在save之后无论经过多少的坐标系变换，只要调用restore就能回到save的状态；示例代码：</p>
+<pre><code class="language-kotlin">        canvas.save()//保存当前状态A
+        canvas.clipPath(circulePath)//裁剪区域
+        canvas.drawBitmap(bitmap, MARGING, MARGING, paint)
+        canvas.restore()//恢复到状态A
+        canvas.drawOval(0f,0f,100.dp,100.dp,paint)//如果没有上面的save和restore，这一行的绘制没有效果
+</code></pre>
+<p>saveLayer会保存坐标系状态，并创建一个透明图层（离屏缓冲），后续的绘图操作都在新建的layer上面进行，当调用restore或者restoreToCount时更新到对应的图层和画布上；使用saveLayer时应该选择尽量小的区域，以优化性能</p>
+<h3 id="文字测量">文字测量</h3>
+<p>纵向的文字居中：<br>
+如果文字内容是静态的，可以使用textPaint.getTextBounds(textContent, 0, textContent.length, textBounds)获取到文字区域范围，然后减去偏移量(textBounds.top + textBounds.bottom) / 2，这个范围由文字大小和文字内容确定<br>
+如果文字内容是动态的，使用上面的方法会出现跳动现象，而应该使用textPaint.getFontMetrics(fontMetrics)，然后减去偏移量(fontMetrics.descent + fontMetrics.ascent) / 2f，这个范围跟文字内容无关，而是由文字大小和字体确定，其中top和bottom表示极限位置，ascent和descent表示核心位置</p>
+<p>文字左对齐时，可以使用getTextBounds() 之后的 left 来计算</p>
+<h3 id="范围裁切和几何变换">范围裁切和几何变换</h3>
+<p>使用canvas.clip相关api来实现范围裁切<br>
+范围裁切时会有毛边（锯齿），且无法去掉</p>
+<p>canvas几何变换，常用方法有：translate(x,y)  rotate(degree)   scale(x,y)   skew(x,y)<br>
+canvas做几何变换时，改变的是坐标系，后续的绘制都会受影响，需要注意</p>
+<p>使用camera来做三维效果，实际上是用二维变换来模拟出三维效果<br>
+有一个虚拟的camera在负Z轴，照射虚拟的三维物体生成一个二维的投影，来模拟出三维效果<br>
+camera相对平面的位置不可变，通过移动图像来达到移动轴心的效果<br>
+camera使用setlocation来调整放缩的视觉幅度，避免不同像素手机效果不一致，<br>
+camera.setlocation(0,0,-6*resources.displayMetrics.density)//xy值默认0，用处未知<br>
+对camera变换之后，使用camera.applyToCanval来应用到canvas</p>
+<h3 id="属性动画和硬件加速">属性动画和硬件加速</h3>
+<p>什么是属性动画？就是不断地一点一点地改变view的属性，从而改变显示效果而形成一个动画效果<br>
+ViewPropertyAnimator<br>
+使用方式：</p>
+<pre><code class="language-kotlin">        myview.animate()
+            .translationX(100f)
+            .translationYBy(100f)
+            .start()
+</code></pre>
+<p>可以连续调用来设置多个动画<br>
+本质上就是不断地修改属性值，每隔10ms调用一次</p>
+<p>ObjectAnimator<br>
+使用方式：</p>
+<pre><code class="language-kotlin">        val animator = ObjectAnimator.ofFloat(myview, &quot;radius&quot;, 5f, 10f)
+        animator.start()
+</code></pre>
+<p>优势在于可以为自定义属性设置动画<br>
+自定义属性需要设置getter和setter方法，并且需要在setter里调用invalidate()来触发重绘</p>
+<p>AnimatorSet，对多个动画进行合成，先后顺序或者并列顺序都可以</p>
+<p>PropertyValuesHolder，用于设置更加详细的动画，例如多个属性应用于同一对象<br>
+或者配合KeyFrame，对一个属性分多个段，示例代码:</p>
+<pre><code class="language-kotlin">        val len = 200f
+        val keyFrame1 = Keyframe.ofFloat(0.2f, 0.2f * len)//参数0 fraction表示时间完成度，参数1 value表示对应属性的值
+        val keyFrame2 = Keyframe.ofFloat(0.4f, 0.6f * len)
+        val keyFrame3 = Keyframe.ofFloat(1f, 1f * len)
+        val holer1 = PropertyValuesHolder.ofKeyframe(&quot;radius&quot;, keyFrame1, keyFrame2, keyFrame3)
+        val holer2 = PropertyValuesHolder.ofKeyframe(&quot;scaleX&quot;, keyFrame1, keyFrame2, keyFrame3)
+        val animator = ObjectAnimator.ofPropertyValuesHolder(myview, holer1, holer2)
+        animator.start()
+</code></pre>
+<p>Interpolator，插值器，用于设置时间完成度到动画完成度的计算公式，直白地说即设置动画的速度曲线，常用的有： AccelerateDecelerateInterpolator 、AccelerateInterpolator、DecelerateInterpolator 、LinearInterpolator 。</p>
+<p>TypeEvaluator，估值器，用于设置动画完成度到属性具体值的计算公式，对于指定类型的属性，精确计算出每一刻的属性值。默认的ofInt ofFloat已经有了自带的IntEvaluator FloatEvaluator，有的时候需要自己设置Evaluator。例如对于颜色，需要为int类型的颜色设置ArgbEvaluator，而不是IntEvaluator。对于不支持的类型，也可以使用ofObject来创建Animator的同时就设置上Evaluator</p>
+<p>ValueAnimator，这是最基本的Animator，不和具体的某个对象联动，而是直接对两个数值进行渐变计算，使用很少</p>
+<h3 id="硬件加速">硬件加速</h3>
+<p>硬件加速是什么？<br>
+软件绘制，把要绘制的内容写进一个 Bitmap，然后在之后的渲染过程中，这个 Bitmap 的像素内容被直接用于渲染到屏幕。这种绘制方式的主要计算工作在于把绘制操作转换为像素的过程（例如由一句 Canvas.drawCircle() 来获得一个具体的圆的像素信息），这个过程的计算是由 CPU 来完成的，大致流程如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1715679981496.png" alt="" loading="lazy"></p>
+<p>硬件绘制，把绘制的内容转换为 GPU 的操作保存了下来，然后就把它交给 GPU，最终由 GPU 来完成实际的显示工作，硬件绘制可以使绘制流程加速，所以也叫硬件加速，大致流程如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1715680097798.png" alt="" loading="lazy"></p>
+<p>为什么能加速？<br>
+1、GPU分摊了工作<br>
+2、GPU设计之初就是为了做绘制，所以绘制简单图形有先天的优势，使得绘制更快<br>
+3、由于绘制流程的不同，硬件加速在界面内容发生重绘的时候绘制流程可以得到优化，避免了一些重复操作，从而大幅提升绘制效率</p>
+<blockquote>
+<p>关于第三点的详细说明<br>
+前面说到，在硬件加速关闭时，绘制内容会被 CPU 转换成实际的像素，然后直接渲染到屏幕。具体来说，这个「实际的像素」，它是由 Bitmap 来承载的。在界面中的某个 View 由于内容发生改变而调用 invalidate() 方法时，如果没有开启硬件加速，那么为了正确计算 Bitmap 的像素，这个 View 的父 View、父 View 的父 View 乃至一直向上直到最顶级 View，以及所有和它相交的兄弟 View，都需要被调用 invalidate()来重绘。一个 View 的改变使得大半个界面甚至整个界面都重绘一遍，这个工作量是非常大的。<br>
+而在硬件加速开启时，前面说过，绘制的内容会被转换成 GPU 的操作保存下来（承载的形式称为 display list，对应的类也叫做 DisplayList），再转交给 GPU。由于所有的绘制内容都没有变成最终的像素，所以它们之间是相互独立的，那么在界面内容发生改变的时候，只要把发生了改变的 View 调用 invalidate() 方法以更新它所对应的 GPU 操作就好，至于它的父 View 和兄弟 View，只需要保持原样。那么这个工作量就很小了。<br>
+正是由于上面的原因，硬件加速不仅是由于 GPU 的引入而提高了绘制效率，还由于绘制机制的改变，而极大地提高了界面内容改变时的刷新效率。</p>
+</blockquote>
+<p>硬件加速的缺陷？<br>
+兼容性。由于使用GPU的绘制无法完成某些复杂绘制，因此对于一些特定的api，需要关闭硬件加速来使用CPU进行绘制。具体的 API 限制和 API 版本的关系如下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1715680620497.png" alt="" loading="lazy"></p>
+<p>离屏缓冲<br>
+指单独的一个绘制view的区域</p>
+<p>setLayerType和saveLayer<br>
+setLayerType是对整个view，不能针对onDraw里面的某一具体过程，他的作用是为绘制设置一个离屏缓冲，让后面的绘制都单独写在这个离屏缓冲内。如果参数填写LAYER_TYPE_SOFTWARE，会把离屏缓冲设置为一个bitmap，即 使用软件绘制来进行缓冲，这样就导致在设置离屏缓冲的同时，将硬件加速关闭了。所以这个方法常用来关闭view级别的硬件加速。<br>
+自带属性做动画时withlayer，在动画过程中开启view级别的离屏缓冲，可以优化动画性能。需要注意的是，View Layer 可以加速无 invalidate() 时的刷新效率，但对于需要调用 invalidate() 的刷新无法加速。View Layer 绘制所消耗的实际时间是比不使用 View Layer 时要高的，所以要慎重使用。<br>
+SaveLayer是针对canvas的，可以圈出哪一部分绘制要用离屏缓冲。</p>
+<h3 id="bitmap和drawable">Bitmap和Drawable</h3>
+<p>Bitmap和Drawable互转代码：</p>
+<pre><code class="language-kotlin">public inline fun Bitmap.toDrawable(
+    resources: Resources
+): BitmapDrawable = BitmapDrawable(resources, this)
+
+public fun Drawable.toBitmap(
+    @Px width: Int = intrinsicWidth,
+    @Px height: Int = intrinsicHeight,
+    config: Bitmap.Config? = null
+): Bitmap {
+    if (this is BitmapDrawable) {
+        //如果Drawable是BitmapDrawable类型，且config相同（使用equals比较），直接使用BitmapDrawable的Bitmap属性
+        if (config == null || bitmap.config == config) {
+            //如果图片的宽高相等，直接返回
+            if (width == bitmap.width &amp;&amp; height == bitmap.height) {
+                return bitmap
+            }
+            //宽高不等，缩放后返回
+            return Bitmap.createScaledBitmap(bitmap, width, height, true)
+        }
+    }
+    
+    val (oldLeft, oldTop, oldRight, oldBottom) = bounds
+    
+    //创建出bitmap对象
+    val bitmap = Bitmap.createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
+    setBounds(0, 0, width, height)
+    draw(Canvas(bitmap))//创建出Canvas对象，并使用Drawable通过Canvas把内容绘制到Bitmap中
+    
+    setBounds(oldLeft, oldTop, oldRight, oldBottom)
+    return bitmap
+}
+</code></pre>
+<p>实际上Bitmap和Drawable是两个不同的概念，所谓的互转，其实是使用其中一个获得另外一个对象</p>
+<p>Bitmap是什么？字面意思是位图，是图片信息的存储，表示像素数据的映射，把实际的像素数据映射到内存对象，对每个像素的颜色做一一记录<br>
+Drawable是什么？是一个绘制工具，调⽤Drawable.draw(Canvas) 可以把 Drawable 设置的绘制内容绘制到 Canvas中。Drawable 内部存储的是绘制规则，这个规则可以是⼀个具体的 Bitmap，也可以是⼀个纯粹的颜⾊，甚⾄可以是⼀个抽象的、灵活的描述，比如定义形状、颜色、边界、渐变等。由于 Drawable 存储的只是绘制规则，因此在它的 draw() ⽅法被调⽤前，需要先调⽤Drawable.setBounds() 来为它设置绘制边界。</p>
+<p>自定义Drawable<br>
+重新以下方法，在draw(canvas: Canvas)方法中做具体绘制</p>
+<pre><code class="language-kotlin">    override fun draw(canvas: Canvas) {
+        //具体内容绘制
+    }
+    
+    override fun setAlpha(alpha: Int) {
+        paint.alpha = alpha
+    }
+    
+    override fun getAlpha(): Int {
+        return paint.alpha
+    }
+    
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        paint.colorFilter = colorFilter
+    }
+    
+    override fun getColorFilter(): ColorFilter? {
+        return paint.colorFilter
+    }
+    
+    override fun getOpacity(): Int {
+        return when (paint.alpha) {
+            0 -&gt; PixelFormat.TRANSPARENT
+            0xff -&gt; PixelFormat.OPAQUE
+            else -&gt; PixelFormat.TRANSLUCENT
+        }
+    }
+</code></pre>
+<p>自定义Drawable是一个更加抽象和专注的、仅仅用来绘制的自定义view模块，可以用来做代码复用，需要共享在多个View之间的绘制代码，可以写在自定义Drawable里，然后再多个自定义View里引用Drawable实现绘制，而不用互相粘贴代码。</p>
+<h3 id="自定义属性">自定义属性</h3>
+<p>在value/attrs中增加自定义属性字段</p>
+<pre><code class="language-html">&lt;resources&gt;
+  &lt;declare-styleable name=&quot;MaterialEditText&quot;&gt;
+    &lt;attr name=&quot;showFloatText&quot; format=&quot;boolean&quot;/&gt;
+    &lt;attr name=&quot;testName&quot; format=&quot;string&quot;/&gt;
+  &lt;/declare-styleable&gt;
+&lt;/resources&gt;
+</code></pre>
+<p>然后就可以在xml中给view设置属性：app:showFloatText=&quot;false&quot;<br>
+在自定义view 中通过一下代码获取自定义属性：</p>
+<pre><code class="language-kotlin">        val attr = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText)
+        floatHintAble = attr.getBoolean(R.styleable.MaterialEditText_showFloatText, true)
+        attr.recycle()
+</code></pre>
+<p>可以更加灵活地获取：</p>
+<pre><code class="language-kotlin">        val attrRes = intArrayOf(R.attr.showFloatText, R.attr.testName)//表示需要过滤出来的数组
+        val attr = context.obtainStyledAttributes(attrs, attrRes)//把在数组中的属性过滤出来
+        val showFloatText = attr.getBoolean(0, true)//根据数组索引获取值
+        val testName = attr.getString(1)
+        attr.recycle()//使用完后资源回收
+</code></pre>
+<h2 id="布局">布局</h2>
+<p>布局过程：确定每个view的位置和尺寸。作用是为绘制和触摸范围做支持，让绘制知道往哪里绘制，让触摸反馈知道用户点的是哪里</p>
+<h3 id="流程">流程</h3>
+<h4 id="整体">整体</h4>
+<p>从整体看，分为测量流程和布局流程，测量流程是从根view递归调用每一级子view的measure方法，对它们进行测量。布局流程是从根view递归调用每一级子view的layout方法，把测量过程得出的子view的位置和尺寸传给子view保存。为什么需要分两个流程，是因为测量过程比较复杂，可能会重复测量。</p>
+<h4 id="个体">个体</h4>
+<p>从个体看，对每个view：</p>
+<ol>
+<li>运行前，开发者在xml文件里写入对view的布局要求layout_xxx；</li>
+<li>父view在自己的onMeasure中，根据开发者在xml中写的对子view的要求，和自己的可用空间，得出对子view的具体尺寸要求；</li>
+<li>子view在自己的onMeasure中，根据父view的要求和自己的特性算出自己的期望尺寸；<br>
+如果是viewGroup，还会在这里调用每个子view的measure进行测量；</li>
+<li>父view在子view计算出期望尺寸后，得出子view的实际尺寸和位置；</li>
+<li>子view在自己的layout方法中，将父view传进来的自己的实际尺寸和位置保存<br>
+如果是viewGroup，还会在onLayout里调用每个子view的layout把它们的尺寸位置传给它们；</li>
+</ol>
+<h3 id="自定义布局">自定义布局</h3>
+<p>自定义布局分类：</p>
+<ol>
+<li>继承已有的view，简单改写它们的尺寸，重写onMeasure；</li>
+<li>对自定义view完成进行自定义尺寸计算，重写onMeasure；</li>
+<li>自定义Layout，重写onMeasure和onLayout；</li>
+</ol>
+<p>1：重写 onMeasure()<br>
+⽤ getMeasuredWidth() 和 getMeasuredHeight() 获取到测量出的尺⼨<br>
+计算出最终要的尺⼨<br>
+⽤ setMeasuredDimension(width, height) 把结果保存<br>
+为什么不重写 layout()？<br>
+因为重新 layout() 会导致「不听话」父view不知道子view的实际测量和布局，导致结果不可控</p>
+<p>2：重写 onMeasure()<br>
+计算出⾃⼰的尺⼨<br>
+⽤ resolveSize() 或者 resolveSizeAndState() 修正结果<br>
+使⽤ setMeasuredDimension(width, height) 保存结果</p>
+<p>3：重写onMeasure和onLayout<br>
+measureChildWithMargins方法测量子view，并重写generateLayoutParams</p>
+<pre><code class="language-kotlin">    override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
+        return MarginLayoutParams(context, attrs)
+    }
+</code></pre>
+<h2 id="触摸反馈">触摸反馈</h2>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/9fMzh3BG8l/" class="tag">
+                    自定义view
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/gei-android-kai-fa-zhe-de-rxjava-xiang-jie/">
+                  <h3 class="post-title">
+                    给Android开发者的RxJava详解
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

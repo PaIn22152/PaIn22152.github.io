@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Flutter开发知识点全记录 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Flutter开发知识点全记录</h2>
+            <div class="post-date">2020-10-01</div>
+            
+              <div class="feature-container" style="background-image: url('https://PaIn22152.github.io/post-images/flutter-kai-fa-zhi-shi-dian-quan-ji-lu.jpeg')">
+              </div>
+            
+            <div class="post-content">
+              <h2 id="关于">关于</h2>
+<p>这是一篇学习笔记博客，会记录个人flutter日常开发中的一些知识点，长期更新。如果某个知识点比较复杂，会另外写一篇博客链接到此。</p>
+<h2 id="常用工具">常用工具</h2>
+<h3 id="1强制手机竖屏">1.强制手机竖屏</h3>
+<p>在应用程序根MaterialApp之前，Widget build(BuildContext context)方法中，添加如下代码（ios可能不起作用，还未测试）</p>
+<pre><code class="language-dart">SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+</code></pre>
+<h3 id="2监听页面的生命周期">2.监听页面的生命周期</h3>
+<p>项目中经常会有一些需求，需要监听页面打开关闭等，在android使用onResume，onPause等方法实现，但是在flutter没有默认的生命周期方法，可以使用RouteAware+RouteObserver实现。<br>
+首先要给根MaterialApp的navigatorObservers属性赋值（比如routeObserver），然后State的实现类需要<a href="https://juejin.cn/post/6844903766492200974">混合</a>RouteAware类，然后在State的didChangeDependencies方法下订阅路由状态，然后就可以在RouteAware的四个方法下监听页面变化。<br>
+假如有3个页面，分别是A、B、C，跳转逻辑由A-&gt;B-&gt;C。<br>
+didPopNext：在C页面关闭后，B页面调起该方法，类似onResume()；<br>
+didPush: 当由A打开B页面时，B页面调起该方法，类似onCreate()；<br>
+didPop: 当B页面关闭时，B页面调起该方法，类似onDestroy()；<br>
+didPushNext: 当从B页面打开C页面时，该方法被调起，类似onPause()。<br>
+部分关键代码如下</p>
+<pre><code class="language-dart">//路由状态观察者初始化
+final RouteObserver&lt;Route&lt;dynamic&gt;&gt; routeObserver = RouteObserver();
+//MaterialApp赋值
+navigatorObservers: [routeObserver],
+//state 实现类混合RouteAware类
+class BaseState&lt;T extends StatefulWidget&gt; extends State with RouteAware
+//订阅路由状态
+@override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context)); //订阅
+    super.didChangeDependencies();
+  }
+</code></pre>
+<h3 id="3国际化">3.国际化</h3>
+<p>使用Intl实现。<a href="https://juejin.cn/post/6844903823119482888">参考链接</a></p>
+<h3 id="4路由统一管理和路由跳转动画">4.路由统一管理和路由跳转动画</h3>
+<p>在应用程序的根MaterialApp，设置onGenerateRoute: MyRouter.generateRoute属性，其中MyRoute代码如下</p>
+<pre><code class="language-dart">///路由管理类，管理所有路由跳转
+class MyRouter {
+
+///应用中所有界面
+  static const String home = 'home'; //主界面
+  static const String play = 'play'; //游戏界面
+  static const String pause = 'pause'; //游戏暂停界面
+
+  static Route&lt;dynamic&gt; generateRoute(RouteSettings settings) {
+
+///设置onGenerateRoute属性后，所有路由跳转都会走到此，路由传值也在此设置，例如下面的PlayRoute
+
+    Map arguments = settings.arguments;
+    switch (settings.name) {
+      //根据名称跳转相应页面
+      case home:
+        return NoAnimRouter(child: HomeRoute());
+      case pause:
+        return NoAnimRouter(child: PauseRoute());
+      case play:
+        return ScaleRouter(
+            child: PlayRoute(
+          sudokuBean: arguments[arg_key_sudoku],
+          handle: arguments[arg_key_handle],
+          handleStack: arguments[arg_key_handleStack],
+          time: arguments[arg_key_time],
+          noteMap: arguments[arg_key_note],
+          inputList: arguments[arg_key_inputlist],
+        ));
+      default:
+        return MaterialPageRoute(
+            builder: (_) =&gt; Scaffold(
+                  body: Center(
+                    child: Text('No route defined for ${settings.name}'),
+                  ),
+                ));
+    }
+  }
+}
+</code></pre>
+<p>常用的路由跳转动画，代码如下（<a href="https://github.com/xiaweizi/SimplicityWeather">代码来源</a>，RESPECT）</p>
+<pre><code class="language-dart">import 'package:flutter/material.dart';
+///路由动画
+//缩放路由动画
+class ScaleRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  ScaleRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+          transitionDuration: Duration(milliseconds: durationMs),
+          transitionsBuilder: (context, a1, a2, child) =&gt; ScaleTransition(
+            scale: Tween(begin: 0.0, end: 1.0)
+                .animate(CurvedAnimation(parent: a1, curve: curve)),
+            child: child,
+          ),
+        );
+}
+//渐变透明路由动画
+class FadeRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  final RouteSettings settings;
+  FadeRouter(
+      {this.child,
+      this.durationMs = 500,
+      this.curve = Curves.fastOutSlowIn,
+      this.settings})
+      : super(
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            settings: settings,
+            transitionDuration: Duration(milliseconds: durationMs),
+            transitionsBuilder: (context, a1, a2, child) =&gt; FadeTransition(
+                  opacity: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: child,
+                ));
+}
+//旋转路由动画
+class RotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  RotateRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            transitionDuration: Duration(milliseconds: durationMs),
+            transitionsBuilder: (context, a1, a2, child) =&gt; RotationTransition(
+                  turns: Tween(begin: 0.1, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: child,
+                ));
+}
+//右---&gt;左
+class Right2LeftRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Right2LeftRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child,
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) =&gt;
+                SlideTransition(
+                  child: child,
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(1.0, 0.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                ));
+}
+//左---&gt;右
+class Left2RightRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  List&lt;int&gt; mapper;
+  Left2RightRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : assert(true),
+        super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) {
+              return child;
+            },
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(-1.0, 0.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//上---&gt;下
+class Top2BottomRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Top2BottomRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) {
+              return child;
+            },
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(0.0, -1.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//下---&gt;上
+class Bottom2TopRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  Bottom2TopRouter(
+      {this.child, this.durationMs = 500, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child,
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              child,
+            ) {
+              return SlideTransition(
+                  position: Tween&lt;Offset&gt;(
+                    begin: Offset(0.0, 1.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(CurvedAnimation(parent: a1, curve: curve)),
+                  child: child);
+            });
+}
+//缩放+透明+旋转路由动画
+class ScaleFadeRotateRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  final int durationMs;
+  final Curve curve;
+  ScaleFadeRotateRouter(
+      {this.child, this.durationMs = 1000, this.curve = Curves.fastOutSlowIn})
+      : super(
+            transitionDuration: Duration(milliseconds: durationMs),
+            pageBuilder: (ctx, a1, a2) =&gt; child, //页面
+            transitionsBuilder: (
+              ctx,
+              a1,
+              a2,
+              Widget child,
+            ) =&gt;
+                RotationTransition(
+                  //旋转动画
+                  turns: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+                    parent: a1,
+                    curve: curve,
+                  )),
+                  child: ScaleTransition(
+                    //缩放动画
+                    scale: Tween(begin: 0.0, end: 1.0)
+                        .animate(CurvedAnimation(parent: a1, curve: curve)),
+                    child: FadeTransition(
+                      opacity: //透明度动画
+                          Tween(begin: 0.5, end: 1.0).animate(
+                              CurvedAnimation(parent: a1, curve: curve)),
+                      child: child,
+                    ),
+                  ),
+                ));
+}
+//无动画
+class NoAnimRouter&lt;T&gt; extends PageRouteBuilder&lt;T&gt; {
+  final Widget child;
+  NoAnimRouter({this.child})
+      : super(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) =&gt; child,
+            transitionDuration: Duration(milliseconds: 0),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =&gt; child);
+}
+</code></pre>
+<h3 id="5屏幕适配">5.屏幕适配</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/flutter_screenutil">flutter_screenutil</a>，适配原理和android的今日头条适配方案一致，按宽度适配，填入设计稿的设备屏幕尺寸，相关代码如下，在应用的第一个界面的Widget build(BuildContext context)方法下初始化即可，</p>
+<pre><code class="language-dart">///初始化，设置适配尺寸 (填入设计稿中设备的屏幕尺寸)
+ScreenUtil.init(context, designSize: Size(375, 667), allowFontScaling: true);
+///使用
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+height: 300.w
+fontSize: 35.sp
+</code></pre>
+<h3 id="6手机唯一标识uuid">6.手机唯一标识uuid</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/device_info">device_info</a>，相关代码如下</p>
+<pre><code class="language-dart">///设备唯一标识
+Future&lt;String&gt; getUniqueId() async {
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+    logD(&quot;ios唯一设备码：&quot; + iosDeviceInfo.identifierForVendor);
+    return 'IOS_' + iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  } else if (Platform.isAndroid) {
+    AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+    logD(&quot;android唯一设备码：&quot; + androidDeviceInfo.androidId);
+    return 'AND_' + androidDeviceInfo.androidId; // unique ID on Android
+  } else {
+    logD(&quot;Platform not support.&quot; + Platform.operatingSystem);
+    return &quot;Platform not support.&quot; + Platform.operatingSystem;
+  }
+}
+</code></pre>
+<h3 id="7log">7.log</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/logger">logger</a>，相关代码如下</p>
+<pre><code class="language-dart">final logger = Logger(
+  printer: PrettyPrinter(),
+);
+logD(dynamic d) {
+    logger.d(d);
+}
+</code></pre>
+<h3 id="8sp">8.sp</h3>
+<p>使用的插件是<a href="https://pub.dev/packages/shared_preferences">shared_preferences</a>，做了一些简单封装，代码如下</p>
+<pre><code class="language-dart">///sp实现类，所有sp相关的，都统一在此写，包括put和get
+import 'package:shared_preferences/shared_preferences.dart';
+
+SharedPreferences _sp;
+
+Future&lt;bool&gt; spInit() async {
+  _sp ??= await SharedPreferences.getInstance();
+  return Future&lt;bool&gt;.value(true);
+}
+
+//get的简单封装，增加默认返回值
+dynamic _spGetDef(String key, dynamic def) {
+  final dynamic res = _sp?.get(key);
+  if (res == null) {
+    return def;
+  } else
+    return res;
+}
+
+//put的简单封装
+Future&lt;bool&gt; _spPutString(String key, String value) async {
+  await spInit();
+  return _sp?.setString(key, value);
+}
+
+Future&lt;bool&gt; _spPutInt(String key, int value) async {
+  await spInit();
+  return _sp?.setInt(key, value);
+}
+
+Future&lt;bool&gt; _spPutDouble(String key, double value) async {
+  await spInit();
+  return _sp?.setDouble(key, value);
+}
+
+Future&lt;bool&gt; _spPutBool(String key, bool value) async {
+  await spInit();
+  return _sp?.setBool(key, value);
+}
+
+//测试
+const String _key_test = '_key_test';
+
+Future&lt;bool&gt; spTestPut(String s) async {
+  return _spPutString(_key_test, s);
+}
+
+String spTestGet() {
+  return _spGetDef(_key_test, '');
+}
+
+</code></pre>
+<h2 id="widget相关">widget相关</h2>
+<h3 id="1类似android上的viewpagertablayout实现效果">1.类似android上的viewpager+tabLayout实现效果</h3>
+<p>在flutter上可以使用PageView+bottomNavigationBar实现。<br>
+PageView默认使用的回弹效果和android上的一样，可以使用physics这个属性去修改，如果使用ClampingScrollPhysics，则page不再可以滑动，也不会有回弹效果；如果使用BouncingScrollPhysics，回弹效果和ios类似，也可以使用其他实现类，具体效果自测。pageSnapping 属性控制滚动方式，默认true的情况下，PageView都是一页一页翻的，如果设置成false，这个PageView就可以一点点滚动，就是不用整页滚动过去，滚动到一半的时候也能停下来，具体效果自测。</p>
+<h3 id="2view点击效果">2.view点击效果</h3>
+<p>使用InkWell实现，borderRadius属性修改点击效果的圆角。enableFeedback: false属性关闭反馈（开启反馈的情况下，部分android手机点击后会有点击音效）</p>
+<h3 id="3linearlayout权重">3.LinearLayout权重</h3>
+<p>android中，使用LinearLayout的weight实现权重，在flutter可以使用Row（或者Column）+Expanded实现，Expanded的flex属性即为权重。</p>
+<h3 id="4监听back按钮">4.监听back按钮</h3>
+<p>在Widget build(BuildContext context)方法下，使用WillPopScope包装Scaffold，然后相关代码在onWillPop属性下写。</p>
+<pre><code class="language-dart">Future&lt;bool&gt; _finish() {
+    ///do something
+    return Future.value(true);
+  }
+
+ return WillPopScope(
+      onWillPop: _finish,
+      child: Scaffold());
+</code></pre>
+<h3 id="5保存page状态">5.保存page状态</h3>
+<p>使用PageView或者TabBarView时，当page页面发生切换时，默认会销毁，再切换回来会重绘。如果需要保存page的状态，让他不会销毁，可以让State实现类混合AutomaticKeepAliveClientMixin，实现wantKeepAlive方法并返回true。</p>
+<h3 id="6修改控件大小">6.修改控件大小</h3>
+<p>有一些控件（比如CupertinoSwitch），大小是固定的，不能直接通过设置宽高来控制他的大小，可以使用缩放的方式实现，代码如下</p>
+<pre><code class="language-dart"> child: Transform.scale(
+                scale: 0.88,
+                child: CupertinoSwitch(
+                    activeColor: app_theme_color,
+                    value: on,
+                    onChanged: (b) {
+                      callback(b);
+                    }),
+              ),
+</code></pre>
+<h3 id="7dialog相关">7.dialog相关</h3>
+<p>barrierDismissible控制是否可以点击阴影取消dialog。<br>
+使用WillPopScope包装AlertDialog，可以控制返回键是否取消dialog。<br>
+想自定义圆角，可以使用AlertDialog的shape属性+ClipRRect裁剪content，代码如下</p>
+<pre><code class="language-dart">AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.w))),
+content: ClipRRect(
+                borderRadius: BorderRadius.circular(10.w),
+</code></pre>
+<p>监听dialog的取消，showDialog（或者showCupertinoDialog）方法是异步的，会返回Future，使用 await showDialog(...); testBlock; 当dialog取消后会执行 testBlock</p>
+<h3 id="8text多余的黄线问题">8.Text多余的黄线问题</h3>
+<p>当使用Text出现多余的黄线时，可以将style中的inherit参数设置为false解决<br>
+比如使用hero动画包装Text，动画时会出现黄色的下划线，可以使用以上方法解决</p>
+<h2 id="dart语法相关">dart语法相关</h2>
+<h3 id="1json和model类互转">1.json和Model类互转</h3>
+<p>只需要Model类实现两个如下的方法，然后就可以直接使用json</p>
+<pre><code class="language-dart">///实现方法
+Point.fromJson(Map&lt;String, dynamic&gt; json)
+      : x = json['x'],
+        y = json['y'];
+
+  Map toJson() {
+    Map map = new Map();
+    map[&quot;x&quot;] = this.x;
+    map[&quot;y&quot;] = this.y;
+    return map;
+  }
+
+  import 'dart:convert';
+  ///Model类转json字符串
+  String str = json.encode(bean);
+
+  ///json字符串转Model类
+  Bean bean = Bean.fromJson(json.decode(str));
+</code></pre>
+<h2 id="android平台相关">android平台相关</h2>
+<h2 id="ios平台相关">ios平台相关</h2>
+<h2 id="其他">其他</h2>
+<h3 id="1aes加密">1.AES加密</h3>
+<p>使用插件<a href="https://pub.dev/packages/encrypt">encrypt</a>实现，代码如下</p>
+<pre><code class="language-dart">import 'package:encrypt/encrypt.dart' as my_encrypt;
+String aesDecoded(String s) {
+  //加密的key和偏移量，不可改动，要和对json加密时使用一样
+  final key = my_encrypt.Key.fromUtf8('f4k9f5w7f8g4er26'); //加密key
+  final iv = my_encrypt.IV.fromUtf8('5e8y6w45ju8w9jq8'); //偏移量
+  //设置cbc模式
+  final encrypter = my_encrypt.Encrypter(my_encrypt.AES(key, mode: my_encrypt.AESMode.cbc));
+  //encrypter.encrypt(s, iv: iv);//加密
+  final decrypted = encrypter.decrypt(my_encrypt.Encrypted.from64(s), iv: iv);
+  return decrypted;
+}
+</code></pre>
+<p>对应的java AES加解密代码如下</p>
+<pre><code class="language-java">
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+private static final String KEY = &quot;f4k9f5w7f8g4er26&quot;;// 密匙
+    private static final String OFFSET = &quot;5e8y6w45ju8w9jq8&quot;; // 偏移量
+    private static final String ENCODING = &quot;UTF-8&quot;; // 编码
+    private static final String ALGORITHM = &quot;AES&quot;;//算法
+    private static final String CIPHER_ALGORITHM = &quot;AES/CBC/PKCS5Padding&quot;; // 默认的加密算法
+
+    /**
+     * 加密
+     */
+    public static String encrypt(String data) throws Exception {
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
+        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        byte[] encrypted = cipher.doFinal(data.getBytes(ENCODING));
+        return new BASE64Encoder().encode(encrypted);//此处使用BASE64做转码。
+        //当数据比较大时，生成的string会多出换行符，待优化
+    }
+
+    /**
+     * 解密
+     */
+    public static String decrypt(String data) throws Exception {
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(&quot;ASCII&quot;), ALGORITHM);
+        IvParameterSpec iv = new IvParameterSpec(OFFSET.getBytes());//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+        byte[] buffer = new BASE64Decoder().decodeBuffer(data);
+        byte[] encrypted = cipher.doFinal(buffer);
+        return new String(encrypted, ENCODING);//此处使用BASE64做转码。
+    }
+</code></pre>
+<h3 id="2实际开发中用到的一些工具类型网站">2.实际开发中用到的一些工具类型网站</h3>
+<p><a href="http://laomengit.com/flutter/widgets/widgets_structure.html">Flutter组件介绍-老孟</a><br>
+<a href="https://weilu.blog.csdn.net/article/details/100108123">Flutter开发中的一些Tips</a><br>
+<a href="https://pub.dev/">pub查找-官方</a><br>
+<a href="https://javiercbk.github.io/json_to_dart/">Json 2 Dart-json生成bean</a><br>
+<a href="https://juejin.cn/book/6844733827265331214">Flutter绘制学习-掘金小册，需购买</a></p>
+<h3 id="3奇奇怪怪的问题">3.奇奇怪怪的问题</h3>
+<p>3.1 在根界面调用pop（退出应用）时，state的deactivate方法和dispose方法不会执行。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android工程师34讲-Android核心技术 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android工程师34讲-Android核心技术</h2>
+            <div class="post-date">2022-04-20</div>
+            
+            <div class="post-content">
+              <h1 id="1android是如何通过activity进行交互的">1Android是如何通过Activity进行交互的</h1>
+<p>taskAffinity可以指定Activity的任务栈，但是需要配合singleTask或者SingleInstance一起使用。</p>
+<p>taskAffinity+allowTaskReparenting<br>
+allowTaskReparenting赋予Activity在Task之间转移的特性。一个在后台任务栈中的Activity A，当有其他任务栈进入前台，并且taskAffinity和A相同，则会自动将A添加到当前启动的任务栈中。<br>
+当一个应用A启动来应用B的某个Activity后，如果这个Activity的allowTaskReparenting属性为true，那么当B被启动后，此Activity会直接从应用A的任务栈移到B的任务栈。<br>
+再具体点，比如现在有两个应用A和B，A启动来B的Activity C，然后按Home键回到桌面，然后再点击B的桌面图标，这个时候并不是启动B的主Activity，而是重新显示C。</p>
+<p>通过Binder传递数据时，对数据大小有限制，大小为1M-8K，所以使用Intent传递的数据都不能大于这个值，解决办法可以是使用transient修饰非必须数据，或者将对象转为JSON字符串，减少数据量，或者使用EventBus等事件总线三方库传递数据。</p>
+<p>当应用中有多个进程时，会导致应用的Application的onCreate方法被执行多次，需要通过进程名称判断是不是符合的进程，然后才在符合的进程中做相应的操作。</p>
+<p>从Android10版本开始，系统限制来后台启动Activity的操作，官方建议使用通知来替代直接启动Activity，如果一定要启动，可以申请悬浮窗权限后可以正常启动。</p>
+<h1 id="2touch事件分发">2Touch事件分发</h1>
+<p>事件分发在ViewGroup中，主要涉及到的方法有dispatchTouchEvent、onInterceptTouchEvent、onTouchEvent。<br>
+在dispatchTouchEvent中，主要有三步：<br>
+1.检查当前ViewGroup是否需要拦截事件，如果拦截则此事件不再传递给子view，如果之前已经传递来，则以CANCEL的方式通知子view；<br>
+2.如果事件不拦截，将事件分发给子View，如果子view将事件捕获，则将mFirstTouchTarget赋值给捕获Touch事件的View；<br>
+3.根据mFirstTouchTarget，再次分发事件</p>
+<p>步骤1的具体代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650468702504.png" alt="" loading="lazy"><br>
+图中红框标出来是否需要拦截的条件：<br>
+如果事件为DOWN事件，则调用onInterceptTouchEvent进行拦截判断；<br>
+或者mFirstTouchTarget不为null，代表已经有子view捕获了这个事件，子view的dispatchTouchEvent返回true就是代表捕获了touch事件。<br>
+（如果是down以外的事件，且mFirstTouchEvent为null，表示没有子view捕获事件，则直接拦截）</p>
+<p>如果步骤1没有拦截事件，执行步骤2，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650468977208.png" alt="" loading="lazy"><br>
+上图代码中：1处表明事件主动分发的前提是事件为DOWN事件；<br>
+2处遍历所有子view；<br>
+3处判断事件坐标是否在子view坐标范围内，并且子view并没有处在动画状态；<br>
+4处调用dispatchTransformedTouchEvent方法将事件分发给子ciew，如果子view捕获事件成功（dispatchTouchEvent返回true），则将mFirstTouchEvent赋值给子view</p>
+<p>步骤3代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650806224508.png" alt="" loading="lazy"><br>
+步骤3有两个分支：<br>
+分支1，如果此时mFirstTouchTarget为null，说明在上述的事件分发中并没有子View对事件进行捕获操作，这种情况直接调用dispatchTransformedTouchEvent方法，并传入child为null，最终会调用super.dispatchTouchEvent方法，实际上最终会调用自身的onTouchEvent方法处理事件。也就是说，如果没有子View捕获处理touch事件，ViewGroup会通过自身的onTouchEvent方法进行处理。<br>
+分支2，mFirstTouchTarget不为null，说明在步骤2有子View捕获了事件，则直接将当前以及后续的事件交给mFirstTouchTarget指向的View进行处理。</p>
+<p>为什么DOWN事件特殊<br>
+所有touch事件都是从DOWN事件开始的，这是DOWN事件比较特殊的原因之一。另外一个原因是DOWN事件的处理结果会直接影响后续MOVE、UP事件的逻辑。<br>
+在步骤2中，只有DOWN事件会传递给子View进行捕获判断，一旦子View捕获成功，后续的MOVE和UP事件是通过遍历mFirstTouchTarget链表，查找之前接受DOWN的子View，并将触摸事件分配给这些子View。也就是说后续的MOVE、UP等事件的分发交给谁，取决于它们的起始事件DOWN是由谁捕获的。</p>
+<p>mFirstTouchTarget有什么作用<br>
+mFirstTouchTarget的部分源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650807008566.png" alt="" loading="lazy"><br>
+可以看出其实mFirstTouchTarget是一个TouchTarget类型的链表结构。而这个TouchTarget的作用就是用来记录捕获了DOWN事件的View，具体保存在上图的child变量。可是为什么是链表类型的结构呢？因为Android设备是支持多指操作的，每一个手指的DOWN事件都可以当作一个TouchTarget保存起来。在步骤3中判断如果mFirstTouchTarget不为null，则再次将事件分发给相应的TouchTarget。</p>
+<p>容易被遗漏的CANCEL事件<br>
+在上面的步骤3中，继续向子View分发事件的代码中，有以下的逻辑：<br>
+<img src="https://PaIn22152.github.io/post-images/1650807781295.png" alt="" loading="lazy"><br>
+上面红框中表明已经有子View捕获了touch事件，但是蓝色框中的intercepted变量又是true，这种情况下，事件的主导权会重新回到父视图ViewGoup中，并包装一个CANCEL事件传给child。<br>
+总结一下就是，当父视图的onInterceptTouchEvent先返回false，然后在子View的dispatchTouchEvent中返回true表示子View捕获事件，然后在接下来的MOVE过程中，父视图的onIntercepetTouchEvent又返回true，intercepted被重新置为true，此时上诉逻辑就会被触发，子控件会收到CANCEL事件。</p>
+<p>小结：<br>
+ViewGroup的dispatchTouchEvent事件分发主要分3部分：<br>
+1.判断是否需要拦截；主要是根据onInterceptTouchEvent方法的返回值来决定是否拦截；<br>
+2.在DOWN事件中将touch事件分发给子View；这一过程如果有子View捕获消费来touch事件，会对mFirstTouchTarget进行赋值；<br>
+3.DOWN、MOVE、UP事件都会根据mFirstTouchTarget是否为null，决定是自己处理touch事件，还是再次分发给子View。</p>
+<p>然后是几个特殊的点：<br>
+DOWN事件的特殊之处：事件的起点；决定后续事件由谁来消费；<br>
+mFirstTouchTarget的作用：记录消费DOWN事件的View，是一个链表结构；<br>
+CANCEL事件的触发场景：当父视图先不拦截，然后在MOVE事件中重新拦截，此时子View会接收到一个CANCEL事件。此外，当事件分发过程中出现界面跳转，Activity会收到CANCEL事件，并依次下发到View。</p>
+<h1 id="3自定义view">3自定义View</h1>
+<p>自定义View有两种方式：<br>
+1.继承系统提供的成熟控件（比如LinearLayout、RelativeLayout、ImageView等）；<br>
+2.直接继承自系统View或者ViewGroup，并自绘显示内容。</p>
+<h2 id="31继承现有控件">3.1继承现有控件</h2>
+<p>相对而言，这是一种较简单的实现方式。因为大部分核心工作，比如关于控件大小的测量、控件位置的摆放等相关的计算，在系统中都已经实现封装好了，开发人员只要在其基础上进行一些扩展，并按照自己的意图显示相应的UI元素。比如下面的代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1650893369761.png" alt="" loading="lazy"></p>
+<p>自定义属性<br>
+有时候我们想在XML布局文件中使用自定义View时，希望能够在XML文件中直接指定显示文字、字体颜色，等属性时，就需要用到自定义属性。自定义属性具体分为以下几个步骤：<br>
+1.在attrs.xml中声明自定义属性<br>
+在res的values目录下的attrs.xml文件中，使用标签自定义属性，如下例：<br>
+<img src="https://PaIn22152.github.io/post-images/1650893652242.png" alt="" loading="lazy"><br>
+2.在xml布局文件中使用自定义属性<br>
+<img src="https://PaIn22152.github.io/post-images/1650893691543.png" alt="" loading="lazy"><br>
+需要先添加命名空间xmlns:app，然后通过命名空间引用自定义属性，并传入相应的资源或者字符串。<br>
+3.在自定义View中，获取自定义属性的引用值<br>
+<img src="https://PaIn22152.github.io/post-images/1650893810315.png" alt="" loading="lazy"><br>
+入上图，主要是通过Context.obtainStyleAttributes方法获取到自定义属性的集合，然后从这个集合中取出相应的自定义属性。</p>
+<h2 id="32直接继承自view或者viewgroup">3.2直接继承自View或者ViewGroup</h2>
+<p>这种方式相比第一种麻烦一些，但是更加灵活，也能实现更加复制的UI界面。有以下几个问题需要解决：<br>
+1.如何根据相应的属性将UI元素绘制到界面；<br>
+2.自定义控件的大小，也就是宽高分别怎么设置；<br>
+3.如果是ViewGroup，如何合理安排其内部子View的摆放位置；</p>
+<p>以上三个问题，依次在如下方法中解决：onDraw、onMeasure、onLayout。<br>
+因此自定义View的重点工作就是复写并合理地实现这三个方法。</p>
+<p>onDraw<br>
+onDraw方法接收一个canvas类型的参数。Canvas可以理解为一个画布，在这块画布上可以绘制各种类型的UI元素，有如下的方法：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894391257.png" alt="" loading="lazy"><br>
+Canvas中没一个绘制操作都需要传入一个Paint对象，Paint相对于一个画笔，有以下属性：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894459598.png" alt="" loading="lazy"></p>
+<p>onMeasure<br>
+首先需要搞清楚，自定义View为什么需要重新测量？正常情况下，我们直接在XML布局文件中定义好View的宽高，然后让自定义View在此宽高的区域显示即可。但是为了更好地兼容不同尺寸的屏幕，有时会用wrap_content和match_parent属性来表示控件的显示规则，它们分别代表“自适应大小”和“填充父视图大小”，但是这两个属性并没有指定具体的大小，因此我们需要在onMeasure方法中过滤出这两种情况，真正的测量出自定义View应该显示的宽高大小。<br>
+所有工作都是在onMeasure方法中完成，方法定义如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650894983589.png" alt="" loading="lazy"><br>
+可以看出，方法会传入两个参数，widthMeasureSpec和heightMeasureSpec。这两个参数是从父视图传递给子View的两个参数，它们表示的是宽高，以及测量模式。<br>
+一共有3种测量模式：<br>
+1.EXACTLY：表示在XML布局文件中宽高使用match_parent或者固定大小的宽高；<br>
+2.AT_MOST：表示在XML布局文件中宽高使用wrap_content；<br>
+3.UNSPECIFIED:父容器没有对当前View有任何限制，当前View可以取任意尺寸；</p>
+<p>具体值和测量模式可以通过如下的API获取到：<br>
+<img src="https://PaIn22152.github.io/post-images/1650896357281.png" alt="" loading="lazy"><br>
+在widthMeasureSpec和heightMeasureSpec中，都是使用二进制高2位表示测量模式，低30位表示宽高的具体值。<br>
+自定义View中，如果不复写onMeasure方法，默认使用父类的实现，也就是View中的实现，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650896868991.png" alt="" loading="lazy"><br>
+蓝色框中的setMeasureDimension是一个非常重要的方法，这个方法传入的值直接决定View的宽高，也就是说如果调用setMeasureDimension(100,200)，最终View就显示宽100*高200的矩形范围。红色下标线标识的getDefaultSize返回的就是默认大小，默认为父视图的剩余可用空间。<br>
+所以当使用的自定义View没有处理wrap_content时，实际使用的宽高就是父视图的剩余可用空间。解决这一问题也比较简单，复写onMeasure，过滤出wrap_content的情况，并主动调用setMeasureDimension方法设置正确的宽高即可，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650897273852.png" alt="" loading="lazy"></p>
+<p>ViewGroup中的onMeasure<br>
+在viewGroup中，onMeasure方法会更加复杂一些。因为ViewGroup在测量自己的宽高之前，需要先确定其内部子View的大小，然后才能确定自己的大小。<br>
+当我们自定义一个ViewGoup的时候，需要在onMeasure方法中综合考虑子View的宽高。比如实现一个流式布局效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650897938459.png" alt="" loading="lazy"><br>
+每一行上的item个数不一定，当每行的item累计宽度超过可用总宽度，则需要重启一行摆放item，因此需要在onMeasure方法中主动的分行计算出最终高度，代码如下：</p>
+<pre><code class="language-java">   //测量控件的宽和高
+
+    @Override
+
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        //获得宽高的测量模式和测量值
+
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+
+
+
+        //获得容器中子View的个数
+
+        int childCount = getChildCount();
+
+        //记录每一行View的总宽度
+
+        int totalLineWidth = 0;
+
+        //记录每一行最高View的高度
+
+        int perLineMaxHeight = 0;
+
+        //记录当前ViewGroup的总高度
+
+        int totalHeight = 0;
+
+        for (int i = 0; i &lt; childCount; i++) {
+
+            View childView = getChildAt(i);
+
+            //对子View进行测量
+
+            measureChild(childView, widthMeasureSpec, heightMeasureSpec);
+
+            MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+            //获得子View的测量宽度
+
+            int childWidth = childView.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+
+            //获得子View的测量高度
+
+            int childHeight = childView.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+
+            if (totalLineWidth + childWidth &gt; widthSize) {
+
+                //统计总高度
+
+                totalHeight += perLineMaxHeight;
+
+                //开启新的一行
+
+                totalLineWidth = childWidth;
+
+                perLineMaxHeight = childHeight;
+
+            } else {
+
+                //记录每一行的总宽度
+
+                totalLineWidth += childWidth;
+
+                //比较每一行最高的View
+
+                perLineMaxHeight = Math.max(perLineMaxHeight, childHeight);
+
+            }
+
+            //当该View已是最后一个View时，将该行最大高度添加到totalHeight中
+
+            if (i == childCount - 1) {
+
+                totalHeight += perLineMaxHeight;
+
+            }
+
+        }
+
+        //如果高度的测量模式是EXACTLY，则高度用测量值，否则用计算出来的总高度（这时高度的设置为wrap_content）
+
+        heightSize = heightMode == MeasureSpec.EXACTLY ? heightSize : totalHeight;
+
+        setMeasuredDimension(widthSize, heightSize);
+
+    }
+
+</code></pre>
+<p>上述代码有两个目的：<br>
+1.调用measureChild方法递归测量子View；<br>
+2.通过叠加每一行的高度，计算出最终Layout的高度。</p>
+<p>onLayout<br>
+上文在onMeasure中只是计算出来ViewGroup的最终高度，但是并没有规定某一个子View应该显示在何处位置。要定义ViewGroup内部的显示规则，则需要复写实现onLayout方法。<br>
+ViewGroup中的onLayout方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1650898517671.png" alt="" loading="lazy"><br>
+这是一个抽象方法，也就是说每一个自定义ViewGroup都必须自己实现如何排布子View，具体就是遍历每一个子View，调用child.(l,t,r,b)方法来为每一个子View设置具体的布局位置，四个参数分别代表左上右下的坐标位置，简单实现如下：</p>
+<pre><code class="language-java">    @Override
+
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        mAllViews.clear();
+
+        mPerLineMaxHeight.clear();
+
+        //存放每一行的子View
+
+        List&lt;View&gt; lineViews = new ArrayList&lt;&gt;();
+
+        //记录每一行已存放View的总宽度
+
+        int totalLineWidth = 0;
+
+        //记录每一行最高View的高度
+
+        int lineMaxHeight = 0;
+
+        /****遍历所有View，将View添加到List&lt;List&lt;View&gt;&gt;集合中**********/
+
+        //获得子View的总个数
+
+        int childCount = getChildCount();
+
+        for (int i = 0; i &lt; childCount; i++) {
+
+            View childView = getChildAt(i);
+
+            MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+            int childWidth = childView.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+
+            int childHeight = childView.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+
+            if (totalLineWidth + childWidth &gt; getWidth()) {
+
+                mAllViews.add(lineViews);
+
+                mPerLineMaxHeight.add(lineMaxHeight);
+
+                //开启新的一行
+
+                totalLineWidth = 0;
+
+                lineMaxHeight = 0;
+
+                lineViews = new ArrayList&lt;&gt;();
+
+            }
+
+            totalLineWidth += childWidth;
+
+            lineViews.add(childView);
+
+            lineMaxHeight = Math.max(lineMaxHeight, childHeight);
+
+        }
+
+        //单独处理最后一行
+
+        mAllViews.add(lineViews);
+
+        mPerLineMaxHeight.add(lineMaxHeight);
+
+        /************遍历集合中的所有View并显示出来************/
+
+        //表示一个View和父容器左边的距离
+
+        int mLeft = 0;
+
+        //表示View和父容器顶部的距离
+
+        int mTop = 0;
+
+        for (int i = 0; i &lt; mAllViews.size(); i++) {
+
+            //获得每一行的所有View
+
+            lineViews = mAllViews.get(i);
+
+            lineMaxHeight = mPerLineMaxHeight.get(i);
+
+            for (int j = 0; j &lt; lineViews.size(); j++) {
+
+                View childView = lineViews.get(j);
+
+                MarginLayoutParams lp = (MarginLayoutParams) childView.getLayoutParams();
+
+                int leftChild = mLeft + lp.leftMargin;
+
+                int topChild = mTop + lp.topMargin;
+
+                int rightChild = leftChild + childView.getMeasuredWidth()；
+
+                int bottomChild = topChild + childView.getMeasuredHeight();
+
+                //四个参数分别表示View的左上角和右下角
+
+                childView.layout(leftChild, topChild, rightChild, bottomChild);
+
+                mLeft += lp.leftMargin + childView.getMeasuredWidth() + lp.rightMargin;
+
+            }
+
+            mLeft = 0;
+
+            mTop += lineMaxHeight;
+
+        }
+
+    }
+
+</code></pre>
+<p>小结<br>
+自定义View主要包含几个方法：<br>
+onDraw，主要复制绘制UI元素<br>
+onMeasure，主要复制测量自定义控件具体显示的宽高<br>
+onLayout，主要是在自定义ViewGroup中复写，并实现子View的显示位置</p>
+<h1 id="4recyclerview">4RecyclerView</h1>
+<p>四级缓存<br>
+第一级缓存：mAttachedScrap、mChangedScrap<br>
+用来缓存屏幕内的ViewHolder，当调用notify方法时，只需要在原有的ViewHolder基础上重新绑定新的数据即可</p>
+<p>第二级缓存：mCachedViews<br>
+用来缓存移除屏幕之外的ViewHolder，默认缓存两个，可以通过setViewCacheSize方法修改容量大小，如果容量已满，则会根据FIFO规则将旧的移除，加入新的</p>
+<p>第三级缓存：ViewCacheExtension<br>
+是预留给开发人员的一个抽象类，使用情景较少</p>
+<p>第四级缓存：RecycledViewPool<br>
+也是用来缓存屏幕外的ViewHolder，当mCachedViews个数满类后，从mCachedViews中淘汰的ViewHolder会先将内部数据清理，然后缓存到RecycledViewPool中，当从RecycledViewPool中取出ViewHolder时需要重新调用onBindViewHolder绑定数据</p>
+<p>当RV需要使用ViewHolder时，会先从4级缓存中依次查找，如果都没有再调用createViewHolder创建</p>
+<h1 id="5okhttp">5OKHTTP</h1>
+<p>使用过程，通过newCall方法生成call对象，再通过调度器Dispatcher的enqueue方法把call对象保存到队列里面，然后在线程池中执行。具体执行的时候，会依次执行拦截器，这里用到的设计模式是责任链模式。（纯粹的责任链模式，处理完后就传递结束，okhttp这里不是纯的，每一次处理完，会把处理后的结果继续往后传递，后面的继续处理）<br>
+拦截器，上文提到的拦截器，主要有：<br>
+BridgeInterceptor：主要对Request中的Header设置默认值，，比如Content-Type、Keep-Alive、Cookie等；<br>
+CacheInterceptor：负责HTTP请求的缓存处理；<br>
+ConnectInterceptor：负责建立与服务器地址之间的连接，也就是TCP连接；<br>
+CallServerInterceptor：负责向服务器发送请求，并从服务器拿到远端数据结果。<br>
+在添加上述几个拦截器之前，会调用client.interceptors将我们设置的自定义拦截器添加到列表中。</p>
+<p>CacheInterceptor缓存拦截器，根据Request获取当前已有缓存的Response，然后创建CacheStategy，再通过这个CacheStrategy对象判断缓存是否可用，如果可用则直接返回，否则调用chain.proceed()继续执行下一个拦截器，也就是发送网络请求，从网络获取到response后，再判断是否将Response进行缓存操作。使用CacheInterceptor拦截器时，需要设置自定义的Cache类，用来指定一些属性，比如缓存路径、最大可用空间，可以使用默认的Cache类。</p>
+<p>CallServerInterceptor是okhttp的最后一个拦截器，也是最核心的起落请求部分。主要负责发送网络请求，以及获取到网络数据后的返回处理。</p>
+<h1 id="6bitmap">6Bitmap</h1>
+<p>Bitmap用来描述一张图片的长、宽、颜色等信息，通常情况下，我们可以使用BitmapFactory来将某一路径下的图片解析为Bitmap对象。可以使用通过Bitmap.getAllocationByteCount()方法获取Bitmap占用的字节大小，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651064907467.png" alt="" loading="lazy"><br>
+图中rodman是保存在res/drawavle-xhdpi目录下的一张600*600的，大小为65kb的图片，打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 5673): bitmap size is 1440000
+</code></pre>
+<p>解释：<br>
+默认情况下，BitmapFactory使用BitMap.Config.ARGB_8888的存储方式来加载图片内容，而在这种存储模式下，每一个像素需要占用4个字节，所以上图中的内存大小可以使用如下公式计算：</p>
+<pre><code class="language-txt">宽 * 高 * 4 = 600 * 600 * 4 = 1440000
+</code></pre>
+<p>屏幕自适应<br>
+还是上面那张图，将rodman移动到res/drawable-hdpi目录下，重新运行代码，打印日志如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 2560000
+</code></pre>
+<p>这是因为BitmapFactory在解析图片的过程中，会根据当前屏幕密度和图片所在的srawable目录来做对比，根据这个对比值进行缩放操作，具体公式如下：</p>
+<pre><code class="language-txt">缩放比例 scale = 当前设备屏幕密度 / 图片所在 drawable 目录对应屏幕密度
+Bitmap 实际大小 = 宽 * scale * 高 * scale * Config 对应存储像素数
+</code></pre>
+<p>而在assets中的图片，系统不会进行缩放，使用代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651065512438.png" alt="" loading="lazy"><br>
+打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 1440000
+</code></pre>
+<h2 id="61bitmap加载优化">6.1Bitmap加载优化</h2>
+<p>上面的例子可以看出，一张65kb大小的图片被加载到内存后，占用来2.5M的内存，所以需要在适当的时候对加载的图片进行缩略优化</p>
+<p>优化1:<br>
+修改图片加载的Config，修改占用字节少的存储方式可以快速有效降低图片占用内存，比如将默认的ARGB_8888修改为RGB_565，这种存储方式一个像素占用2个字节，所以整体相比ARGB_8888内存占用直接减半，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651065912648.png" alt="" loading="lazy"><br>
+打印日志如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 720000
+</code></pre>
+<p>优化2:<br>
+Options中还有一个inSamplseSize参数，可以实现Bitmap采样压缩，这个参数的含义是宽高纬度上每隔inSampleSize个像素进行一次采集，试例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066084690.png" alt="" loading="lazy"><br>
+因为宽高都会进行采样，所以最终图片会被缩略4倍，打印结果如下：</p>
+<pre><code class="language-txt">I/Bitmap  ( 6047): bitmap size is 180000
+</code></pre>
+<p>inSampleSize的取值应该总是2的指数，如1，2，4，8等。如果外界传入的inSampleSize的值不为2的指数，那么系统会向下取整并选择一个最接近2的指数来代替。比如3，系统会选择2来代替</p>
+<p>优化3:<br>
+Bitmap复用，有以下的需求，某个页面创建来多个Bitmap，比如两张图片A和B，通过点击某一按钮需要在Image上切换显示这两张图片，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066443942.gif" alt="" loading="lazy"><br>
+如果使用以下的代码，每次切换图片都通过Bitmapfactory创建新的Bitmap对象，那么当方法执行完毕后，Bitmap对象会被GC回收，这样不断地创建和销毁大内存对象，就会导致内存抖动，造成UI界面卡顿<br>
+<img src="https://PaIn22152.github.io/post-images/1651066810614.png" alt="" loading="lazy"><br>
+这种场景下，可以使用Options.inBitmap优化，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651066924209.png" alt="" loading="lazy"><br>
+1处创建一个可以用来复用的Bitmap对象<br>
+2处将options.inMutable赋值为true，options.inBitmap赋值为之前创建的reuseBitmap对象，从而避免重新分配内存。<br>
+需要注意，复用Bitmap之前，需要调用canUseForInBitmap方法来判断是否可以复用</p>
+<p>优化4:<br>
+BitmapRegionDecoder图片分片显示<br>
+当需要加载显示的图片很大或者很长的时候，在不压缩图片的前提下，不建议一次性将整张图加载到内存，而是采用分片加载的方式来显示图片部分内容，然后再根据手势操作，放大缩小或者移动图片显示区域。<br>
+实现过程<br>
+使用BitmapRegionDecoder将图片加载到内存中，图片可以以绝对路径、文件描述符、输入流的方式传递给BitmapRegionDecoder，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651067535723.png" alt="" loading="lazy"><br>
+在此基础上，通过自定义View，添加touch事件来动态设置Bitmap需要显示的区域Rect，就可以实现大图加载</p>
+<p>优化5：<br>
+在RecyclerView中需要展示一大堆图片时，由于用户会不断地上下滑动，某个Bitmap可能会被短时间内加载并销毁多次，这种情况下使用适当的缓存，可以有效地减缓GC频率保证图片加载效率，提高界面的响应速度和流畅性。常用的缓存是LruCache，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651067895481.png" alt="" loading="lazy"><br>
+LruCache内部是使用LinkedHashMap来实现的LRU（最近最少未使用），这是因为LinkedHashMap天然就支持LRU，只需要在初始化的时候设置accessOrder参数为true。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/dong-tai-gui-hua/">
+                  <h3 class="post-title">
+                    动态规划
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

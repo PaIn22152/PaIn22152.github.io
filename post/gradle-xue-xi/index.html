@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>gradle+asm实现字节码插桩 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">gradle+asm实现字节码插桩</h2>
+            <div class="post-date">2022-04-03</div>
+            
+            <div class="post-content">
+              <p>字节码插桩技术，通过AOP的手段实现业务</p>
+<p>可以实现的功能：<br>
+1.统一处理事件点击，点击防抖<br>
+2.日志打点，可以处理自己的activity或者是三方SDK的activity<br>
+3.性能监控、动态权限控制等</p>
+<p>先看一看android打包过程：<br>
+<img src="https://PaIn22152.github.io/post-images/1649046151565.webp" alt="" loading="lazy"><br>
+其中需要关注的是中间生成的class文件，通过ASM修改原class文件，生成新的class文件，再使用新的class文件打包到dex文件中；</p>
+<p>实现过程<br>
+总体思路，遍历项目中所有的.class文件，过滤出需要处理的class文件，在需要处理的方法中，通过ASM插入字节码。</p>
+<p>具体实现：<br>
+androidstudio使用gradle编译打包项目时，都是通过一个个transform处理的，并且我们可以自定义transform去获取所有class文件的引用，自定义transform需要依赖GradlePlugin，所以首先需要创建一个GradlePlugin；之后再通过ASM插入字节码。</p>
+<p>自定义的gradle插件写好后，可以通过gradle构建命令，构建并发布插件，然后就可以在app中使用了</p>
+<p>ASM是一套开源框架，常用的几个API如下：<br>
+ClassReader，负责解析.class文件中的字节码，并将所有字节码传递给ClassWriter；<br>
+ClassVisitor，负责访问class文件中的各个元素，解析class文件结构，然后自动调用内部相应的FieldVisitor或者MethodVisitor方法，进一步解析或者修改class文件内容。<br>
+ClassWriter，继承自ClassVisitor，它是生成字节码的工具类，负责将修改后的字节码输出为byte数组。</p>
+<p>需要注意的点：<br>
+AGP升级到7之后，maven插件不再可用，要换成apply plugin: 'maven-publish'<br>
+对应的下面的task也需要换，整体的文件如下</p>
+<pre><code class="language-grovvy">apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+dependencies {
+
+    implementation gradleApi()
+    implementation localGroovy()
+
+    implementation 'com.android.tools.build:gradle:7.1.2'
+
+
+    //ASM相关依赖
+    implementation 'org.ow2.asm:asm:9.1'
+    implementation 'org.ow2.asm:asm-commons:9.1'
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            //定义插件的在本地 maven 中的 id
+            groupId 'danny.lifecycle.plugin'
+            artifactId 'asm_lifecycle_plugin'
+            //定义插件的在本地 maven 中的版本号
+            version '1.0.0'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            // 发布位置
+            url uri('../asm_lifecycle_repo')
+        }
+    }
+}
+
+</code></pre>
+<p>实测中发现，Transform类已经废弃，而且使用FileUtils时也找不到，导致demo最终没有成功运行。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/mac-huan-jing-da-jian/">
+                  <h3 class="post-title">
+                    mac环境搭建
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>啃源码之--Handler | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">啃源码之--Handler</h2>
+            <div class="post-date">2021-09-17</div>
+            
+            <div class="post-content">
+              <ul>
+<li><a href="#head1"> 0.前言</a></li>
+<li><a href="#head2"> 1.使用</a></li>
+<li><a href="#head3"> 2.类关键源码</a></li>
+<li><a href="#head4"> 3.具体流程</a>
+<ul>
+<li><a href="#head5"> 初始化Looper</a></li>
+<li><a href="#head6"> 发送消息</a></li>
+<li><a href="#head7"> 开启Looper循环</a></li>
+</ul>
+</li>
+<li><a href="#head8"> 同步屏障和IdleHandler</a></li>
+</ul>
+<h1 id="span-idhead1-0前言span"><span id="head1"> 0.前言</span></h1>
+<p>Android中使用Handler实现消息的传递，相关的类主要有四个，android.os.Handler，android.os.Looper，android.os.Message，android.os.MessageQueue。下面会从源码的角度，来一步步看清整个消息机制的实现原理。</p>
+<h1 id="span-idhead2-1使用span"><span id="head2"> 1.使用</span></h1>
+<p>先看一下日常开发中，Handler的简单使用都有什么样的。</p>
+<pre><code class="language-java">    private static class H extends Handler {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            //do something  4处理消息
+            super.handleMessage(msg);
+        }
+    }
+
+    public void test() {
+        //1.发送消息到主线程处理
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                //do something
+            }
+        });
+
+        //2.使用Message接口发送消息，message的callback（一个Runnable实例）处理消息
+        Message msg = Message.obtain(handler, new Runnable() {
+            @Override
+            public void run() {
+                //do something
+            }
+        });
+        msg.sendToTarget();
+
+        //3.使用Handler的Callback处理消息，并决定是否拦截
+        Handler handler2 = new Handler(new Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                if (msg.what == 1) {
+                    //do something
+                }
+                return false;//返回是否拦截消息
+            }
+        });
+        handler2.sendEmptyMessage(1);
+
+        //4.自定义Handler的子类处理消息
+        H h = new H();
+        h.sendMessage(Message.obtain());
+
+    }
+</code></pre>
+<p>上述是几种常见的使用方式，不一定很全，只是先大概知道一下怎么用就好。需要说一下，Handler分发消息时候是有优先级的，其中上面的优先级是1=2&gt;3&gt;4，当在2处的message的callback存在时，不会走到3和4，当3处返回true表示拦截消息时，不会走到4。现在只是简单的提一嘴，后面到了具体的源码处，就会知道这里说的是什么意思了。</p>
+<h1 id="span-idhead3-2类关键源码span"><span id="head3"> 2.类关键源码</span></h1>
+<pre><code class="language-java">    public final class Message implements Parcelable {
+
+        //用户定义的消息标识，用来识别区分消息
+        public int what;
+        //消息回调
+        Runnable callback;
+        //消息触发时间
+        public long when;
+
+        //形成链表结构
+        Message next;
+        //用链表作为消息对象缓存池
+        private static Message sPool;
+
+        //静态方法，从池中获取默认消息对象，还有几个重载函数可以传入消息的属性
+        public static Message obtain() {
+        }
+    }
+
+    public final class Looper {
+
+        //ThreadLocal表示对象是线程隔离的，在一个线程下，只会存在唯一的一个对象，且不和其他线程共享
+        static final   ThreadLocal&lt;Looper&gt; sThreadLocal = new ThreadLocal&lt;Looper&gt;();
+        //主线程下的Looper对象
+        private static Looper              sMainLooper;
+
+        //消息队列MessageQueue
+        final MessageQueue mQueue;
+        //当前Looper所在线程
+        final Thread       mThread;
+
+        //Looper初始化
+        private static void prepare(boolean quitAllowed) {
+        }
+
+        //开启loop循环处理消息
+        public static void loop() {
+        }
+    }
+
+    public final class MessageQueue {
+
+        //获取队列下一条消息
+        Message next() {
+        }
+
+        //把消息存入到队列
+        boolean enqueueMessage(Message msg, long when) {
+        }
+    }
+
+    public class Handler {
+
+        //Handler会持有当前线程的Looper对象，以及Looper的MessageQueue
+        final Looper           mLooper;
+        final MessageQueue     mQueue;
+        //用户自定义的Handler消息回调
+        final Handler.Callback mCallback;
+
+        //回调接口
+        public interface Callback {
+
+            //返回值表示是否拦截消息
+            boolean handleMessage(@NonNull android.os.Message msg);
+        }
+
+        //分发消息，把消息交给具体的处理人
+        public void dispatchMessage(@NonNull Message msg) {
+        }
+
+        //以下方法全是发送消息，最终都会走到下面的enqueueMessage方法，然后会调用MessageQueue的enqueueMessage方法把消息存入到队列
+        public final boolean post(@NonNull Runnable r) {
+        }
+
+        public final boolean sendMessage(@NonNull Message msg) {
+        }
+
+        public boolean sendMessageAtTime(@NonNull Message msg, long uptimeMillis) {
+        }
+
+        private boolean enqueueMessage(@NonNull MessageQueue queue, @NonNull Message msg,
+                long uptimeMillis) {
+        }
+    }
+</code></pre>
+<p>以上只是简单说明每一个类的关键属性和方法，下面会通过具体的消息发送处理过程，查看源码的方法调用流程，并详细说明。</p>
+<h1 id="span-idhead4-3具体流程span"><span id="head4"> 3.具体流程</span></h1>
+<p>先从简单调用说起，新建子线程，发送延迟消息，代码如下：</p>
+<pre><code class="language-java">        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();//1初始化Looper
+                Handler h = new Handler();
+                h.postDelayed(new Runnable() {//2发送消息
+                    @Override
+                    public void run() {
+                        //do something
+                    }
+                }, 1000);
+                Looper.loop();//3开启Looper循环
+            }
+        }).start();
+</code></pre>
+<p>为什么在主线程不需要也不能调用1和3处的代码？这是因为系统已经调用了，在ActivityThread中主线程的相关源码如下：</p>
+<pre><code class="language-java">    public static void main(String[] args) {
+        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, &quot;ActivityThreadMain&quot;);
+        //......其他代码
+        Looper.prepareMainLooper();
+        //......其他代码
+        Looper.loop();
+
+        throw new RuntimeException(&quot;Main thread loop unexpectedly exited&quot;);
+    }
+</code></pre>
+<h2 id="span-idhead5-初始化looperspan"><span id="head5"> 初始化Looper</span></h2>
+<p>注释1处，在线程中初始化Looper，源码如下：</p>
+<pre><code class="language-java">    public static void prepare() {
+        prepare(true);
+    }
+
+    private static void prepare(boolean quitAllowed) {
+        if (sThreadLocal.get() != null) {
+            throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);
+        }
+        sThreadLocal.set(new Looper(quitAllowed));
+    }
+
+        private Looper(boolean quitAllowed) {
+        mQueue = new MessageQueue(quitAllowed);
+        mThread = Thread.currentThread();
+    }
+</code></pre>
+<p>以上源码比较简单，初始化做的事就是新建一个Looper实例，给Looper的mQueue和mThread属性赋值，然后把值存到静态变量sThreadLocal中，在同一个线程下，这个方法只能调用一次，否则就会抛出异常。</p>
+<h2 id="span-idhead6-发送消息span"><span id="head6"> 发送消息</span></h2>
+<p>注释2处，调用Handler对象的postDelayed方法，发送延迟消息<br>
+先通过Message.obtain()方法获取到消息对象，该方法的源码如下：</p>
+<pre><code class="language-java">    public static Message obtain() {
+        synchronized (sPoolSync) {
+            if (sPool != null) {
+                Message m = sPool;
+                sPool = m.next;
+                m.next = null;
+                m.flags = 0; // clear in-use flag
+                sPoolSize--;
+                return m;
+            }
+        }
+        return new Message();
+    }
+</code></pre>
+<p>优先从消息对象缓存池里面拿对象，如果有，返回池的头部对象；如果没有，新建对象返回。<br>
+经过几个方法调用，最终会走到enqueueMessage方法，这个方法其实也没有真正处理消息，而是调用MessageQueue的enqueueMessage，下面是MessageQueue的enqueueMessage方法的源码：</p>
+<pre><code class="language-java">    boolean enqueueMessage(Message msg, long when) {
+        //处理消息前的判断，是否有target，是否正在使用
+        if (msg.target == null) {
+            throw new IllegalArgumentException(&quot;Message must have a target.&quot;);
+        }
+        if (msg.isInUse()) {
+            throw new IllegalStateException(msg + &quot; This message is already in use.&quot;);
+        }
+
+        //同步处理
+        synchronized (this) {
+            if (mQuitting) {
+                IllegalStateException e = new IllegalStateException(
+                        msg.target + &quot; sending message to a Handler on a dead thread&quot;);
+                Log.w(TAG, e.getMessage(), e);
+                msg.recycle();
+                return false;
+            }
+
+            msg.markInUse();//标记消息为正在使用
+            msg.when = when;//设置消息的触发时间
+            Message p = mMessages;
+            boolean needWake;
+            //当 消息队列为空、消息马上触发，消息触发时间小于队列头部消息触发时间 时，把消息放在消息头部
+            if (p == null || when == 0 || when &lt; p.when) {
+                // New head, wake up the event queue if blocked.
+                msg.next = p;
+                mMessages = msg;
+                needWake = mBlocked;
+            } else {
+                // Inserted within the middle of the queue.  Usually we don't have to wake
+                // up the event queue unless there is a barrier at the head of the queue
+                // and the message is the earliest asynchronous message in the queue.
+                needWake = mBlocked &amp;&amp; p.target == null &amp;&amp; msg.isAsynchronous();
+                Message prev;
+                for (; ; ) {//遍历消息队列，并根据消息的触发时间把消息放在队列的合适位置
+                    prev = p;
+                    p = p.next;
+                    if (p == null || when &lt; p.when) {
+                        break;
+                    }
+                    if (needWake &amp;&amp; p.isAsynchronous()) {
+                        needWake = false;
+                    }
+                }
+                msg.next = p; // invariant: p == prev.next
+                prev.next = msg;
+            }
+
+            //如果需要唤醒，调用native唤醒方法
+            // We can assume mPtr != 0 because mQuitting is false.
+            if (needWake) {
+                nativeWake(mPtr);
+            }
+        }
+        return true;
+    }
+</code></pre>
+<p>逻辑清晰明了，就是根据消息的触发时间，把新的消息放到合适的位置。这样就完成了消息的发送，那么这个消息队列里面的消息什么时候去取呢？就要看下面的内容了。</p>
+<h2 id="span-idhead7-开启looper循环span"><span id="head7"> 开启Looper循环</span></h2>
+<p>注释3处的代码，开启Looper循环处理消息，源码如下：</p>
+<pre><code class="language-java">    public static void loop() {
+        //通过sThreadLocal属性，获取当前线程下的Looper对象，如果没有抛出异常
+        final Looper me = myLooper();
+        if (me == null) {
+            throw new RuntimeException(&quot;No Looper; Looper.prepare() wasn't called on this thread.&quot;);
+        }
+        //当前线程下的消息队列
+        final MessageQueue queue = me.mQueue;
+
+        //这是一个native方法，目的如下文说的那样，是为了保此线程的标识是本地进程的标识，并跟踪该标识令牌实际是什么。不做深入了解
+        // Make sure the identity of this thread is that of the local process,
+        // and keep track of what that identity token actually is.
+        Binder.clearCallingIdentity();
+        final long ident = Binder.clearCallingIdentity();
+
+        //这也是native方法，允许通过system prop重写threshold，不做深入了解
+        // Allow overriding a threshold with a system prop. e.g.
+        // adb shell 'setprop log.looper.1000.main.slow 1 &amp;&amp; stop &amp;&amp; start'
+        final int thresholdOverride =
+                SystemProperties.getInt(&quot;log.looper.&quot;
+                        + Process.myUid() + &quot;.&quot;
+                        + Thread.currentThread().getName()
+                        + &quot;.slow&quot;, 0);
+
+        boolean slowDeliveryDetected = false;
+
+        //1.开启死循环
+        for (;;) {
+            //2.获取消息队列的下一条消息，可能会阻塞线程
+            Message msg = queue.next(); // might block
+            if (msg == null) {
+                //无消息表示消息队列退出，退出死循环
+                // No message indicates that the message queue is quitting.
+                return;
+            }
+
+            //如果有设置日志打印器，打印日志
+            // This must be in a local variable, in case a UI event sets the logger
+            final Printer logging = me.mLogging;
+            if (logging != null) {
+                logging.println(&quot;&gt;&gt;&gt;&gt;&gt; Dispatching to &quot; + msg.target + &quot; &quot; +
+                        msg.callback + &quot;: &quot; + msg.what);
+            }
+            // Make sure the observer won't change while processing a transaction.
+            final Observer observer = sObserver;
+
+            final long traceTag = me.mTraceTag;
+            long slowDispatchThresholdMs = me.mSlowDispatchThresholdMs;
+            long slowDeliveryThresholdMs = me.mSlowDeliveryThresholdMs;
+            if (thresholdOverride &gt; 0) {
+                slowDispatchThresholdMs = thresholdOverride;
+                slowDeliveryThresholdMs = thresholdOverride;
+            }
+            final boolean logSlowDelivery = (slowDeliveryThresholdMs &gt; 0) &amp;&amp; (msg.when &gt; 0);
+            final boolean logSlowDispatch = (slowDispatchThresholdMs &gt; 0);
+
+            final boolean needStartTime = logSlowDelivery || logSlowDispatch;
+            final boolean needEndTime = logSlowDispatch;
+
+            if (traceTag != 0 &amp;&amp; Trace.isTagEnabled(traceTag)) {
+                Trace.traceBegin(traceTag, msg.target.getTraceName(msg));
+            }
+
+            final long dispatchStart = needStartTime ? SystemClock.uptimeMillis() : 0;
+            final long dispatchEnd;
+            Object token = null;
+            if (observer != null) {
+                token = observer.messageDispatchStarting();
+            }
+            long origWorkSource = ThreadLocalWorkSource.setUid(msg.workSourceUid);
+            try {
+                //3.通过Handler对象分发消息
+                msg.target.dispatchMessage(msg);
+                //给观察者分发消息
+                if (observer != null) {
+                    observer.messageDispatched(token, msg);
+                }
+                dispatchEnd = needEndTime ? SystemClock.uptimeMillis() : 0;
+            } catch (Exception exception) {
+                if (observer != null) {
+                    observer.dispatchingThrewException(token, msg, exception);
+                }
+                throw exception;
+            } finally {
+                ThreadLocalWorkSource.restore(origWorkSource);
+                if (traceTag != 0) {
+                    Trace.traceEnd(traceTag);
+                }
+            }
+            if (logSlowDelivery) {
+                if (slowDeliveryDetected) {
+                    if ((dispatchStart - msg.when) &lt;= 10) {
+                        Slog.w(TAG, &quot;Drained&quot;);
+                        slowDeliveryDetected = false;
+                    }
+                } else {
+                    if (showSlowLog(slowDeliveryThresholdMs, msg.when, dispatchStart, &quot;delivery&quot;,
+                            msg)) {
+                        // Once we write a slow delivery log, suppress until the queue drains.
+                        slowDeliveryDetected = true;
+                    }
+                }
+            }
+            if (logSlowDispatch) {
+                showSlowLog(slowDispatchThresholdMs, dispatchStart, dispatchEnd, &quot;dispatch&quot;, msg);
+            }
+
+            if (logging != null) {
+                logging.println(&quot;&lt;&lt;&lt;&lt;&lt; Finished to &quot; + msg.target + &quot; &quot; + msg.callback);
+            }
+
+            // Make sure that during the course of dispatching the
+            // identity of the thread wasn't corrupted.
+            final long newIdent = Binder.clearCallingIdentity();
+            if (ident != newIdent) {
+                Log.wtf(TAG, &quot;Thread identity changed from 0x&quot;
+                        + Long.toHexString(ident) + &quot; to 0x&quot;
+                        + Long.toHexString(newIdent) + &quot; while dispatching to &quot;
+                        + msg.target.getClass().getName() + &quot; &quot;
+                        + msg.callback + &quot; what=&quot; + msg.what);
+            }
+
+            //4.回收消息，把消息数据清空，如果消息缓存池未满，把消息对象加入到缓存池头部
+            msg.recycleUnchecked();
+        }
+    }
+</code></pre>
+<p>关键的代码有4处，注释1开启死循环，一直到消息队列退出后，这个死循环才会退出，而如果是在主线程，因为主线程的消息队列是不可退出的，所以死循环Looper的死循环也不会退出，除非是发生异常。<br>
+注释2是通过消息队列MessageQueue的next()方法获取消息。<br>
+注释3处是把消息给到Handler的dispatchMessage()方法处理。<br>
+注释4回收消息。</p>
+<p>注释2处，消息队列MessageQueue的next()方法源码如下：</p>
+<pre><code class="language-java">Message next() {
+        // Return here if the message loop has already quit and been disposed.
+        // This can happen if the application tries to restart a looper after quit
+        // which is not supported.
+        final long ptr = mPtr;
+        if (ptr == 0) {
+            return null;
+        }
+
+        int pendingIdleHandlerCount = -1; // -1 only during first iteration
+        int nextPollTimeoutMillis = 0;
+        for (; ; ) {
+            if (nextPollTimeoutMillis != 0) {
+                Binder.flushPendingCommands();
+            }
+
+            nativePollOnce(ptr, nextPollTimeoutMillis);
+
+            synchronized (this) {
+                // Try to retrieve the next message.  Return if found.
+                final long now = SystemClock.uptimeMillis();
+                Message prevMsg = null;
+                Message msg = mMessages;
+                //获取消息队列里的头部消息
+                if (msg != null &amp;&amp; msg.target == null) {
+                    // Stalled by a barrier.  Find the next asynchronous message in the queue.
+                    do {
+                        prevMsg = msg;
+                        msg = msg.next;
+                    } while (msg != null &amp;&amp; !msg.isAsynchronous());
+                }
+                if (msg != null) {
+                    if (now &lt; msg.when) {//如果当前消息还没有到触发时间，设置唤醒时间，后面会调用nativePollOnce唤醒
+                        // Next message is not ready.  Set a timeout to wake up when it is ready.
+                        nextPollTimeoutMillis = (int) Math.min(msg.when - now, Integer.MAX_VALUE);
+                    } else {//如果消息到达触发时间，返回消息
+                        // Got a message.
+                        mBlocked = false;
+                        if (prevMsg != null) {
+                            prevMsg.next = msg.next;
+                        } else {
+                            mMessages = msg.next;
+                        }
+                        msg.next = null;
+                        if (DEBUG) {
+                            Log.v(TAG, &quot;Returning message: &quot; + msg);
+                        }
+                        msg.markInUse();
+                        return msg;
+                    }
+                } else {
+                    // No more messages.
+                    nextPollTimeoutMillis = -1;
+                }
+
+                // Process the quit message now that all pending messages have been handled.
+                if (mQuitting) {
+                    dispose();
+                    return null;
+                }
+
+                // If first time idle, then get the number of idlers to run.
+                // Idle handles only run if the queue is empty or if the first message
+                // in the queue (possibly a barrier) is due to be handled in the future.
+                if (pendingIdleHandlerCount &lt; 0
+                        &amp;&amp; (mMessages == null || now &lt; mMessages.when)) {
+                    pendingIdleHandlerCount = mIdleHandlers.size();
+                }
+                if (pendingIdleHandlerCount &lt;= 0) {
+                    // No idle handlers to run.  Loop and wait some more.
+                    mBlocked = true;
+                    continue;
+                }
+
+                if (mPendingIdleHandlers == null) {
+                    mPendingIdleHandlers = new IdleHandler[Math.max(pendingIdleHandlerCount, 4)];
+                }
+                mPendingIdleHandlers = mIdleHandlers.toArray(mPendingIdleHandlers);
+            }
+
+            // Run the idle handlers.
+            // We only ever reach this code block during the first iteration.
+            for (int i = 0; i &lt; pendingIdleHandlerCount; i++) {
+                final IdleHandler idler = mPendingIdleHandlers[i];
+                mPendingIdleHandlers[i] = null; // release the reference to the handler
+
+                boolean keep = false;
+                try {
+                    keep = idler.queueIdle();
+                } catch (Throwable t) {
+                    Log.wtf(TAG, &quot;IdleHandler threw exception&quot;, t);
+                }
+
+                if (!keep) {
+                    synchronized (this) {
+                        mIdleHandlers.remove(idler);
+                    }
+                }
+            }
+
+            // Reset the idle handler count to 0 so we do not run them again.
+            pendingIdleHandlerCount = 0;
+
+            // While calling an idle handler, a new message could have been delivered
+            // so go back and look again for a pending message without waiting.
+            nextPollTimeoutMillis = 0;
+        }
+    }
+</code></pre>
+<p>主要做的事就是获取队列的头部消息，然后判断这个消息的触发时间是否满足。<br>
+这里有一个native方法nativePollOnce()，作用是阻塞当前线程，当指定时间到了，或者有新消息时，调用nativeWake()，就会唤醒线程，这里的阻塞和唤醒，是利用Linux的多路复用机制epoll实现的。</p>
+<p>注释3处Handler的dispatchMessage()方法源码如下：</p>
+<pre><code class="language-java">    public void dispatchMessage(@NonNull Message msg) {
+        //1如果消息msg有callback回调，交给msg的callback处理
+        //2否则交给Handler的mCallback处理消息，如果返回true，表示拦截，不再处理消息
+        //3如果2返回false，表示不拦截消息，继续交给Handler子类重写的handleMessage方法处理
+        if (msg.callback != null) {
+            //1
+            handleCallback(msg);
+        } else {
+            //2
+            if (mCallback != null) {
+                if (mCallback.handleMessage(msg)) {
+                    return;
+                }
+            }
+            //3
+            handleMessage(msg);
+        }
+    }
+
+    private static void handleCallback(Message message) {
+        message.callback.run();
+    }
+
+    public void handleMessage(@NonNull Message msg) {
+    }
+</code></pre>
+<p>这里就是文中一开始说到的，消息处理优先级，以及源码实现。</p>
+<p>注释4回收消息对象，源码如下：</p>
+<pre><code class="language-java">    void recycleUnchecked() {
+        //清空所有数据
+        // Mark the message as in use while it remains in the recycled object pool.
+        // Clear out all other details.
+        flags = FLAG_IN_USE;
+        what = 0;
+        arg1 = 0;
+        arg2 = 0;
+        obj = null;
+        replyTo = null;
+        sendingUid = UID_NONE;
+        workSourceUid = UID_NONE;
+        when = 0;
+        target = null;
+        callback = null;
+        data = null;
+
+        //如果消息缓存池未满，把消息加入到缓存池头部
+        synchronized (sPoolSync) {
+            if (sPoolSize &lt; MAX_POOL_SIZE) {
+                next = sPool;
+                sPool = this;
+                sPoolSize++;
+            }
+        }
+    }
+</code></pre>
+<h1 id="span-idhead8-同步屏障和idlehandlerspan"><span id="head8"> 同步屏障和IdleHandler</span></h1>
+<p>同步屏障可以通过MessageQueue.postSyncBarrier函数来设置。该方法发送了一个没有target的Message到Queue中，在next方法中获取消息时，如果发现没有target的Message，则在一定的时间内跳过同步消息，优先执行异步消息，没有异步消息也不会执行同步消息，而是等待异步消息的到来。换句话说，同步屏障为Handler消息机制增加了一种简单的优先级机制，异步消息的优先级要高于同步消息。在创建Handler时有一个async参数，传true表示此Handler发送的是异步消息。ViewRootImpl.scheduleTraversals方法就使用了同步屏障，保证UI绘优先执行。<br>
+相关源码：</p>
+<pre><code class="language-java"> Message prevMsg = null;
+                Message msg = mMessages;
+                if (msg != null &amp;&amp; msg.target == null) {
+                    // Stalled by a barrier.  Find the next asynchronous message in the queue.
+                    do {
+                        prevMsg = msg;
+                        msg = msg.next;
+                    } while (msg != null &amp;&amp; !msg.isAsynchronous());
+                }
+                if (msg != null) {
+                    if (now &lt; msg.when) {
+                        // Next message is not ready.  Set a timeout to wake up when it is ready.
+                        nextPollTimeoutMillis = (int) Math.min(msg.when - now, Integer.MAX_VALUE);
+                    } else {
+                        // Got a message.
+                        mBlocked = false;
+                        if (prevMsg != null) {
+                            prevMsg.next = msg.next;
+                        } else {
+                            mMessages = msg.next;
+                        }
+                        msg.next = null;
+                        if (DEBUG) Log.v(TAG, &quot;Returning message: &quot; + msg);
+                        msg.markInUse();
+                        return msg;
+                    }
+                }
+</code></pre>
+<p>IdleHandler是一个回调接口，可以通过MessageQueue的addIdleHandler添加实现类。当MessageQueue中的任务暂时处理完了（没有新任务或者下一个任务延时在之后），这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完的时候继续回调。当队列中有多个IdleHandler时，一次最多只执行4个。<br>
+相关源码：</p>
+<pre><code class="language-java"> // If first time idle, then get the number of idlers to run.
+                // Idle handles only run if the queue is empty or if the first message
+                // in the queue (possibly a barrier) is due to be handled in the future.
+                if (pendingIdleHandlerCount &lt; 0
+                        &amp;&amp; (mMessages == null || now &lt; mMessages.when)) {
+                    pendingIdleHandlerCount = mIdleHandlers.size();
+                }
+                if (pendingIdleHandlerCount &lt;= 0) {
+                    // No idle handlers to run.  Loop and wait some more.
+                    mBlocked = true;
+                    continue;
+                }
+
+                if (mPendingIdleHandlers == null) {
+                    mPendingIdleHandlers = new IdleHandler[Math.max(pendingIdleHandlerCount, 4)];
+                }
+                mPendingIdleHandlers = mIdleHandlers.toArray(mPendingIdleHandlers);
+
+......
+
+                 for (int i = 0; i &lt; pendingIdleHandlerCount; i++) {
+                final IdleHandler idler = mPendingIdleHandlers[i];
+                mPendingIdleHandlers[i] = null; // release the reference to the handler
+
+                boolean keep = false;
+                try {
+                    keep = idler.queueIdle();
+                } catch (Throwable t) {
+                    Log.wtf(TAG, &quot;IdleHandler threw exception&quot;, t);
+                }
+
+                if (!keep) {
+                    synchronized (this) {
+                        mIdleHandlers.remove(idler);
+                    }
+                }
+            }
+</code></pre>
+<p>对于同步屏障和IdleHandler，可以简单理解成是普通Message优先级不一样的Message，开启同步屏障时，只执行异步消息，所以异步消息优先级最高；普通情况下，按序执行Message；当队列空闲的时候，执行IdleHandler，所以IdleHandler优先级最低。</p>
+<p>https://mp.weixin.qq.com/s/HK3SokYCOgVMAu6Uj6c-Xw  同步屏障和IdleHandler详细</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/m3_HaE3lN/" class="tag">
+                    Handler
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/gYLRDnqqS/" class="tag">
+                    源码
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/ken-yuan-ma-zhi-lifecycle/">
+                  <h3 class="post-title">
+                    啃源码之--Lifecycle
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
