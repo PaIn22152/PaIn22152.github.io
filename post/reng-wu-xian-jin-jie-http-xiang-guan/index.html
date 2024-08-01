@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-HTTP相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-HTTP相关</h2>
+            <div class="post-date">2024-04-19</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。HTTP相关</p>
+<!-- more -->
+<h2 id="http工作原理">HTTP工作原理</h2>
+<p>HTTP，HyperText Transfer Protocol超文本传输协议 ，基于TCP协议实现的一种应用层协议<br>
+客户端发送请求报文request，服务端返回响应报文response<br>
+URL格式，三部分：协议类型、服务器地址（和端口）、路径<br>
+如：https://hencoder.com/user?gender=male</p>
+<h3 id="报文格式">报文格式</h3>
+<p>请求报文：<br>
+<img src="https://PaIn22152.github.io/post-images/1713494440072.png" alt="" loading="lazy"><br>
+响应报文：<br>
+<img src="https://PaIn22152.github.io/post-images/1713494477506.png" alt="" loading="lazy"></p>
+<h2 id="请求方法和状态码">请求方法和状态码</h2>
+<h3 id="请求方法">请求方法</h3>
+<p>GET 获取资源，没有body，幂等<br>
+POST 增加或者修改资源，有body，不具有幂等性<br>
+PUT 修改资源，有body，具有幂等性<br>
+DELETE 删除资源，没有body，幂等<br>
+HEAD 使用方法和GET相同，返回响应没有body，用于获取信息（header），比如下载文件前先使用HEAD方法获取文件大小、是否支持断线续传等信息<br>
+幂等性，多次调用和一次调用结果一致</p>
+<h3 id="状态码">状态码</h3>
+<p>状态码，对响应结果做简单描述<br>
+1XX：临时性消息  100继续发送、101正在切换协议<br>
+2XX：成功 200 OK<br>
+3XX：重定向 301永久移动、302暂时移动<br>
+4XX：客户端错误 404找不到内容、403被禁止<br>
+5XX：服务器错误 500服务器内部错误</p>
+<h2 id="header和body">HEADER和BODY</h2>
+<h3 id="header">HEADER</h3>
+<p>HEADER是HTTP消息的元数据<br>
+<strong>Host</strong>   目标主机地址，不是用来寻址的，而是在目标服务器上用于定位子服务器的<br>
+<strong>Content-Legth</strong>  指定body的长度<br>
+<strong>Location</strong>   指定重定向的目标URL<br>
+<strong>User-Agent</strong>   用户代理，即是谁实际发送请求、接受响应，例如手机浏览器、某款手机App<br>
+<strong>Accept-Range:bytes</strong>  响应报文中出现，表示服务器支持按字节来取范围数据<br>
+<strong>Range:bytes=&lt;start&gt;-&lt;end&gt;</strong>  请求报文中出现，表示要取哪段数据<br>
+<strong>Content-Range:&lt;start&gt;-&lt;end&gt;/total</strong>   响应报文中出现，表示发送的是哪段数据<br>
+作用：断点续传、多线程下载<br>
+<strong>Cache</strong>   在客户端或者中间网络节点缓存数据，减低从服务器取数据的频率，以提高网络性能<br>
+<strong>Transfer-Encoding: chunked</strong> 分块传输编码，当响应发起时，内容长度还没能确定的情况下使用，和Content-Length不可同时使用，目的时尽早给出响应，减少用户等待，格式如下<br>
+<img src="https://PaIn22152.github.io/post-images/1713495469213.png" alt="" loading="lazy"><br>
+<strong>Content-Type</strong>  指定Body的类型，主要有以下几类：<strong>text/html</strong> 、  <strong>application/x-www-form-urlencoded</strong> 、  <strong>multipart/from-data  application/json</strong> 、<strong>image/jepg</strong>  、 <strong>application/zip</strong></p>
+<h3 id="body">BODY</h3>
+<p><strong>text/html</strong>  请求web页面时返回响应的类型，body中返回html文本，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495278555.png" alt="" loading="lazy"><br>
+<strong>application/x-www-form-urlencoded</strong>  普通表单，web页面纯文本表单的提交方式，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495307176.png" alt="" loading="lazy"><br>
+<strong>multipart/form-data</strong>  web页面含有二进制文件时的提交方式，boundary表示分界，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495354398.png" alt="" loading="lazy"><br>
+<strong>application/json</strong>  json格式传输文本，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495384799.png" alt="" loading="lazy"><br>
+<strong>image/jpeg</strong>   <strong>application/zip</strong>  单文件，格式如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713495421187.png" alt="" loading="lazy"></p>
+<h2 id="restful-api">RESTful api</h2>
+<p>RESTful api，即正确使用HTTP规范实现的接口，包括以下：<br>
+使用资源的格式来定义URL<br>
+规范地使用method来定义网络请求操作<br>
+规范地使用status code来响应状态<br>
+其他符合HTTP规范的设计准则</p>
+<h2 id="编码-加密-hash-序列化和字符集">编码、加密、hash、序列化和字符集</h2>
+<h3 id="对称加密和非对称加密">对称加密和非对称加密</h3>
+<p><strong>对称加密</strong><br>
+通信双方使用同一个秘钥，使用加密算法配合秘钥来加密，解密时使用加密过程的完全逆过程来进行解密。经典算法有DES、AES。<br>
+作用：加密通信，防止信息在不安全网络上被截获后，信息被人读取或篡改<br>
+缺点：不能在不安全网络上传输秘钥，一旦秘钥泄露则加密通信失败<br>
+<img src="https://PaIn22152.github.io/post-images/1713495790800.png" alt="" loading="lazy"></p>
+<p><strong>非对称加密</strong><br>
+原理：使用公钥对数据进行加密得到密文，使用私钥对密文进行解密得到原数据。使用的是复杂的数学技巧实现，经典算法有RSA（可用于加密和签名）、DSA（仅用于签名，但速度更快）<br>
+使用非对称加密通信，可以在不可信网络上将双方的公钥传给对方，然后在发消息前分别对数据使用对方的公钥来加密和使用自己的私钥来签名，做到不可信网络上的可靠秘钥传播及加密通信<br>
+<img src="https://PaIn22152.github.io/post-images/1713495830814.png" alt="" loading="lazy"><br>
+私钥和公钥互相可解，因此非对称加密还可以用于数字签名，通常会对原数据hash以后签名，然后附加在原数据的后面作为签名，为了让数据更小<br>
+<img src="https://PaIn22152.github.io/post-images/1713495864057.png" alt="" loading="lazy"><br>
+优缺点：优点：可以在不安全网络上传输秘钥。缺点：计算复杂，因此性能相比对称加密差很多<br>
+破解思路，穷举法找到一个私钥，可以解密所有经过公钥加密过的密文</p>
+<h3 id="base64">Base64</h3>
+<p>将二进制数据转换成由64个字符组成的字符串编码算法。<br>
+算法：将原数据每6位对应成Base64索引表中的一个字符编排成一个字符串（每个字符串8位）<br>
+用途：使用文本形式传输文件、图片<br>
+缺点：数据量会增大，所以会影响存储和传输性能</p>
+<h3 id="压缩和解压缩">压缩和解压缩</h3>
+<p>压缩：将数据使用具有存储优势的编码算法进行编码<br>
+解压缩：将压缩数据解码还原成原来的形式<br>
+目的是减少数据占用的存储空间，常见压缩算法DEFLATE、JPEG、MP3<br>
+有损压缩：压缩后数据有损失，无法完全恢复成原数据，不可逆。媒体数据（音视频、图片）跟感官交互的数据，是接受有损压缩的。</p>
+<h3 id="序列化">序列化</h3>
+<p>把数据对象（一般是内存中，例如JVM中的对象）转换成字节序列的过程。对象在程序内存里的存放形式是散乱的，通过序列化可以把内存中的对象转换成一个字节序列，从而使用byte[]等形式进行本地存储或网络传输，在需要的时候重新组装（反序列化）来使用<br>
+目的：让内存中的对象可以存储和传输</p>
+<h3 id="hash哈希">Hash哈希</h3>
+<p>把任意数据转换成指定大小范围的数据。相当于从数据中提出摘要信息，主要用途是数字指纹。经典算法MD5、SHA-1、SHA-256<br>
+用途：数据完整性验证（下载文件时确认文件是否有损坏）、快速查找（HashMap）、隐私保护（用户密码保存hash值）<br>
+破解：彩虹表，将常见密码生成密码和hash值的映射<br>
+反破解：加盐，保存Hash（密码+盐）</p>
+<h2 id="登录和授权">登录和授权</h2>
+<p>http中确认授权（或登录）的两种方式<br>
+1.通过Cookie<br>
+2.通过Authorization Header</p>
+<h3 id="cookie">Cookie</h3>
+<p><strong>Cookie工作机制</strong><br>
+服务器需要客户端保存的内容，放在Set-Cookie header里面返回，客户端自动保存<br>
+客户端保存的Cookie，会在之后的所有请求里都携带进Cookie header里面发送给服务器<br>
+客户端保存Cookie是按照服务器域名来分类的<br>
+客户端保存的Cookie在超时后会被删除，没有设置超时时间的Cookie在浏览器关闭后会自动删除，服务器也可以主动删除还未过期的客户端Cookie</p>
+<p><strong>Cookie的作用</strong><br>
+会话管理：登录状态、购物车<br>
+个性化：用户偏好、主题<br>
+Tracking：分析用户行为</p>
+<h3 id="authorization">Authorization</h3>
+<p>两种主流方式：Basic和Bearer</p>
+<p><strong>Basic</strong><br>
+格式：Authorization:Basic &lt;username:pwd(Base64ed)&gt;</p>
+<p><strong>Bearer</strong><br>
+格式：Authorization:Bearer&lt;bearer token&gt;<br>
+OAuth2流程，第三方App通过微信登录的流程就是一个OAuth2流程<br>
+0.第三方App向腾讯申请授权合作，拿到client id和client secret<br>
+1.用户在使用第三方App时，点击【通过微信登录】，第三方App将使用微信SDK跳转到微信，并传入自己的client id作为自己的身份标识<br>
+2.微信通过和服务器交互，拿到第三方app的信息，并显示在界面中，询问用户是否同意授权该app使用微信来登录<br>
+3.用户点击【使用微信登录】后，微信和服务器交互将授权信息提交，然后跳转回第三方app，并传入Authorization code作为用户认可的凭证<br>
+4.第三方app调用自己服务器api，传入Authorization code<br>
+5.服务器使用Authorization code去向微信的第三方授权接口发送请求，将Authorization code和自己的client sceret传给微信服务器，微信服务器验证通过后，返回access token<br>
+6.服务器收到access token后，向微信的用户信息接口发送请求，微信服务器验证通过后，返回用户信息<br>
+7.服务器收到用户信息后，保存信息到数据库，并将用户id和用户的微信id做关联<br>
+8.用户创建后，服务器向客户端app的请求发送响应，传回用户信息<br>
+9.客户端收到服务器响应，登录成功</p>
+<p><strong>Refresh token</strong><br>
+三方登录时服务器返回refresh token和access token以及有效时间，当access token失效后，使用refresh token获取新的access token<br>
+目的：安全。当access token失窃，由于有失效时间，所以别人只能在一定时间内使用access token，同时由于refresh token值存在于第三方服务的服务器中，因此refresh token几乎没有失窃的风险</p>
+<h2 id="tcpip协议族">TCP/IP协议族</h2>
+<p>TCP/IP指一系列协议所组成的网络分层模型<br>
+为什么需要分层？因为网络不稳定</p>
+<p>分层：<br>
+应用层：HTTP、FTP、DNS<br>
+传输层：TCP、UDP<br>
+网络层：IP<br>
+数据链路层：以太网、wifi</p>
+<p>连接：通信双方建立确认可以通信，不会将对方的消息丢弃，即为建立连接<br>
+长连接：网络是连接在运营商的内网，不具有真正的公网IP，因此当某个TCP连接在一段时间不通信之后，网关会出于网络性能考虑而关闭这条TCP连接和公网的连接通道，导致这个TCP连接被动关闭。使用心跳的方式保持长连接。</p>
+<p>简述 TCP 连接建立时的「三次（三向）握手」<br>
+简述 TCP 连接关闭时的「四次挥手」<br>
+为什么 TCP 连接在断开时是四次挥手而不是三次？</p>
+<h2 id="https">HTTPS</h2>
+<p>HTTPS，全称HTTP over SSL（或者HTTP over TLS），即工作在SSL上的HTTP，就是加密通信的HTTP<br>
+工作原理：在客户端和服务器之间使用非对称加密协商出一套对称秘钥，每次发送消息之前将内容加密，收到之后解密，达到数据的加密传输<br>
+为什么不直接用非对称加密？是因为非对称加密计算复杂，会影响网络通信的性能</p>
+<h3 id="https连接建立过程">HTTPS连接建立过程</h3>
+<p>1.Client hello  C-&gt;S 可选的TLS版本、可选的加密套件、客户端随机数<br>
+2.Server Hello   S-&gt;C  TLS版本、加密套件、服务器随机数<br>
+3.服务器证书信任建立  S-&gt;C<br>
+4.Pre-master Secret  C-&gt;S  使用服务器公钥加密<br>
+5.客户端通知：将使用加密通信  C-&gt;S<br>
+6.客户端发送：Finished   C-&gt;S<br>
+7.服务器通知：将使用加密通信   S-&gt;C<br>
+8.服务器发送：Finished   S-&gt;C</p>
+<p><strong>证书验证过程</strong><br>
+服务器发送自己的证书链到客户端（带有服务器的公钥、域名）<br>
+公钥+签名+证书签发机构公钥+签名... ... 根证书（操作系统自带）</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/FAj_GA9ie/" class="tag">
+                    HTTP
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/zygote-wei-shi-me-shi-yong-socketer-bu-shi-binder/">
+                  <h3 class="post-title">
+                    Zygote为什么使用Socket，而不是Binder
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

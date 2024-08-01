@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter-plugin源码爱恨情仇 | 一、shared_preferences | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter-plugin源码爱恨情仇 | 一、shared_preferences</h2>
+            <div class="post-date">2021-01-15</div>
+            
+            <div class="post-content">
+              <p>想写一个系列博客，关于flutter优秀插件的源码学习，flutter-plugin源码爱恨情仇，这是第一篇，本地数据持久化----<a href="https://pub.dev/packages/shared_preferences">shared_preference</a>(^0.5.12+4)。</p>
+<h3 id="引子">引子</h3>
+<p>刚才有个朋友问我，马老师发生什么事了，我说怎么回事，给我发了一个flutter插件，我一看，源莱氏-佐田，使用shared_preferences实现数据持久化，插件的官方描述</p>
+<blockquote>
+<p>Wraps platform-specific persistent storage for simple data (NSUserDefaults on iOS and macOS, SharedPreferences on Android, etc.). Data may be persisted to disk asynchronously, and there is no guarantee that writes will be persisted to disk after returning, so this plugin must not be used for storing critical data.</p>
+</blockquote>
+<h3 id="翻译一下">翻译一下</h3>
+<blockquote>
+<p>为简单数据包装特定于平台的持久存储(iOS和macOS上的NSUserDefaults, Android上的SharedPreferences，等等)。数据可以异步持久化到磁盘，并且不能保证返回后的写操作将持久化到磁盘，所以这个插件不能用于存储关键数据。</p>
+</blockquote>
+<h3 id="源码入口">源码入口</h3>
+<p>查看使用demo</p>
+<pre><code class="language-dart">Future&lt;SharedPreferences&gt; _prefs = SharedPreferences.getInstance();
+</code></pre>
+<p>点进去一看，啪，上来就是个单例模式，很快啊，我全部防出去了</p>
+<pre><code class="language-dart"> //构造方法私有化 
+  SharedPreferences._(this._preferenceCache);
+
+  /// Loads and parses the [SharedPreferences] for this app from disk.
+  ///
+  /// Because this is reading from disk, it shouldn't be awaited in
+  /// performance-sensitive blocks.
+  static Future&lt;SharedPreferences&gt; getInstance() async {
+    if (_completer == null) {
+      _completer = Completer&lt;SharedPreferences&gt;();
+      try {
+        final Map&lt;String, Object&gt; preferencesMap =
+            await _getSharedPreferencesMap();
+        _completer.complete(SharedPreferences._(preferencesMap));
+      } on Exception catch (e) {
+        // If there's an error, explicitly return the future with an error.
+        // then set the completer to null so we can retry.
+        _completer.completeError(e);
+        final Future&lt;SharedPreferences&gt; sharedPrefsFuture = _completer.future;
+        _completer = null;
+        return sharedPrefsFuture;
+      }
+    }
+    return _completer.future;
+  }
+</code></pre>
+<p>首先是把构造方法私有化，保证其他类不能直接构造SharedPreferences的实例，只能通过getInstance这个异步方法获取实例。然后是在getInstance方法中，做一些必要的初始化操作，包括获取sp中已经存在的所有键值对到map，然后使用这个map构造SharedPreferences实例，如果发生异常，，返回一个error future的同时，会把_completer置为空，以便下次可以重试。</p>
+<p>这一段代码里面，指向的关键代码是_getSharedPreferencesMap方法，代码如下</p>
+<pre><code class="language-dart">static Future&lt;Map&lt;String, Object&gt;&gt; _getSharedPreferencesMap() async {
+    final Map&lt;String, Object&gt; fromSystem = await _store.getAll();
+    assert(fromSystem != null);
+    // Strip the flutter. prefix from the returned preferences.
+    final Map&lt;String, Object&gt; preferencesMap = &lt;String, Object&gt;{};
+    for (String key in fromSystem.keys) {
+      assert(key.startsWith(_prefix));
+      preferencesMap[key.substring(_prefix.length)] = fromSystem[key];
+    }
+    return preferencesMap;
+  }
+</code></pre>
+<p>这段代码做的是，获取当前平台对应的_store，用_store的getall方法，拿到已经存在的，且由flutter添加的（通过key的头判断）所有键值对数据，以map形式返回到_preferenceCache。<br>
+这样做的目的是，以后每次get数据时，可以直接从内存（_preferenceCache）拿数据，同步返回，提升效率。<br>
+set数据时，先对传入的key处理，统一加上头’flutter.‘作为标记，然后再对传入的value处理，如果value为空，从_preferenceCache和_store里删除改记录，如果value是List，复制一份值出来，然后把数据存到_preferenceCache和_store。<br>
+这里的_preferenceCache是在内存里的一个map对象，_store是SharedPreferencesStorePlatform类，是不同平台存数据的实现类。<br>
+get代码和set代码如下</p>
+<pre><code class="language-dart">//get
+/// Reads a value of any type from persistent storage.
+  dynamic get(String key) =&gt; _preferenceCache[key];
+
+//set string
+Future&lt;bool&gt; setString(String key, String value) =&gt;_setValue('String', key, value);
+
+Future&lt;bool&gt; _setValue(String valueType, String key, Object value) {
+    final String prefixedKey = '$_prefix$key';
+    if (value == null) {
+      _preferenceCache.remove(key);
+      return _store.remove(prefixedKey);
+    } else {
+      if (value is List&lt;String&gt;) {
+        // Make a copy of the list so that later mutations won't propagate
+        _preferenceCache[key] = value.toList();
+      } else {
+        _preferenceCache[key] = value;
+      }
+      return _store.setValue(valueType, prefixedKey, value);
+    }
+  }
+</code></pre>
+<p>上文提到的获取当前平台对应的_store，代码如下</p>
+<pre><code class="language-dart">static bool _manualDartRegistrationNeeded = true;
+static SharedPreferencesStorePlatform get _store {
+  // This is to manually endorse the Linux implementation until automatic
+  // registration of dart plugins is implemented. For details see
+  // https://github.com/flutter/flutter/issues/52267.
+  if (_manualDartRegistrationNeeded) {
+    // Only do the initial registration if it hasn't already been overridden
+    // with a non-default instance.
+    if (!kIsWeb &amp;&amp;
+        SharedPreferencesStorePlatform.instance
+            is MethodChannelSharedPreferencesStore) {
+      if (Platform.isLinux) {
+        SharedPreferencesStorePlatform.instance = SharedPreferencesLinux();
+      } else if (Platform.isWindows) {
+        SharedPreferencesStorePlatform.instance = SharedPreferencesWindows();
+      }
+    }
+    _manualDartRegistrationNeeded = false;
+  }
+
+  return SharedPreferencesStorePlatform.instance;
+}
+</code></pre>
+<p>逻辑比较清晰，判断当前平台，如果是Linux平台，使用SharedPreferencesLinux，如果是windows平台，使用SharedPreferencesWindows，如果是android，ios，web（web不太确定，看代码逻辑是这样的，但是没有找到web的实现）平台，使用MethodChannelSharedPreferencesStore，然后在这个类里面再分平台调用平台的native代码</p>
+<h3 id="flutter调用native代码">flutter调用native代码</h3>
+<p>在MethodChannelSharedPreferencesStore类里面，先设置命名通道MethodChannel，代码如下</p>
+<pre><code class="language-dart">const MethodChannel _kChannel =
+    MethodChannel('plugins.flutter.io/shared_preferences');
+</code></pre>
+<p>然后通过_invokeBoolMethod，调用以上命名通道下的native代码，_invokeBoolMethod代码如下</p>
+<pre><code class="language-dart">Future&lt;bool&gt; _invokeBoolMethod(String method, Map&lt;String, dynamic&gt; params) {
+    return _kChannel
+        .invokeMethod&lt;bool&gt;(method, params)
+        // TODO(yjbanov): I copied this from the original
+        //                shared_preferences.dart implementation, but I
+        //                actually do not know why it's necessary to pipe the
+        //                result through an identity function.
+        //
+        //                Source: https://github.com/flutter/plugins/blob/3a87296a40a2624d200917d58f036baa9fb18df8/packages/shared_preferences/lib/shared_preferences.dart#L134
+        .then&lt;bool&gt;((dynamic result) =&gt; result);
+  }
+</code></pre>
+<h3 id="android平台实现">android平台实现</h3>
+<p>在插件的android包下，io.flutter.plugins.sharedpreferences包中，有两个类，SharedPreferencesPlugin和MethodCallHandlerImpl，<br>
+SharedPreferencesPlugin类定义了android的命名通道方法，和之前MethodChannelSharedPreferencesStore使用相同的命名通道，然后flutter才可以找到android这边对应的方法，代码如下</p>
+<pre><code class="language-dart">private static final String CHANNEL_NAME = &quot;plugins.flutter.io/shared_preferences&quot;;
+
+channel = new MethodChannel(messenger, CHANNEL_NAME);
+</code></pre>
+<p>MethodCallHandlerImpl类是每一个方法在android的具体实现，可以看onMethodCall方法，实现了flutter里面调用的所有方法，代码太多不粘了。</p>
+<h3 id="ios平台实现">ios平台实现</h3>
+<p>在插件的ios包下，有两个类FLTSharedPreferencesPlugin.m和FLTSharedPreferencesPlugin.h，在FLTSharedPreferencesPlugin.h<br>
+中，定义了ios的命名通道，以及每一个方法在ios的具体实现，代码如下</p>
+<pre><code class="language-dart">//命名通道
+static NSString *const CHANNEL_NAME = @&quot;plugins.flutter.io/shared_preferences&quot;;
+FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:CHANNEL_NAME
+binaryMessenger:registrar.messenger];
+</code></pre>
+<h3 id="总结">总结</h3>
+<p>插件流程，判断当前设备的平台，通过平台原生代码获取已经存在的数据，用map保存，get数据时，直接从map里面拿，set数据时，把数据加到map中，再调用平台的原生代码，存数据到磁盘。<br>
+正如官方描述的那样，这个插件做的事，就是对数据持久化这一功能，在不同平台上面的封装（wrap），整体逻辑比较清晰，代码量不大，适合我这样的菜鸡做源码阅读。其中关键的技术点，是flutter调用原生代码，这篇博客只是看了个大概流程和调用走向，对flutter调用原生代码这一块的学习，还有待具体实操。</p>
+<h3 id="马老师镇场">马老师镇场</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1610698564210.jpg" alt="" loading="lazy"></figure>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/XNvTkkr4L/" class="tag">
+                    plugin
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/LeetCode每日一题（20201022）/">
+                  <h3 class="post-title">
+                    LeetCode每日一题（20201022）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

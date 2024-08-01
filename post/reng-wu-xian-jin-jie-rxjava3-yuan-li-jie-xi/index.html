@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-RxJava3原理解析 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-RxJava3原理解析</h2>
+            <div class="post-date">2024-06-24</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。RxJava3原理</p>
+<!-- more -->
+<h3 id="rxjava3简单使用">RxJava3简单使用：</h3>
+<p>配合retrofit：<br>
+定义retrofit接口：<img src="https://PaIn22152.github.io/post-images/1719219527951.png" alt="" loading="lazy"><br>
+retofit初始化添加rxjava支持：<img src="https://PaIn22152.github.io/post-images/1719219584148.png" alt="" loading="lazy"><br>
+使用rxjava实现线程切换：<br>
+<img src="https://PaIn22152.github.io/post-images/1719219681691.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1719219704525.png" alt="" loading="lazy"></p>
+<h3 id="disposable">Disposable</h3>
+<p>可以通过dispose()方法来让上游或者内部调度器（或者两者都有）停止工作，达到丢弃任务的效果</p>
+<h3 id="subscribeon">subscribeOn</h3>
+<p>原理：在Scheduler指定的线程里启动subscribe()<br>
+效果：切换源数据的线程；当多次调用时，只有最上面的会起作用</p>
+<h3 id="observeon">observeOn</h3>
+<p>原理：在内部创建的Observer的onNext(),onError(),onSuccess()等回调方法里，通过Scheduler指定的线程来调用下级Observer的对应回调方法<br>
+效果：切换observeOn下面的Observer的回调所在线程；当多次调用时，每一个都会进行一次线程切换，影响范围是他的下面的每个Observer</p>
+<p>线程切换影响效果图：<img src="https://PaIn22152.github.io/post-images/1719220441355.png" alt="" loading="lazy"></p>
+<h3 id="scheduler">Scheduler</h3>
+<p>Schedulers.newThread()和Schedulers.io()<br>
+newThread每次都会新建一个Worker，worker新建一个Executor，由Executor来完成线程切换，io和newThread相比，会创建一个Worker缓存池，每次都是从缓存池里面获取worker，达到复用Executor的效果</p>
+<p>AndroidSchedulers.mainThread()<br>
+通过内部的handler把任务放到主线程</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/JHb9RgkhE/" class="tag">
+                    RxJava3
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-xian-cheng-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-线程相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

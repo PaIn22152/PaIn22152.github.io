@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-ConstraintLayout上手使用 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-ConstraintLayout上手使用</h2>
+            <div class="post-date">2024-06-12</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。ConstraintLayout使用</p>
+<!-- more -->
+<p>使用ContraintLayout，可以灵活地实现复杂UI，同时可以减少布局嵌套，提升UI性能（层级过深会增加绘制界面时间，影响用户体验）</p>
+<p>ConstraintLayout中的子view，至少需要添加两个约束，一个垂直方向，一个水平方向</p>
+<p>使用start和end来代替left和right，可以很好地适配中东地区的从右到左布局（阿拉伯语语言是从右到左RTL）。</p>
+<p>以下示例，ConstraintLayout作为父容器，白色底，宽高300dp</p>
+<h2 id="布局">布局：</h2>
+<h3 id="居中父容器">居中父容器：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718171688064.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintBottom_toBottomOf=&quot;parent&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+</code></pre>
+<h3 id="居中于控件">居中于控件：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718172111586.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintStart_toStartOf=&quot;@id/view1&quot;
+      app:layout_constraintEnd_toEndOf=&quot;@id/view1&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/view1&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/view1&quot;
+</code></pre>
+<h3 id="填充">填充：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718172490939.png" alt="" loading="lazy"><br>
+使用0dp（match_constraint）或者match_parent<br>
+代码：</p>
+<pre><code class="language-xml">    &lt;View
+      android:id=&quot;@+id/view1&quot;
+      android:layout_width=&quot;match_parent&quot;  //或者0dp
+      android:layout_height=&quot;100dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+      /&gt;
+</code></pre>
+<h3 id="权重">权重：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718173080266.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      //v1
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;1&quot;
+
+      //v2
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;2&quot;
+
+      //v3
+      android:layout_width=&quot;0dp&quot;
+      app:layout_constraintHorizontal_weight=&quot;1&quot;
+</code></pre>
+<h3 id="文字基准线对齐">文字基准线对齐：</h3>
+<p>效果图：<img src="https://PaIn22152.github.io/post-images/1718173659281.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintBaseline_toBaselineOf=&quot;@id/tv1&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot; 
+</code></pre>
+<h3 id="圆形定位">圆形定位</h3>
+<p>通过【圆心】【角度】【半径】设置圆形定位<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718174024960.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintCircle=&quot;@id/tv1&quot;
+      app:layout_constraintCircleAngle=&quot;30&quot;
+      app:layout_constraintCircleRadius=&quot;100dp&quot;
+</code></pre>
+<h2 id="特殊属性">特殊属性</h2>
+<h3 id="约束限制">约束限制</h3>
+<p>限制控件大小不会超过约束范围<br>
+效果图：<br>
+不约束的效果：<img src="https://PaIn22152.github.io/post-images/1718174447480.png" alt="" loading="lazy"><br>
+宽度超过了约束范围<br>
+约束后效果：<img src="https://PaIn22152.github.io/post-images/1718174504859.png" alt="" loading="lazy"><br>
+宽度在约束范围内<br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constrainedHeight=&quot;true&quot;
+</code></pre>
+<h3 id="偏向">偏向</h3>
+<p>控制控件在水平方向20%的位置<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718174825124.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0.2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;
+</code></pre>
+<p>还可以用于配合【约束限制】下，不需要居中的情况使用<br>
+效果图：<br>
+<img src="https://PaIn22152.github.io/post-images/1718175198900.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1718175296845.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv1&quot; 
+</code></pre>
+<h3 id="gonemargin">goneMargin</h3>
+<p>当约束的view不显示时（gone），设置为这个margin<br>
+效果图：<br>
+显示时：<img src="https://PaIn22152.github.io/post-images/1718175638106.png" alt="" loading="lazy"><br>
+不显示时：<img src="https://PaIn22152.github.io/post-images/1718175690662.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">      android:layout_marginStart=&quot;10dp&quot;
+      app:layout_goneMarginLeft=&quot;30dp&quot;
+
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+</code></pre>
+<h3 id="约束链">约束链</h3>
+<p>在约束链的第一个控件加上chainStyle，可以改变一组控件的布局方式：<br>
+spread（扩散，默认值）、packed（打包）、spread_inside（内部扩散）<br>
+效果图：<br>
+扩散：<img src="https://PaIn22152.github.io/post-images/1718176123832.png" alt="" loading="lazy"><br>
+打包：<img src="https://PaIn22152.github.io/post-images/1718176187456.png" alt="" loading="lazy"><br>
+内部扩散：<img src="https://PaIn22152.github.io/post-images/1718176263063.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintHorizontal_chainStyle=&quot;packed&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv3&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv2&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="宽高比">宽高比</h3>
+<p>至少需要一个方向的值为0dp<br>
+使用app:layout_constraintDimensionRatio=&quot;1:2&quot;设置宽比高为1:2</p>
+<h3 id="百分比布局">百分比布局</h3>
+<p>需要对应方向的值为0dp<br>
+百分比是parent的百分比，而不是约束区域的百分比<br>
+使用app:layout_constraintWidth_percent=&quot;0.8&quot;</p>
+<h2 id="辅助控件">辅助控件</h2>
+<h3 id="guideline-参考线">GuideLine 参考线</h3>
+<p>添加一条虚拟的参考线，别的控件可以以这条线作为约束<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718177790885.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;androidx.constraintlayout.widget.Guideline
+      android:id=&quot;@+id/guideline1&quot;
+      app:layout_constraintGuide_percent=&quot;0.5&quot;
+      android:orientation=&quot;vertical&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+
+    &lt;TextView
+      android:layout_marginTop=&quot;50dp&quot;
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;账号名称：&quot;
+      android:textSize=&quot;20sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/guideline1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;androidx.appcompat.widget.AppCompatEditText
+      android:hint=&quot;输入账号&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv1&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/tv1&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/guideline1&quot;
+      android:id=&quot;@+id/et1&quot;
+      android:textSize=&quot;15sp&quot;
+      android:layout_width=&quot;150dp&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:textSize=&quot;20sp&quot;
+      android:text=&quot;密码：&quot;
+      app:layout_constraintEnd_toEndOf=&quot;@id/guideline1&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/tv1&quot;/&gt;
+
+    &lt;androidx.appcompat.widget.AppCompatEditText
+      android:hint=&quot;输入密码&quot;
+      app:layout_constraintTop_toTopOf=&quot;@id/tv2&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/guideline1&quot;
+      android:id=&quot;@+id/et2&quot;
+      android:textSize=&quot;15sp&quot;
+      android:layout_width=&quot;150dp&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+    
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="group-组">Group 组</h3>
+<p>通过constraint_referenced_ids使用引用的方式来避免布局嵌套，可以统一控制一组控件的隐藏和显示（只能设置可见度，不能设置点击事件）<br>
+代码：</p>
+<pre><code class="language-xml">    &lt;androidx.constraintlayout.widget.Group
+      android:id=&quot;@+id/group&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2,et1,et2&quot;
+      android:layout_height=&quot;wrap_content&quot;/&gt;
+      
+      findViewById&lt;View&gt;(R.id.group).visibility = View.GONE
+</code></pre>
+<h3 id="layer-层布局">Layer 层布局</h3>
+<p>和Group类似，为一组控件统一设置旋转、缩放、位移<br>
+todo</p>
+<h3 id="barrier-屏障">Barrier 屏障</h3>
+<p>设置一组控件某个方向的屏障<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718180135704.png" alt="" loading="lazy"><br>
+上图中，左边两个标题一长一短，且谁长谁短不定，右边的文字需要按照标题做约束，这时就需要给两个标题添加end方向的屏障，然后右边文字按照屏障做约束<br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;TextView
+      android:background=&quot;@color/teal_200&quot;
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:text=&quot;长一点的标题&quot;
+      android:textSize=&quot;15sp&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:background=&quot;@color/teal_200&quot;
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:text=&quot;短标题&quot;
+      android:textSize=&quot;15sp&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toBottomOf=&quot;@id/tv1&quot; /&gt;
+
+    &lt;androidx.constraintlayout.widget.Barrier
+      android:id=&quot;@+id/barrier&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      app:barrierDirection=&quot;end&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2&quot; /&gt;
+
+    &lt;TextView
+      android:background=&quot;#e33&quot;
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;wrap_content&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:layout_marginStart=&quot;10dp&quot;
+      android:layout_marginEnd=&quot;30dp&quot;
+      android:text=&quot;很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长的文字测试&quot;
+      android:textSize=&quot;10sp&quot;
+      app:layout_constrainedWidth=&quot;true&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintHorizontal_bias=&quot;0&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/barrier&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="placeholder-占位符">Placeholder 占位符</h3>
+<p>Placeholder的作用就是占位，它可以在布局中占好位置，然后通过setContentId()来设置内容，将某个控件移动到此占位符中。<br>
+可以配合TransitionManager.beginDelayedTransition(constraint_root)来实现过渡动画<br>
+效果图：<img src="https://PaIn22152.github.io/post-images/1718181787235.gif" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:id=&quot;@+id/constraint_root&quot;
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;androidx.constraintlayout.widget.Placeholder
+      android:id=&quot;@+id/placeholder&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      app:layout_constraintBottom_toBottomOf=&quot;parent&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;1&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv2&quot;
+      app:layout_constraintStart_toStartOf=&quot;parent&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      android:text=&quot;2&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv3&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv1&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#3e3&quot;
+      android:text=&quot;3&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toStartOf=&quot;@id/tv4&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv2&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv4&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;4&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot;
+      app:layout_constraintEnd_toEndOf=&quot;parent&quot;
+      app:layout_constraintStart_toEndOf=&quot;@id/tv3&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot; /&gt;
+
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+
+
+        findViewById&lt;View&gt;(R.id.tv1).setOnClickListener {
+            TransitionManager.beginDelayedTransition(constraint_root)
+            placeholder.setContentId(R.id.tv1)
+        }
+        
+</code></pre>
+<h3 id="flow-流式虚拟布局">Flow 流式虚拟布局</h3>
+<p>Flow的constraint_referenced_ids关联的控件是没有设置约束的<br>
+通过流式的方式对关联的控件进行布局，有3种flow_wrapMode（排列方式）可选：none（默认值）、chain、aligned。下面分别介绍每种排列方式：<br>
+none：所有引用的view形成一条链，水平居中，超出屏幕两侧的view不可见，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183782016.png" alt="" loading="lazy"><br>
+chain：所有引用的view形成一条链，超出部分自动换行，同行的view会平分宽度，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183881711.png" alt="" loading="lazy"><br>
+aligned：所有引用的view形成一条链，但view会在同行同列，效果如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1718183975095.png" alt="" loading="lazy"><br>
+代码：</p>
+<pre><code class="language-xml">  &lt;androidx.constraintlayout.widget.ConstraintLayout
+    android:id=&quot;@+id/constraint_root&quot;
+    android:layout_width=&quot;300dp&quot;
+    android:layout_height=&quot;300dp&quot;
+    android:layout_centerInParent=&quot;true&quot;
+    android:background=&quot;#ffffff&quot;&gt;
+
+    &lt;!--flow test code  start--&gt;
+    &lt;TextView
+      android:id=&quot;@+id/tv1&quot;
+      android:layout_width=&quot;140dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;@color/teal_200&quot;
+      android:text=&quot;1&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv2&quot;
+      android:layout_width=&quot;140dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#e33&quot;
+      android:text=&quot;2&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv3&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#3e3&quot;
+      android:text=&quot;3&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv4&quot;
+      android:layout_width=&quot;50dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;4&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+    &lt;TextView
+      android:id=&quot;@+id/tv5&quot;
+      android:layout_width=&quot;40dp&quot;
+      android:layout_height=&quot;50dp&quot;
+      android:background=&quot;#33e&quot;
+      android:text=&quot;5&quot;
+      android:textAlignment=&quot;center&quot;
+      android:textSize=&quot;30sp&quot; /&gt;
+
+
+    &lt;androidx.constraintlayout.helper.widget.Flow
+      app:flow_horizontalStyle=&quot;packed&quot;
+      android:id=&quot;@+id/flow&quot;
+      app:flow_wrapMode=&quot;chain&quot;
+      android:layout_width=&quot;match_parent&quot;
+      android:layout_height=&quot;wrap_content&quot;
+      android:orientation=&quot;horizontal&quot;
+      app:constraint_referenced_ids=&quot;tv1,tv2,tv3,tv4,tv5&quot;
+      app:flow_horizontalGap=&quot;2dp&quot;
+      app:layout_constraintTop_toTopOf=&quot;parent&quot;/&gt;
+    &lt;!--flow test code  start--&gt;
+    
+  &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</code></pre>
+<h3 id="constraintset">ConstraintSet</h3>
+<p>在传统布局中，如果想改变某个控件的位置，需要获取LayoutParams，然后修改属性值，但是在约束布局中，要改变控件的约束条件，需要使用ConstraintSet<br>
+使用步骤：</p>
+<ol>
+<li>创建ConstraintSet</li>
+<li>需要复制一份父布局的约束（也可以从已有的xml文件中复制）</li>
+<li>设置组件之间的约束（或者移除之前的约束）</li>
+<li>设置过渡动画</li>
+<li>apply更新约束条件<br>
+代码：</li>
+</ol>
+<pre><code class="language-kotlin">        val constraint_root = findViewById&lt;ConstraintLayout&gt;(R.id.constraint_root)
+        val v1 = findViewById&lt;View&gt;(R.id.v1)
+        v1.setOnClickListener {
+            val constraintSet = ConstraintSet().apply {
+                isForceId = false//防止布局中有无id控件时报错，需要设置isForceId=false
+                //clone(this@ConstraintActivity,R.layout.activity_constraint2)  //从xml中复制约束条件
+                clone(constraint_root)
+                clear(R.id.v1, ConstraintSet.START)//移除约束
+                clear(R.id.v1, ConstraintSet.TOP)
+                connect(//重新建立约束
+                    R.id.v1,
+                    ConstraintSet.BOTTOM,
+                    ConstraintSet.PARENT_ID,
+                    ConstraintSet.BOTTOM
+                )
+                connect(
+                    R.id.v1,
+                    ConstraintSet.END,
+                    ConstraintSet.PARENT_ID,
+                    ConstraintSet.END
+                )
+            }
+            TransitionManager.beginDelayedTransition(constraint_root)//过渡动画
+            constraintSet.applyTo(constraint_root)//约束条件更新
+        }
+</code></pre>
+<h3 id="constrainthelper">ConstraintHelper</h3>
+<p>以上的Group、Barrier、Layer、Flow都是继承自ConstraintHelper，ConstraintHelper 继承自 View，因此它可以在 xml 中使用和预览。但它通常没有自己的 UI 样式，只是通过特定的逻辑，去控制其他相关 View 的约束。</p>
+<p>它有一个constraint_referenced_ids属性，也就是我们在用Group的时候指定相关 View id 的属性。此类主要作用就是将 xml 中赋值的 id 字符串（如&quot;v1, v2, v3&quot;）解析成一组真正的 int 类型的 View id（定义在 R.java 文件中），然后通过getReferencedIds()方法提供给子类使用。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/y6PDsqvXB/" class="tag">
+                    ContraintLayout
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zi-ding-yi-view-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-自定义view相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

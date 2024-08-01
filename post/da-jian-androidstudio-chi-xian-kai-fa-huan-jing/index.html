@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>搭建AndroidStudio离线开发环境 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">搭建AndroidStudio离线开发环境</h2>
+            <div class="post-date">2021-03-09</div>
+            
+            <div class="post-content">
+              <p>1.创建两台一模一样的虚拟机，一台用于更新下载Gradle插件（VN），可以联网。<br>
+一台用于离线开发（VO），全程断网。<br>
+2.VN 和 VO搭建好AndroidStudio开发环境，两台虚拟机使用的AndroidStudio版本要一致（目前测试3.6.3可行）<br>
+3.使用VN随便创建一个项目，把需要用到的Gradle库加入到项目，同步项目后，关闭Studio。<br>
+4.找到C:\Users{用户名}.gradle目录，压缩该目录下所有文件夹，复制备用。<br>
+5.打开VO，找到C:\Users{用户名}.gradle目录，删除改目录下所有文件，把刚刚压缩好的文件复制到此，解压。<br>
+6.按照  https://developer.android.com/studio/intro/studio-config#offline 教程，配置离线编译依赖项。<br>
+7.在VO创建一个项目，打开studio离线模式，把需要用到的Gradle库加入到项目（和VN下的一样），同步代码，项目可以正常运行，gradle导入的库也可以正常使用。<br>
+8.后续需要增加新的库时，需要在VN下导入库，然后压缩并复制 C:\Users{用户名}.gradle目录，在VO中，删除 C:\Users{用户名}.gradle目录，再把复制的压缩文件解压到此。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter20-xin-te-xing/">
+                  <h3 class="post-title">
+                    Flutter2.0新特性
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
