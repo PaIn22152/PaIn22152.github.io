@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-深入理解JVM | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-深入理解JVM</h2>
+            <div class="post-date">2024-08-16</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。深入理解JVM。</p>
+<!-- more -->
+<h2 id="字节码class结构">字节码class结构</h2>
+<p>class文件中只存在无符号数和表两种基本数据结构，由无符号数和表组成class中的各个结构，这些结构按照预先规定好的顺序紧密排序，如下图所示。<br>
+<img src="https://PaIn22152.github.io/post-images/1723787802418.png" alt="" loading="lazy"><br>
+每个结构占据多少空间参考下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1723788218246.png" alt="" loading="lazy"></p>
+<h3 id="基本结构">基本结构</h3>
+<p>无符号数：以u1、u2、u4、u8来表示1个字节到8个字节，可以用来描述数字、索引引用、数据长度等</p>
+<p>表：由多个无符号数或者其他表作为数据项构成的符合数据类型，所有表都以“_info”结尾。</p>
+<h3 id="结构介绍">结构介绍</h3>
+<p>魔数：是class文件开头的四个字节，固定值0xCAFEBABE（cafe babe），是class文件的标识<br>
+版本号：分为主版本和次版本<br>
+常量池：常量池大小描述了常量的数量，常量池表示了具体的常量。注意这里常量的概念和java代码中static final修饰的常量不同，这里的常量是指类中的各种相关信息，比如类名称，方法名称，参数名称等都会保存在常量池，这些信息都以表的形式保存在常量池中<br>
+访问标志：描述类或者接口的访问信息，比如该class文件时类还是接口，是否public，是否abstruct，是否final等；<br>
+类索引：描述类名称，父类和实现的接口<br>
+字段集合：描述类中申明的全局变量<br>
+方法集合：描述类中声明的方法</p>
+<h3 id="constant_utf8_info">CONSTANT_Utf8_info</h3>
+<p>java代码中的String在class文件中的存储格式是CONSTANT_Utf8_info表，结构如下：</p>
+<pre><code class="language-java">table CONSTANT_Utf8_info {
+    u1  tag;
+    u2  length;
+    u1[] bytes;
+}
+</code></pre>
+<p>可以看到长度使用的u2修饰，所以字符串的最大长度为2^16=65536，实际长度限制为最大65534</p>
+<h2 id="jvm运行时数据区域">JVM运行时数据区域</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1723789979721.png" alt="" loading="lazy"><br>
+JVM运行时数据区域如上图所示，主要包含5部分，其中所有线程共享的区域为堆和方法区，每个线程私有的区域为虚拟机栈、本地方法栈和程序计数器。</p>
+<h3 id="堆和方法区">堆和方法区</h3>
+<p>堆：Java堆（Heap）是JVM管理的内存中最大的一块，用于存放对象实例，几乎所有对象的实例都在堆里面分配，因此也是垃圾回收的主要区域，因此也叫GC堆。</p>
+<p>方法区：主要用来存储已经被JVM加载的类信息、常量、静态变量等数据。</p>
+<h3 id="栈和程序计数器">栈和程序计数器</h3>
+<p>程序计数器：Java程序是多线程的，CPU可以在多个线程间分配时间片段，当某个线程被CPU挂起时，需要记录代码已经执行到的位置，方便CPU重新执行此线程时，知道从哪个指令开始执行。这就是程序计数器的作用。其他说明：1.Java虚拟机规范中，对程序计数器这一区域没有规定任何OOM的情况；2.是线程私有的，生命周期跟随线程的生命周期；3.当一个线程正在执行一个Java方法时，这个程序计数器记录的是正在执行的虚拟机字节码指令的地址，如果执行的是native方法，计数器值为空。</p>
+<p>虚拟机栈：用于存储执行Java方法时的局部变量、操作数栈、方法返回值等信息。Java虚拟机规范对这区域规定了两种异常：1.StackOverFlowError，当线程请求栈深度超出虚拟机栈锁允许的深度时抛出；2.OutOfMemoryError，当Java虚拟机动态扩展到无法申请足够内存时抛出。</p>
+<p>本地方法栈：作用和虚拟机栈类似，虚拟机栈针对Java方法，本地方法栈针对native方法。</p>
+<h2 id="垃圾回收">垃圾回收</h2>
+<p>没有用的对象就是垃圾，垃圾回收就是要找到没有用的对象，将他占用的内存回收。</p>
+<h3 id="判断垃圾的算法">判断垃圾的算法：</h3>
+<p>引用计数法：当有循环引用时，计数器永远不会为0，导致不会被回收</p>
+<p>可达性分析：从GC Roots作为起点进行搜索，可达的对象是存活的，不可达对象是可以被回收的。<br>
+以下几种对象可以作为GC Roots：</p>
+<ol>
+<li>虚拟机栈中局部变量表引用的对象；</li>
+<li>本地方法栈中JNI引用的对象；</li>
+<li>方法区中静态属性引用的对象</li>
+<li>方法区中常量引用的对象</li>
+</ol>
+<h3 id="垃圾收集算法">垃圾收集算法</h3>
+<p>标记-清除：将垃圾对象标记，回收内存。缺点：会产生大量不连续的内存碎片<br>
+标记-整理：将所有存活对象向一端移动，回收边界外的内存。缺点：需要移动大量对象，处理效率低<br>
+复制：将内存划分为相等的两块，一块使用完后，将存活对象复制到另外一块。缺点：内存只能使用一半<br>
+分代回收：根据对象存活时间分类，使用不同算法处理。</p>
+<h3 id="分代回收">分代回收</h3>
+<p>JVM将堆里面的对象分类，分为新生代和老年代，然后再将新生代划分为一个Eden区域和两个Servivor，大小比例8:1:1。当需要给对象分配内存时，先在Eden区域分配，如果空间不足时，触发Minor GC，将Eden区域和servivor from中的存活对象复制到servivor to区域。大对象和长期存活对象会进入老年代，当老年代的空间也不足时，会触发Major GC，将整个堆里面的垃圾对象都进行回收。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/-1_IImqm9/" class="tag">
+                    JVM
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-yuan-ma/">
+                  <h3 class="post-title">
+                    扔物线进阶-HashMap、LeakCanary、BlockCanary源码
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

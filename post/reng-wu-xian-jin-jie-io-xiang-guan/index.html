@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-IO相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-IO相关</h2>
+            <div class="post-date">2024-07-22</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。IO相关</p>
+<!-- more -->
+<h3 id="io是什么">IO是什么</h3>
+<p>IO即Input和Output，输入输出，指程序内部和程序外部进行数据交互的过程，程序内部指内存，程序外部指本地文件，或者网络，或者别的进程。</p>
+<h3 id="传统io">传统IO</h3>
+<p>也称为BIO，使用流进行单向传输，例如FileInputStream，FileOutputStream。<br>
+在流的外面，还可以套别的流，层层嵌套都可以。<br>
+Buffered开头的IO流，会给流加一个缓冲。如果是输入流，缓冲的意义是每次多读一些数据放在内存，下次再取数据就不用再和外部交互了；如果是输出流，是把数据先在内存里攒着，攒够一定的数量再一起往外面写，也可以调用flush方法立即将缓冲中的数据写入外部，或者调用close时，也会先将缓冲中的数据写入外部。通过缓冲的方式减少和外部的交互，从而提高效率。<br>
+文件流使用完后需要关闭，也可以在try的后面加上括号，然后在括号中初始化closeable对象，可以实现自动关闭，实际开发中推荐使用try括号的方式。</p>
+<p>flush和fsync：<br>
+现代操作系统中，为了提高磁盘的读写性能，写入磁盘的数据通常会在内核做缓冲<br>
+flush是将内存中的缓冲数据立即写入到磁盘的缓冲中，用于保证数据的及时写入。<br>
+fsync是强制将磁盘缓冲中的数据真正写入到磁盘物理存储介质上，用于保证数据的持久化。</p>
+<h3 id="nio">NIO</h3>
+<p>使用Channel进行双向传输，如果是网咯交互时，支持非阻塞，文件交互只能是阻塞<br>
+NIO使用时强制使用Buffer，比如ByteBuffer是用byte数组实现，创建之后大小不可变，用position和limit来控制数据的位置，写完数据后需要调用flip方法才能进行读数据。<br>
+Android中使用MediaCodec做音视频的编解码时会使用到ByteBuffer。<br>
+RandomAccessFile实现文件写入，内部也是使用的NIO。</p>
+<h3 id="okio">OKIO</h3>
+<p>单向传输，输入源叫Source，输出目标叫Sink，他的实现原理是对传统IO做了一层包装，让API更好用。<br>
+OKIO支持Buffer但不是必须的，而且和NIO的Buffer相比，OKIO的Buffer更好用。<br>
+示例代码：</p>
+<pre><code class="language-java">            File file = new File(filesDir, &quot;adb&quot;);
+            try (BufferedSource bufferedSource = Okio.buffer(
+                    Okio.source(context.getAssets().open(&quot;adb&quot;)));
+                    BufferedSink bufferedSink = Okio.buffer(Okio.sink(file))) {
+                bufferedSink.writeAll(bufferedSource);
+            } catch (IOException e) {
+                LogProxy.d(TAG, &quot;initAdbRoot e=&quot; + e);
+                e.printStackTrace();
+            }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/SxbVYSoXs/" class="tag">
+                    IO相关
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-kotlin-xie-cheng/">
+                  <h3 class="post-title">
+                    扔物线进阶-Kotlin协程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

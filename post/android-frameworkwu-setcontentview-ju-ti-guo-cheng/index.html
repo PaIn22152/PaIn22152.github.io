@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android Framework（五），setContentView具体过程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android Framework（五），setContentView具体过程</h2>
+            <div class="post-date">2024-10-08</div>
+            
+            <div class="post-content">
+              <p>在Activity中调用setContentView，会将操作交给PhoneWindow处理，在PhoneWindow的setContentView方法中，先创建出DecorView，DecorView是FrameLayout的子类，默认有一个mContentParent对象，然后将xml中的布局添加到mContentParent中。如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1728379464752.png" alt="" loading="lazy"></p>
+<p>在activity的onCreate阶段只是初始化需要显示的内容，而在onResume阶段才会将PhoneWindow中的DecorView绘制到屏幕。在ActivityThread的handleResumeActivity方法中，会调用WindowManager的addView将DecorView添加到WMS，最终调用到WindowManagerGlobal的addView方法中，WindowManagerGlobal是一个单例，每个进程只有一个实例对象，在他的addView方法中，会创建出ViewRootImpl对象，然后通过ViewRootImpl的setView方法将view添加到WMS。在setView方法中，先通过requestLayout方法执行View的测量布局绘制流程，然后调用mWindowSession的addToDisplay方法将view添加到WMS，最终会通过aidl调用WMS的addWindow方法。另外在setView中还会创建出InputChannel，通过socket的方式接收WMS发送过来的触摸事件，首先是DecorView接收到事件，DecorView再通过dispatchPointerEvent和自己重写的dispatchTouchEvent方法将事件传给对应的activity或者dialog，activity再调用PhoneWindow的superDispatchTouchEvent将事件往view进行分发。</p>
+<p>requestLayout过程<br>
+requestLayout过程包括view的测量、布局和绘制。首先是检查线程，检查当前线程是否是创建ViewRootImpl的线程，一般来说就是指主线程，如果不是就抛出异常（如果想实现在子线程更新UI，可以创建一个子线程，开启Handler的Looper循环，然后在这个子线程创建的view，就可以在这个子线程更新UI）。然后往主线程消息队列中发送同步屏障消息，接着Choreographer监听垂直同步消息后发送异步消息处理UI，同步屏障的目的是保证处理UI的消息优先执行。主线程接收到处理UI的消息后，最终会调用到performTraversals方法，在这个方法中执行测量布局绘制。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/foI-czKO2/" class="tag">
+                    framework
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-frameworksan-pms-an-zhuang-he-xie-zai-apk-liu-cheng/">
+                  <h3 class="post-title">
+                    Android Framework（四），PMS安装和卸载APK流程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

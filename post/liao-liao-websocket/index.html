@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>聊聊WebSocket | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">聊聊WebSocket</h2>
+            <div class="post-date">2022-01-11</div>
+            
+            <div class="post-content">
+              <p>WS(WebSocket)是应用层协议，允许客户端和服务端全双工通信。<br>
+HTTP协议有一比较大的缺陷，那就是通信只能由客户端发起，不能实现服务端主动发消息给客户端，客户端想要获知服务器的状态变化，只能通过轮询或者长轮询等方式，效率很低且浪费资源，WS就是为了解决这一问题出现的。</p>
+<p>WS和HTTP对此：<br>
+相同点：<br>
+1.都是基于TCP的应用层协议；<br>
+2.都使用Request/Response模型进行连接的建立；<br>
+3.在连接过程中对错误的处理方式相同，在这个阶段WS可能返回和HTTP相同的返回码；<br>
+4.都可以在网络中传输数据。</p>
+<p>不同点：<br>
+1.WS使用HTTP来建立连接，但是定义了一系列新的header域，这些域在HTTP中不会被使用；<br>
+2.WS的连接不能通过中间人来转发，它必须是一个直接连接；<br>
+3.WS连接建立之后，通信双方都可以在任何时刻向另一方发送数据；<br>
+4.WS连接建立之后，数据的传输使用帧来传递，不再需要request消息；<br>
+5.WS的数据帧有序。</p>
+<p>WS通信过程<br>
+<img src="https://PaIn22152.github.io/post-images/1641885930077.png" alt="" loading="lazy"><br>
+WS是基于TCP的一个应用协议，与HTTP协议的关联之处在于WS的握手数据被HTTP服务器当作HTTP包来处理，主要通过Update request HTTP包建立连接，之后的通信全部使用WS自己的协议。过程如上图所示，握手请求报文头部如下</p>
+<blockquote>
+<p>GET /uin=xxxxxxxx&amp;app=xxxxxxxxx&amp;token=XXXXXXXXXXXX HTTP/1.1<br>
+Host: server.example.cn:443<br>
+Connection: Upgrade<br>
+Pragma: no-cache<br>
+Cache-Control: no-cache<br>
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36<br>
+Upgrade: websocket<br>
+Sec-WebSocket-Version: 13<br>
+Accept-Encoding: gzip, deflate<br>
+Accept-Language: zh-CN,zh;q=0.9<br>
+Cookie: user_id=XXXXX<br>
+Sec-WebSocket-Key: 1/2hTi/+eNURiekpNI4k5Q==<br>
+Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits<br>
+Sec-WebSocket-Protocol: binary, base64</p>
+</blockquote>
+<p>第一行是请求的方法，类型必须为GET，协议版本号必须大于1.1<br>
+Upgrade字段必须包含，值为WebSocket<br>
+Connection字段必须包含，值为Upgrade<br>
+Sec-WebSocket-Key字段必须包含，记录着握手过程中必不可少的键值<br>
+Sec-SebSocket-Protocol字段必须包含，记录着使用的子协议<br>
+Origin（请求头）：Origin用来指明请求的来源，Origin头部主要用于保护WS服务器免受非授权的跨域脚本调用WS API的请求。也就是不想没被授权的跨域访问与服务器建立连接，服务器可以通过这个字段来判断来源的域，并有选择的拒绝。</p>
+<p>WS有什么特点<br>
+1.与HTTP协议有良好的兼容性；<br>
+2.建立在TCP协议之上，和HTTP协议同属应用层；<br>
+3.数据格式比较轻量，性能开销小，通信高效；<br>
+4.可以发送文本，也可以发送二进制；<br>
+5.没有同源限制，可以与任意服务器通信。</p>
+<p>HTTP和WS和区别<br>
+HTTP协议是短连接，因为请求之后，都会关闭连接，下次请求需要重新打开连接。<br>
+WS协议是一种长连接，只需要通过一次请求来初始化连接，然后所有请求和响应都是通过TCP连接进行通信的。</p>
+<p>WebSocket和Socket的区别<br>
+Socket是应用层与TCP/IP协议通信的中间软件抽象层，它是一组接口。而WebSocket协议是一个完整的应用层协议，拥有一套完整的API。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-shi-jian-fen-fa/">
+                  <h3 class="post-title">
+                    Android事件分发
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>开发你的第一个flutter插件 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">开发你的第一个flutter插件</h2>
+            <div class="post-date">2021-01-18</div>
+            
+            <div class="post-content">
+              <h2 id="whats-flutter插件">What's flutter插件？</h2>
+<p>flutter作为一个ui绘制工具，是不能直接调用一些原生功能的，比如相机，传感器，屏幕亮度等等，所以需要原生实现，然后再用flutter和原生通信，这就是flutter插件。</p>
+<h2 id="how">How？</h2>
+<p>那么flutter怎么和原生通信呢，<a href="https://flutter.cn/docs/development/platform-integration/platform-channels?tab=ios-channel-objective-c-tab">flutter官网</a>有如下的图<br>
+<img src="https://PaIn22152.github.io/post-images/1611309136106.png" alt="" loading="lazy"><br>
+可以看到，flutter是通过Platform Channels（官方翻译为平台通道）和原生通信的，图中的MethodChannel就是PlatformChannel中的一种，另外还有EventChannel。</p>
+<h2 id="demo">Demo</h2>
+<p>官网有一个<a href="https://flutterchina.club/platform-channels/">获取设备电池状态的demo</a>，接下来我会写一个获取设备屏幕亮度的demo，包括实际开发flutter plugin的具体流程细节和一些可能会遇到的坑。</p>
+<h3 id="1新建module">1.新建module</h3>
+<p>选择Flutter Plugin，在location那一栏，选择到当前flutter项目下的plugins文件夹（没有就新建），就会生成一个如图的flutter项目<br>
+<img src="https://PaIn22152.github.io/post-images/1612145659686.png" alt="" loading="lazy"></p>
+<h3 id="2配置gradle">2.配置gradle</h3>
+<p>android端，build.gradle下添加如下</p>
+<pre><code class="language-gradle">//获取local.properties配置文件
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader -&gt;
+        localProperties.load(reader)
+    }
+}
+//获取flutter的sdk路径
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException(&quot;Flutter SDK not found. Define location with flutter.sdk in the local.properties file.&quot;)
+}
+
+dependencies {
+    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version&quot;
+    compileOnly files(&quot;$flutterRoot/bin/cache/artifacts/engine/android-arm/flutter.jar&quot;)
+    compileOnly 'androidx.annotation:annotation:1.1.0'
+}
+</code></pre>
+<p>在local.properties文件下增加android sdk和flutter sdk的路径（如果没有），如下</p>
+<pre><code class="language-java">sdk.dir=D:\\as\\sdk
+flutter.sdk=F:\\flutter\\flutter
+</code></pre>
+<p>然后使用androidStudio打开screen_light下的android项目，编译运行，如果这一步没有问题的话，ScreenLightPlugin这个类可以正常编译通过，不会报错。</p>
+<h3 id="3-flutter传值到platform">3. flutter传值到platform</h3>
+<p>在lib文件夹下编写flutter代码<br>
+3.1 创建MethodChannel对象</p>
+<pre><code class="language-dart">final MethodChannel _channel = const MethodChannel(_channel_name);
+</code></pre>
+<p>其中的_channel_name参数，需要保证在flutter、android、ios各端都是同一个值。<br>
+3.2 调用invokeMethod方法</p>
+<pre><code class="language-dart">///调用platform方法，并返回bool
+  Future&lt;bool&gt; _invokeBooleanMethod(String method, [dynamic arguments]) async {
+    final bool result = await _channel.invokeMethod&lt;bool&gt;(
+      method,
+      arguments,
+    );
+    return result;
+  }
+</code></pre>
+<p>通过调用_channel的invokeMethod方法，可以把flutter的参数传到原生端<br>
+3.3 android端接受参数<br>
+在android目录下，ScreenLightPlugin类实现FlutterPlugin、ActivityAware和MethodChannel.MethodCallHandler<br>
+插件加载后，会执行onAttachedToEngine方法，可以做一些初始化操作；</p>
+<pre><code class="language-kotlin">override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        context = flutterPluginBinding.applicationContext
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, _channelName)
+        channel.setMethodCallHandler(this)
+    }
+</code></pre>
+<p>插件卸载执行onDetachedFromEngine方法；</p>
+<pre><code class="language-kotlin"> override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
+</code></pre>
+<p>还有onAttachedToActivity可以获取到activity；（需要实现ActivityAware接口）</p>
+<pre><code class="language-kotlin"> override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+</code></pre>
+<p>另外一个最重要的方法是onMethodCall，当flutter通过_channel.invokeMethod调用方法后，会执行此方法，并且可以通过MethodCall参数获取到flutter传的参数</p>
+<pre><code class="language-kotlin">override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        when (call.method) {
+            _getSysScreenLight -&gt; callGetSysScreenLight(call, result)
+            _setAppScreenLight -&gt; callSetAppScreenLight(call, result)
+            _getAppScreenLight -&gt; callGetAppScreenLight(call, result)
+            _listenSysScreenLight -&gt; callListenSysScreenLight(call, result)
+            _unlistenSysScreenLight -&gt; callUnlistenSysScreenLight(call, result)
+        }
+    }
+
+    //参数获取flutter传的参数
+ val light: Int? = call.argument&lt;Int&gt;(_argLight)
+</code></pre>
+<p>3.4 platform处理后，返回值到flutter<br>
+通过onMethodCall下的Result参数，可以返回相应的值到flutter</p>
+<pre><code class="language-kotlin">result.success(true)
+</code></pre>
+<p>以上的流程可以总结为，在flutter端，通过MethodChannel对象，调用invokeMethod方法，传值到原生端，原生端处理后，通过Result参数返回值到flutter端<br>
+有一个问题，是flutter和android端的ScreenLightPlugin类怎么关联在一起的，其实是在插件的pubspec.yaml文件里面配置的</p>
+<pre><code class="language-yaml">flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.perdev.screen_light
+        pluginClass: ScreenLightPlugin
+      ios:
+        pluginClass: ScreenLightPlugin
+</code></pre>
+<h3 id="4-回调方法原生传值到flutter">4. 回调方法（原生传值到flutter）</h3>
+<p>和flutter传值到原生一样，也是先在原生端获得MethodChannel对象，然后调用invokeMethod方法，然后就会走到flutter的这个地方</p>
+<pre><code class="language-dart"> _channel.setMethodCallHandler((call) =&gt; _handleMethod(call));
+
+  ///回调，platform主动调用channel.invokeMethod方法后，会走到此处
+  Future&lt;dynamic&gt; _handleMethod(MethodCall call) {
+    switch (call.method) {
+      case _callbackSysScreenLightChanged:
+        final map = call.arguments as Map&lt;dynamic, dynamic&gt;;
+        final light = map[_argLight] as int;
+        final selfChange = map[_argSelfChange] as bool;
+        _list.forEach((v) {
+          v(light, selfChange);
+        });
+        break;
+    }
+    return Future&lt;dynamic&gt;.value(null);
+  }
+</code></pre>
+<h3 id="5-待续ios平台实现代码">5. 待续，ios平台实现代码</h3>
+<h3 id="6-发布插件">6. 发布插件</h3>
+<p>当插件开发完成后，可以把插件发布到<a href="https://pub.dev/">pub.dev</a>，供其他人使用，发布流程比较简单的，看一下<a href="https://flutterchina.club/developing-packages/#publish">这个文档</a>就会了。</p>
+<h2 id="最后">最后</h2>
+<p>至此，你已经完成了你的第一个flutter插件开发<br>
+<a href="https://pub.dev/packages/screen_light">插件pub地址</a><br>
+<a href="https://github.com/PaIn22152/Bing-flutter/tree/master/plugins/screen_light">源码地址</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/XNvTkkr4L/" class="tag">
+                    plugin
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter-plugin-yuan-ma-ai-hen-qing-chou-or-er-flutter_screenutil/">
+                  <h3 class="post-title">
+                    flutter-plugin源码爱恨情仇 | 二、flutter_screenutil
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

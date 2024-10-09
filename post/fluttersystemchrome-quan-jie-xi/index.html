@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter，SystemChrome全解析 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter，SystemChrome全解析</h2>
+            <div class="post-date">2021-01-26</div>
+            
+            <div class="post-content">
+              <p>SystemChrome<br>
+<a href="https://api.flutter.dev/flutter/services/SystemChrome-class.html">官方类文档</a><br>
+官方对这个类的描述是</p>
+<blockquote>
+<p>Controls specific aspects of the operating system's graphical interface and how it interacts with the application.</p>
+</blockquote>
+<p>翻译一下</p>
+<blockquote>
+<p>控制操作系统图形界面的特定方面，以及它如何与应用程序交互。</p>
+</blockquote>
+<p>那么这个类具体是控制哪些东西呢？接下来我们一步一步的看。</p>
+<h2 id="方法和参数">方法和参数</h2>
+<p>先看下类提供的方法有如下5个static方法<br>
+1.setPreferredOrientations(List<DeviceOrientation> orientations) → Future<void><br>
+设置应用程序界面的方向集合。</p>
+<p>2.setApplicationSwitcherDescription(ApplicationSwitcherDescription description) → Future<void><br>
+设置应用在最近任务栏的显示信息。</p>
+<p>3.setEnabledSystemUIOverlays(List<SystemUiOverlay> overlays) → Future<void><br>
+设置系统状态栏和导航栏是否显示</p>
+<p>4.restoreSystemUIOverlays() → Future<void><br>
+将状态栏和导航栏还原到通过setEnabledSystemUIOverlays提供的最后设置 。当平台强制启用/禁用UI元素时可以使用。<br>
+实际开发中遇到一个问题，当设置应用全屏后，进入到有输入栏的界面，点击输入，弹出键盘后，状态栏和导航栏会出现，且不再消失。<br>
+解决办法是，使用插件<a href="https://pub.dev/packages/keyboard_visibility">keyboard_visibility</a>监听键盘收起后，再调用restoreSystemUIOverlays()方法恢复。</p>
+<p>5.setSystemUIOverlayStyle(SystemUiOverlayStyle style) → void<br>
+设置系统状态栏和导航栏（如果有）的样式。</p>
+<p>以及一个参数<br>
+latestStyle，表示最近通过setSystemUIOverlayStyle方法设置的样式，作用是每次调用setSystemUIOverlayStyle方法时，先判断新设置的样式和上一次的样式是否一样，如果一样就直接返回，不一样才执行设置逻辑。</p>
+<h2 id="可以实现的功能">可以实现的功能</h2>
+<h3 id="1强制应用为竖屏当系统开启了自动旋转功能时手机横屏放置应用依然保持竖屏">1.强制应用为竖屏（当系统开启了自动旋转功能时，手机横屏放置，应用依然保持竖屏）</h3>
+<p>代码使用</p>
+<pre><code class="language-dart"> //禁用横屏，强制竖屏
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+</code></pre>
+<p>原理分析<br>
+方法setPreferredOrientations可以设置的方向有4个，分别是<br>
+竖直上 DeviceOrientation.portraitUp<br>
+竖直下 DeviceOrientation.portraitDown<br>
+水平左 DeviceOrientation.landscapeLeft<br>
+水平右 DeviceOrientation.landscapeRight<br>
+其中portraitUp是手机正常方向；landscapeLeft是手持手机正常方向，逆时针旋转90°；landscapeRight是手持手机正常方向，顺时针旋转90°；portraitDown是正常方向旋转180°；应用运行效果图如下<br>
+<img src="https://PaIn22152.github.io/post-images/1611713156986.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<blockquote>
+<p>portraitUp，手机正常方向</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1611713165997.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>portraitDown，将正常手机旋转180°。</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://PaIn22152.github.io/post-images/1611713176163.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>landscapeLeft，将正常手机方向逆时针旋转90°。</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="https://PaIn22152.github.io/post-images/1611713184720.jpg" alt="" width="330" height="640" loading="lazy"></figure>
+<blockquote>
+<p>landscapeRight，将正常手机方向顺时针旋转90°。</p>
+</blockquote>
+<p>当应用方向被设置为portraitUp和portraitDown，应用就只有竖直方向，同理可以设置应用为横屏。</p>
+<h3 id="2设置应用在最近任务栏的显示信息">2设置应用在最近任务栏的显示信息</h3>
+<p>代码使用</p>
+<pre><code class="language-dart">SystemChrome.setApplicationSwitcherDescription(
+        const ApplicationSwitcherDescription(
+          label: 'history',
+          primaryColor: 0x0000ff00,
+        ));
+</code></pre>
+<p>其中label是显示在最近任务栏最上方的title，primaryColor是title的背景色（部分android手机没有效果，ios未实测）<br>
+<img src="https://PaIn22152.github.io/post-images/1611715453328.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<h3 id="3设置全屏">3设置全屏</h3>
+<p>使用setEnabledSystemUIOverlays方法隐藏掉系统上方的状态栏和下方的导航栏，代码如下</p>
+<pre><code class="language-dart">SystemChrome.setEnabledSystemUIOverlays([]);
+</code></pre>
+<p>使用android手机实测时发现：<br>
+1.如果使用SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);<br>
+只显示状态栏，不显示导航栏，用户点击应用后，会立即出现导航栏，且不再隐藏<br>
+2.如果使用SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);<br>
+只显示导航栏，不显示状态栏，但是但用户手动拉出状态栏后，状态栏不再隐藏<br>
+3.如果使用SystemChrome.setEnabledSystemUIOverlays([]);<br>
+状态栏和导航栏都会隐藏，用户可以手动拉出状态栏和导航栏，在大约三秒后，系统又会隐藏掉状态栏和导航栏，以此实现全屏效果，不过在刘海屏和水滴屏上，状态栏会整个不显示，如图最上方的黑色部分（红色块设置的位置是在top left）<br>
+<img src="https://PaIn22152.github.io/post-images/1611714809247.jpg" alt="" width="330" height="640" loading="lazy"></p>
+<h3 id="4设置状态栏和导航栏的背景色">4.设置状态栏和导航栏的背景色</h3>
+<p>代码如下</p>
+<pre><code class="language-dart">SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.red,
+          systemNavigationBarColor: Colors.blue,
+        ));
+</code></pre>
+<p>其中statusBarColor是状态栏，systemNavigationBarColor是导航栏，效果如图<br>
+<img src="https://PaIn22152.github.io/post-images/1611715246624.jpg" alt="" width="330" height="640" loading="lazy"><br>
+SystemUiOverlayStyle还有其他几个参数，但是在用android机实测时，未发现有什么用</p>
+<p>至此，SystemChrome相关的功能全部说完😃🤓</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter-he-yuan-sheng-tong-xin/">
+                  <h3 class="post-title">
+                    开发你的第一个flutter插件
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-注解处理器APT | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-注解处理器APT</h2>
+            <div class="post-date">2024-07-31</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。注解处理器APT</p>
+<!-- more -->
+<h3 id="元注解">元注解</h3>
+<p>元注解，就是用来注解自定义注解的注解。<br>
+有6个，@Target、@Retention、@Documented、@Inherited、@Repeatable、@Native</p>
+<p>@Target，目标，表示自定义注解修饰的目标，用来描述注解的使用范围。常用参数有ElementType.TYPE（表示注解可以修饰类、接口、枚举、注解类），ElementType.FIELD（表示注解可以修饰字段），ElementType.METHOD（表示注解可以修饰方法）。</p>
+<p>@Retention，保留级别，表示需要在什么级别保存该注解信息，用来表述注解保留的时间范围。可选参数有RetentionPolicy.SOURCE（只会保留在源文件，编译器会将注解丢弃），RetentionPolicy.CLASS（注解会被编译器记录在class文件中，在虚拟机运行时没有注解信息），RetentionPolicy.RUNTIME（注解信息会被保留到运行时，因此可以被反射读取）。</p>
+<p>@Documented，文档记录，描述在使用javadoc工具为类生成帮助文档时，是否要保留其注解信息。</p>
+<p>@Inherited，继承，使被他修饰的注解具有继承性，自定义注解被@Inherited修饰后，使用自定义注解去注解类时，子类会自动继承此注解。</p>
+<p>@Repeatable，可重复，使被他修饰的注解可以在相同的程序元素中重复使用，java8新增。</p>
+<p>@Native，使用@Native修饰成员变量，表示这个变量可以被本地代码引用，常被代码生成工具使用，java8新增。</p>
+<p>自定义注解源码：</p>
+<pre><code class="language-java">@Target({ElementType.TYPE, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface MyAnnotation {
+
+}
+</code></pre>
+<h3 id="反射实现butterknife">反射实现ButterKnife</h3>
+<ol>
+<li>创建@BindView注解</li>
+<li>用反射获取Field[]，然后找到加了@BindView 的字段，自动调用findViewById来绑定对象</li>
+</ol>
+<p>代码：</p>
+<pre><code class="language-java">//注解类
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BindView {
+
+    int value();
+}
+
+//Binder类
+public class Binder {
+
+    public static void bind(Activity activity) {
+        Log.d(&quot;JmBinder&quot;, &quot;JmBinder.bind  start&quot;);
+        for (Field field : activity.getClass().getDeclaredFields()) {
+            BindView jmBindView = field.getAnnotation(BindView.class);
+            if (jmBindView != null) {
+                try {
+                    field.setAccessible(true);
+                    field.set(activity, activity.findViewById(jmBindView.value()));
+                    Log.d(&quot;JmBinder&quot;, &quot;JmBinder.bind  success.  field=&quot; + field);
+                } catch (Exception e) {
+
+                }
+            }
+        }
+    }
+}
+
+
+//在activity的使用
+    @BindView(R.id.btn_retrofit)
+    lateinit var btn_retrofit: Button
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        Binder.bind(this)
+        
+        btn_retrofit.setOnClickListener {
+            startActivity(Intent(this@MainActivity, RetrofitActivity::class.java))
+        }
+ }
+
+</code></pre>
+<p>可以看到，使用简单的几行代码，就可以实现一个简化版本的ButterKnife。但是用这种方式实现有性能问题，反射遍历activity的所有字段，找到注解修饰的字段后，再反射赋值，会随着字段的增多和注解的增多，bind的耗时也会增多。</p>
+<h3 id="依赖注入">依赖注入</h3>
+<p>什么是依赖注入？把依赖的决定权交给外部，就是依赖注入。<br>
+Dagger：外部的依赖图来决定依赖的值，对象自己只负责索要，而不负责指定值，所以是依赖注入。<br>
+ButterKnife：类自己决定依赖的获取，只把执行过程交给ButterKnife，所以只是一个视图绑定，而不是依赖注入。</p>
+<h3 id="apt">APT</h3>
+<p>APT：Annotation Processing Tool，注解处理器。<br>
+原理：编译过程中读取源码，然后生成新的代码和文件，再放在一起进行编译。<br>
+思路：每个使用@BindView注解修饰字段的Activity，都通过APT生成一个ActivityBinding类，然后在将findViewById的代码添加到ActivityBinding类的构造方法中，在activity中调用Binder.bind时，通过反射创建ActivityBinding类对象，就等同于调用所有的findViewById。</p>
+<h3 id="apt实战">APT实战</h3>
+<p>在wifikit中，通过APT的方式将所有的页面id类添加到数组，生成代码，初始化时通过反射拿到所有的id类。</p>
+<p>注解类：</p>
+<pre><code class="language-java">@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE)
+@Inherited
+public @interface WifikitUi {
+
+}
+</code></pre>
+<p>AnnotationProcessor项目结构：<br>
+<img src="https://PaIn22152.github.io/post-images/1722493436141.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1722493507660.jpg" alt="" loading="lazy"></p>
+<p>Processor代码：</p>
+<pre><code class="language-java">
+//@AutoService(Processor.class) //使用auto-service添加Processor
+public class WifikitUiProcessor extends AbstractProcessor {
+
+    @Override
+    public Set&lt;String&gt; getSupportedAnnotationTypes() {
+        return Collections.singleton(WifikitUi.class.getCanonicalName());
+    }
+
+    private Filer filer = null;
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        filer = processingEnv.getFiler();
+        System.out.println(&quot;WifikitUiProcessor  init  filer=&quot; + filer);
+    }
+
+    private static final String      PACK_NAME  = &quot;com.android.gps.tracker.wifikit.ui&quot;;
+    private static final String      CLASS_NAME = &quot;InterfaceIds2&quot;;
+    private static final Set&lt;String&gt; ids        = new HashSet&lt;&gt;();
+    private static       boolean     created    = false;
+
+    @Override
+    public boolean process(Set&lt;? extends TypeElement&gt; set, RoundEnvironment roundEnv) {
+        System.out.println(&quot;WifikitUiProcessor  process start&quot;);
+
+        Set&lt;? extends Element&gt; elements = roundEnv.getElementsAnnotatedWith(WifikitUi.class);
+        for (Element element : elements) {
+//            System.out.println(&quot;WifikitUiProcessor  WifikitUi element.getClass=&quot; + element.getClass());
+            Symbol symbol = (Symbol) element;
+            boolean isInterface = symbol.isInterface();
+            boolean isAbstract = symbol.getModifiers().contains(Modifier.ABSTRACT);
+            if (!isInterface &amp;&amp; !isAbstract) {
+                String qualifiedName = symbol.getQualifiedName().toString();
+                ids.add(qualifiedName);
+                System.out.println(&quot;WifikitUiProcessor  WifikitUi qualifiedName=&quot; + qualifiedName);
+            }
+
+        }
+
+        createFile();
+
+        return true;
+    }
+
+    private void createFile() {
+        if (created) {
+            return;
+        }
+        created = true;
+        System.out.println(&quot;WifikitUiProcessor  createFile start.  ids.size=&quot; + ids.size());
+        try {
+            ClassName className = ClassName.get(PACK_NAME, CLASS_NAME);
+
+            FieldSpec idList = FieldSpec.builder(ArrayList.class, &quot;idList&quot;)
+                    .addModifiers(Modifier.PUBLIC)
+                    .build();
+
+            String initList = &quot;    idList=new ArrayList&lt;&gt;();\n&quot;;
+            StringBuilder addId = new StringBuilder();
+            for (String id : ids) {
+                addId.append(&quot;    idList.add(\&quot;&quot;).append(id).append(&quot;\&quot;);\n&quot;);
+            }
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addCode(initList)
+                    .addCode(addId.toString())
+                    .build();
+
+            TypeSpec builtClass = TypeSpec.classBuilder(className)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addField(idList)
+                    .addMethod(constructor)
+                    .build();
+
+            JavaFile javaFile = JavaFile.builder(PACK_NAME, builtClass).build();
+
+            javaFile.writeTo(filer);
+
+//            try {
+//                if (filer instanceof JavacFiler) {
+//                    JavacFiler javacFiler = (JavacFiler) filer;
+//                    javacFiler.close();
+//                }
+//            } catch (Exception ee) {
+//
+//            }
+            System.out.println(&quot;WifikitUiProcessor  createFile end&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;WifikitUiProcessor  createFile e=&quot; + e);
+        }
+    }
+}
+
+
+//gradle配置
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    implementation project(path:':jm-annotations')
+//    implementation 'com.google.auto.service:auto-service:1.0-rc2'
+    implementation 'com.squareup:javapoet:1.13.0'
+}
+</code></pre>
+<p>在Processor中使用javapoet库来生成java代码</p>
+<p>申明注解有两种方式，1是通过配置javax.annotation.processing.Processor路径实现，2是使用@AutoService注解实现</p>
+<p>app项目中使用APT的gradle配置</p>
+<pre><code class="language-groovy">dependencies {
+
+    //apt处理注解
+    implementation project(path:':jm-annotations')
+    annotationProcessor project(path:':jm-apt')
+}
+</code></pre>
+<p>app项目中的注解使用如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722494094395.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1722494114079.jpg" alt="" loading="lazy"><br>
+自动生成的代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722494164324.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">package com.android.gps.tracker.wifikit.ui;
+
+import java.util.ArrayList;
+
+public class InterfaceIds2 {
+  public ArrayList idList;
+
+  public InterfaceIds2() {
+        idList=new ArrayList&lt;&gt;();
+        idList.add(&quot;com.android.gps.tracker.wifikit.ui.ids.ID11&quot;);
+  }
+}
+
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/el5nj9c8U/" class="tag">
+                    注解
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/7CFYBUj6-F/" class="tag">
+                    APT
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-android-jia-gou/">
+                  <h3 class="post-title">
+                    扔物线进阶-Android架构
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

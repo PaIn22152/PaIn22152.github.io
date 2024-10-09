@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>flutter远端插件本地化 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">flutter远端插件本地化</h2>
+            <div class="post-date">2021-04-19</div>
+            
+            <div class="post-content">
+              <ul>
+<li><a href="#head1"> 前言</a></li>
+<li><a href="#head2"> 详细步骤</a></li>
+</ul>
+<h3 id="span-idhead1-前言span"><span id="head1"> 前言</span></h3>
+<p>有时候，从pub.dev依赖的插件不完全满足需求，需要在插件的源码基础上做一些改动，这时就需要把远端插件本地化，即复制插件项目到本地，然后依赖本地的插件项目。</p>
+<h3 id="span-idhead2-详细步骤span"><span id="head2"> 详细步骤</span></h3>
+<p>以插件android_alarm_manager为例，</p>
+<p>1.正常依赖远端插件</p>
+<pre><code class="language-yaml">dependencies:
+    android_alarm_manager: ^2.0.0
+</code></pre>
+<p>2.找到插件在本地的具体位置，复制项目到plugins/目录下<br>
+然后修改依赖为</p>
+<pre><code class="language-yaml">dependencies:
+    android_alarm_manager:
+        path: plugins/android_alarm_manager-2.0.0
+</code></pre>
+<p>3.用studio打开android_alarm_manager下的android项目<br>
+在build.gradle文件下增加如下配置</p>
+<pre><code class="language-groovy">//获取local.properties配置文件
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader -&gt;
+        localProperties.load(reader)
+    }
+}
+//获取flutter的sdk路径
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException(&quot;Flutter SDK not found. Define location with flutter.sdk in the local.properties file.&quot;)
+}
+
+
+dependencies {
+    compileOnly files(&quot;$flutterRoot/bin/cache/artifacts/engine/android-arm/flutter.jar&quot;)
+    }
+</code></pre>
+<p>并在local.properties文件下增加flutter sdk配置</p>
+<pre><code class="language-yaml">flutter.sdk=C\:\\Users\\tgy\\Desktop\\fluttersdk\\flutter
+</code></pre>
+<p>4.同步项目，android项目正常编译后，就可以按自己的需求修改代码了。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/XNvTkkr4L/" class="tag">
+                    plugin
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/lTU1I2WcT/" class="tag">
+                    flutter
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/2021-nian-du-shu-ji-lu/">
+                  <h3 class="post-title">
+                    2021年读书记录
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-线程相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-线程相关</h2>
+            <div class="post-date">2024-06-15</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。线程相关</p>
+<!-- more -->
+<p>线程和进程：<br>
+进程是操作系统中的独立区域，进程间数据不共享；<br>
+线程是一个进程中最小的执行单位，同一个进程中的多个线程可以共享数据；</p>
+<p>如何调度进程和线程，完全由操作系统决定，程序自己不能决定什么时候执行，执行多长时间。</p>
+<h2 id="线程的使用">线程的使用</h2>
+<p>创建线程的方式有：</p>
+<ol>
+<li>直接使用new Thread().start();<br>
+不推荐使用这种方式</li>
+<li>使用ThreadPoolExecutor创建线程池；<br>
+推荐这种方式，可以复用线程，避免反复创建和关闭线程所带来的开销，并且会统一管理创建出来的线程。执行延时任务时，也可以使用ScheduledExecutorService相关接口。</li>
+<li>使用HandlerThread；<br>
+Android中如果是长期执行的线程，而且需要往这个线程发数据时推荐使用</li>
+</ol>
+<p>小tip，使用多线程时给每个线程一个命名，方便排查问题，特别是长期执行的子线程（试想一下，在分析CPU占用时，如果发现Thread-88在大量占用CPU，怎么定位这个Thread-88在哪里，所以每个线程有一个单独的命名，是很有必要的），OKHTTP最新的代码里面就有这样的设计，源码如下：</p>
+<pre><code class="language-kotlin">public abstract class NamedRunnable implements Runnable {
+  protected final String name;
+
+  public NamedRunnable(String format, Object... args) {
+    this.name = Util.format(format, args);
+  }
+
+  @Override public final void run() {
+    String oldName = Thread.currentThread().getName();
+    Thread.currentThread().setName(name);
+    try {
+      execute();
+    } finally {
+      Thread.currentThread().setName(oldName);
+    }
+  }
+
+  protected abstract void execute();
+}
+</code></pre>
+<h2 id="线程的状态">线程的状态</h2>
+<p>下图是线程的生命周期，表示各个状态之间的流转：<br>
+<img src="https://PaIn22152.github.io/post-images/1718437806873.png" alt="" loading="lazy"></p>
+<p>下图说明了线程运行后，可能遇到的阻塞状态：<br>
+<img src="https://PaIn22152.github.io/post-images/1718441730704.png" alt="" loading="lazy"></p>
+<p>调用Object.wait方法，线程会释放锁资源以及CPU资源<br>
+调用Thread.sleep方法，线程释放CPU资源，不释放锁资源</p>
+<p>线程中断：<br>
+调用Thread.interrupt方法，会将线程设置为中断状态，如果这个线程当前是阻塞状态，那么会在阻塞方法出抛出InterruptedException异常（注，synchronized在获锁的过程中是不能被中断的），目的是为了告知线程，后续需要线程自己决定如何处理</p>
+<h2 id="线程安全">线程安全</h2>
+<p>开发过程中，对线程安全需要考虑的是在保证线程安全的前提下，提升效率和性能</p>
+<p>线程安全三要素：原子性、可见性、有序性</p>
+<h3 id="synchronized">synchronized</h3>
+<p>synchronized可以用来修饰方法或者代码块，目的是让被他修饰的代码块内的资源互斥访问，他的原理是为代码块添加一个Monitor监视器，同一时间最多只能有一个线程访问，可以保证线程安全。但是带来的性能损耗较大。</p>
+<p>wait和notify的使用，需要在synchronized修饰的代码块中，通过调用Monitor.wait，让出锁资源，进入阻塞状态，等其他线程调用Monitor.notify后，会将线程唤醒。（注意wait和notify都是通过synchronized的Monitor调用）</p>
+<h3 id="volatile">volatile</h3>
+<p>volatile关键字修饰的变量，数据发生改变时虚拟机会将线程高速缓存中的数据强制刷新到主内存，同时这个写操作会导致其他线程缓存中的数据无效，需要重新从主内存获取，这保证了数据的可见性。虚拟机对volatile修饰的变量不会做指令重排，这保证了数据的有序性。不能保证原子性。性能优于synchronized</p>
+<h3 id="cas">CAS</h3>
+<p>CAS全称compare and swap，是一种用于在多线程环境下实现同步功能的机制。CAS 操作包含三个操作数 -- 内存位置、预期数值和新值。CAS 的实现逻辑是将内存位置处的数值与预期数值想比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作。可以保证操作的原子性。</p>
+<h3 id="原子类">原子类</h3>
+<p>Java中的原子类实现原理就是volatile+CAS+自旋，通过无线循环操作CAS，如果成功就返回，失败就继续循环。比如AtomicInteger</p>
+<h3 id="reentrantlock">ReentrantLock</h3>
+<p>可重入锁，相比于使用synchronized，使用方法更复杂一点，需要手动加锁和解锁，可以手动指定公平锁和非公平锁，性能略优于synchronized。</p>
+<h3 id="reentrantreadwritelock">ReentrantReadWriteLock</h3>
+<p>多个线程访问一份数据，如果一个线程写一个线程读，或者两个线程都在写，会导致数据错乱，线程不安全。但是如果两个线程都是在读，那么是安全的。所以需要将读数据和写数据分开加锁，不允许多线程读写，但是允许多线程同时读，提高效率，使用ReentrantReadWriteLock读写分离锁实现。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/z0VVZ4thC/" class="tag">
+                    线程
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-constraintlayout-shang-shou-shi-yong/">
+                  <h3 class="post-title">
+                    扔物线进阶-ConstraintLayout上手使用
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

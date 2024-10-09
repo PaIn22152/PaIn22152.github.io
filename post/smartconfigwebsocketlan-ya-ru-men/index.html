@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SmartConfig、WebSocket、蓝牙入门 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SmartConfig、WebSocket、蓝牙入门</h2>
+            <div class="post-date">2024-08-19</div>
+            
+            <div class="post-content">
+              <p>简单了解SmartConfig、WebSocket、蓝牙。</p>
+<!-- more -->
+<h2 id="smartconfig">SmartConfig</h2>
+<p>原理：发送UDP包时，利用数据包的长度进行数据传递。比如约定连续3个长度666表示开始，连续3个长度888表示结束，长度100-227表示不同的ASCII码，APP需要向设备发送abc字符串时，先发生连续3个666长度的报文，然后发送a对应的报文长度比如150，发送b对应的报文长度151，发生c对应的报文长度152，再发送连续3个888长度的报文，设备端收到连续3个666长度报文后开始监听发送源的报文，收到同一发送源150长度的报文表示a，151长度表示b，152长度表示c，收到连续3个888长度表示结束，这样就能将abc字符串，通过UDP从APP发送到设备。</p>
+<p>具体流程：长按设备按钮进入配网模式（或者叫混杂模式），用户在APP上输入需要配网的SSID和密码，App向后台获取配网token，App发送UDP广播，广播内容包括SSID、密码、token，设备收到完整信息后，连接网络，设备和后台建立tcp连接，并将自己的唯一标识deviceId和配网token发送到后台注册设备，App向后台轮询该token新增的设备，获取到设备列表，完成设备的配网和绑定流程。</p>
+<p>缺点：当网络环境比较复杂时，可能需要重复好几次才能接收到正确的数据，甚至有可能一直失败。</p>
+<h2 id="websocket">WebSocket</h2>
+<p>基本概念：WebSocket是一种应用层协议，基于TCP实现，可以客户端和服务器直接双向数据传输。HTTP只能客户端主动请求数据，然后服务器响应，不能实现服务器主动发送数据，WebSocket可以服务器主动发送数据。WebSocket可以发送字符串数据，也可以直接发送二进制数据，所以游戏领域和音视频领域都会使用到WebSocket发送数据。</p>
+<p>连接过程：客户端和服务器之间建立TCP连接，然后通过HTTP发送握手包，通过101状态码将HTTP协议升级为WebSocket，此后客户端和服务器保持长连接，并且通过WebSocket协议收发数据。</p>
+<p>实现：Android中可以使用OkHttp库实现WebSocket通信。示例代码如下：</p>
+<pre><code class="language-kotlin">    private lateinit var wsUrl: String
+    private lateinit var wsClient: OkHttpClient
+    private lateinit var webSocket: WebSocket
+    private val webSocketListener = object : WebSocketListener() {
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            super.onOpen(webSocket, response)//建立连接
+        }
+        
+        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+            super.onClosed(webSocket, code, reason)//连接关闭
+        }
+        
+        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+            super.onMessage(webSocket, bytes)//接收到二进制消息
+        }
+        
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            super.onMessage(webSocket, text)//接收到字符串消息
+        }
+    }
+    
+    fun wsInit() {
+        wsUrl = &quot;wss://test.com&quot;
+        wsClient = OkHttpClient.Builder()
+            .pingInterval(10, TimeUnit.SECONDS)//设置心跳间隔
+            .build()
+    }
+    
+    fun wsConnect() {
+        val wsRequest = Request.Builder().url(wsUrl).build()
+        webSocket = wsClient.newWebSocket(wsRequest, webSocketListener)//建立WebSocket连接
+    }
+    
+    fun wsTest() {
+        wsInit()
+        wsConnect()
+        
+        webSocket.send(&quot;test&quot;)//发送字符串数据
+        webSocket.send(ByteString.of(0x11, 0x22, 0x33))//发送二进制数据
+        webSocket.close(1000, &quot;normal closure&quot;)//1000正常关闭
+    }
+</code></pre>
+<h2 id="蓝牙">蓝牙</h2>
+<p>Ble低功耗蓝牙通信流程：扫描设备、连接设备、发现设备、收发数据。</p>
+<p>扫描设备：通过广播的形式可以扫描附近的蓝牙设备，扫描到的数据包括蓝牙名称name和信号强度rssi<br>
+连接设备：扫描到的设备，连接Gatt<br>
+发现设备：设备可能提供多个服务，每个服务有多个特征，根据服务值和特征值匹配到指定的特征<br>
+收发数据：使用获取到的特征收发数据</p>
+<p>需要权限：蓝牙权限、定位权限，Android12之后不再需要定位权限</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/moersPk7-/" class="tag">
+                    SmartConfig
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/m4w1iWegvO/" class="tag">
+                    WebSocket
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/HyoVqydeG/" class="tag">
+                    蓝牙
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-shen-ru-li-jie-jvm/">
+                  <h3 class="post-title">
+                    扔物线进阶-深入理解JVM
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

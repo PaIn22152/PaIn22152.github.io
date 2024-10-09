@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>二叉树基本概念 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">二叉树基本概念</h2>
+            <div class="post-date">2022-03-08</div>
+            
+            <div class="post-content">
+              <p>满二叉树：如果一棵二叉树只有度为0的节点和度为2的节点，并且度为0的节点在同一层上，那么这就是满二叉树。如图所示：<br>
+<img src="https://PaIn22152.github.io/post-images/1646707153855.png" alt="" loading="lazy"></p>
+<p>完全二叉树：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在最左边的若干位置。如图所示：<br>
+<img src="https://PaIn22152.github.io/post-images/1646707319152.png" alt="" loading="lazy"></p>
+<p>二叉搜索树：前面介绍的树都没有数值，而二叉搜索树是有数值的，且是有序树，又名二叉排序树。满足如下的条件：<br>
+1）若左子树不空，则左子树上所有节点的值均小于它的根节点的值；<br>
+2）若又子树不空，则右子树上所有节点的值均大于它的根节点的值；<br>
+3）它的左、右子树也分别为二叉搜索树。<br>
+<img src="https://PaIn22152.github.io/post-images/1646707676579.png" alt="" loading="lazy"></p>
+<p>平衡二叉搜索树：又叫AVL树（Adelson-Velsky and Landis），具有以下性质：它是一颗空树或他的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是平衡二叉搜索树。<br>
+<img src="https://PaIn22152.github.io/post-images/1646707858471.png" alt="" loading="lazy"></p>
+<p>二叉树的存储方式<br>
+二叉树可以链式存储，也可以顺序存储。<br>
+链式存储方式是用指针，和链表结构类似，顺序存储方式是用数组。<br>
+链式存储如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1646708111502.png" alt="" loading="lazy"></p>
+<p>顺序存储如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1646708159453.png" alt="" loading="lazy"><br>
+用数组存储二叉树，应该如何遍历呢？如果父节点的数组下标是i，那么它的左孩子就是i<em>2+1，右孩子就是i</em>2+2。</p>
+<p>二叉树的遍历方式<br>
+二叉树有两种遍历方式：<br>
+1.深度优先，先往深走，遇到叶子节点再往回走；<br>
+2.广度优先，一层一层的去遍历。<br>
+其中，深度优先有三种顺序：<br>
+1）前序遍历（递归法，迭代法）；<br>
+2）中序遍历（递归法，迭代法）；<br>
+3）后续遍历（递归法，迭代法）。<br>
+广度优先仅有一种方式，层次遍历（迭代法）。</p>
+<p>深度优先三个遍历顺序容易搞混，一个有效的技巧是，前中后序指的是中间节点的位置：<br>
+前序遍历：中左右<br>
+中序遍历：左中右<br>
+后续遍历：左右中<br>
+例如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1646708838202.png" alt="" loading="lazy"></p>
+<p>代码实现：</p>
+<pre><code class="language-java">    class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        public TreeNode() {
+
+        }
+
+        public TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-frameworkyi-xi-tong-qi-dong-liu-cheng/">
+                  <h3 class="post-title">
+                    Android Framework（一），系统启动流程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

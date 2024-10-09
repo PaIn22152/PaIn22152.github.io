@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Android架构 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Android架构</h2>
+            <div class="post-date">2024-07-31</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。Android架构</p>
+<!-- more -->
+<p>主流的架构有MVC、MVP、MVVM、MVI</p>
+<p>架构最主要的一个思想是【拆】，把项目拆的足够分散，降低耦合。</p>
+<h2 id="mvc和mvp">MVC和MVP</h2>
+<p>MVC：Model View Controller。<br>
+MVP：Model View Presenter。<br>
+MVC和MVP基本理念都是一样的，把项目拆分成Model层+View层+中间层，其中Model层负责存取数据，View层负责界面展示以及和用户的交互，中间层负责处理Model层和View层的交互，这么拆的目的是让结构清晰，代码解耦，如果不引入架构思想，所有的事都在activity里面做，当项目功能越来越多，代码越来越复杂后，就会显得很乱，而且activity里面的代码也会越发膨胀，不方面管理和扩展功能。如果从activity中抽象出一个Model层后，这时activity负责view层和中间层，这时有两种拆法，如果将View的工作拆到另外的类中，activity只负责中间层的功能，称为Controller，这种实现称为MVC；如果将中间层的工作拆到Presenter类中，activity只负责View的工作，这种实现称为MVP。<br>
+网上大多数文章对MVC的讲解不全面，没有把View从avtivity中拆出来，导致activity中既有View，又有Controller，然后还说这是MVC的缺点，耦合度太高，其实不是架构的问题，而是没有拆完全。</p>
+<h2 id="mvvm">MVVM</h2>
+<p>MVVM：Model View ViewModel。<br>
+MVVM是MVP+数据绑定，中间层称为ViewModel，并且ViewModel层和View层实现了数据的双向绑定。<br>
+数据绑定是什么？首先可以把数据分为三类，外部数据，内存数据，表现数据。外部数据指数据库数据、文件数据、网络数据等；内存数据指Java代码中的变量；表现数据指界面中展示的数据。数据绑定是指表现数据和内存数据互相自动更新，一个改变了，另外一个跟着改变，另外有时候还可以将内存数据和数据库数据做关联监听，让三种数据进一步联动。</p>
+<p>数据绑定功能可以自己实现，也可以使用Jetpack的Databinding库。</p>
+<p>Jetpack的ViewModel库和MVVM没有相关性，ViewModel库的作用是，当屏幕发生旋转导致activity重建，ViewModel用来做数据存储的。当然实际开发中ViewModel也会和Dadabinding一起使用。</p>
+<h2 id="mvi">MVI</h2>
+<p>MVI：Model View Intent。<br>
+MVI的思想是靠数据来驱动页面，Model主要指UI状态，View和其他架构一样，还是负责页面展示，Intent不是activity跳转时的Intent，而是用户的任何操作，都会被包装成Intent发送给Model进行数据处理。交互图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722397049926.webp" alt="" loading="lazy"><br>
+MVI思想和Compose这种声明式UI比较契合，所有的View都是根据不同的数据有不同状态，不同状态显示不同效果。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-cha-jian-hua-he-re-geng-xin/">
+                  <h3 class="post-title">
+                    扔物线进阶-插件化和热更新
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
