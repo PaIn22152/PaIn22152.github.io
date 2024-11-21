@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android Framework（二），应用冷启动过程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android Framework（二），应用冷启动过程</h2>
+            <div class="post-date">2022-05-03</div>
+            
+            <div class="post-content">
+              <p>当启动Activity时，系统后台没有该应用的进程，系统会先创建一个新的进程分配给该应用，然后再跳转Activity，这叫应用的冷启动。</p>
+<h1 id="0主要流程">0主要流程</h1>
+<p>1.Launcher请求AMS过程<br>
+2.AMS请求Zygote进程，创建应用进程<br>
+3.AMS到ApplicationThread过程<br>
+4.ActivityThread启动Activity<br>
+启动流程图：<br>
+<img src="https://PaIn22152.github.io/post-images/1728460558927.jpg" alt="" loading="lazy"></p>
+<h1 id="1launcher请求ams过程">1.Launcher请求AMS过程</h1>
+<p>简化流程为下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1651580179071.png" alt="" loading="lazy"><br>
+当点击应用程序的图标时，就会调用Launcher的startActivitySafely方法，方法里面会先将Intent的Flag设置为FLAG_ACTIVITY_NEW_TASK，这样新的Activity就会在新的任务栈中启动，然后调用startActivity方法，通过一系列的调用链后，会走到Instrumentation的execStartActivity方法，这个方法里面，会先调用ActivityManager的getService方法获取AMS的代理对象，然后调用AMS的startActivity方法。这里是通过Binder的方式实现的进程间通信，把启动Activity的任务从Launcher进程转移到了AMS的syetem_server进程中。</p>
+<h1 id="2ams请求zygote进程创建应用进程">2.AMS请求Zygote进程，创建应用进程</h1>
+<p>AMS在startActivity之前，会先判断目标进程是否存在，如果不存在，会先创建应用的进程。<br>
+这里可以分为两部分，一部分是AMS发送启动应用进程的请求，一部分是Zygote接收请求并创建应用进程。</p>
+<h2 id="21ams发送请求">2.1AMS发送请求</h2>
+<p>AMS会调用startProcessLocked方法向Zygote进程发送请求，在这个方法里面，会先将应用进程的启动参数写入到ZygoteState中，然后与一个名为“zygote”的Socket建立连接，并匹配ABI。</p>
+<h2 id="22zygote接收请求并创建进程">2.2Zygote接收请求并创建进程</h2>
+<p>在Zygote进程中，Socket连接成功并匹配ABI后，会返回ZygoteState对象， 这个对象里面有启动进程的参数，然后通过fork当前进程的方式，使用进程参数创建进程，并在新创建的进程中创建Binder线程池，然后通过反射的方式创建出ActivityThread对象，然后通过抛异常的方式，调用ActivityThread的main方法，这里使用抛异常的方式而不是直接调用main方法，是因为这样做可以清除所有设置过程中需要的堆栈帧。ActivityThread类用于管理当前应用进程的主线程，在main方法里面，会创建并开启主线程消息循环，使得进程可以方便地使用消息循环机制。</p>
+<h1 id="3ams到applicationthread的调用过程">3AMS到ApplicationThread的调用过程</h1>
+<p>在应用进程创建完成之后，才会调用AMS的startActivity方法，然后调用startActivityAsUser方法，这个方法里面，首先判断调用者进程是否被隔离，然后检查调用者是否有权限，判断通过后调用ActivityStarter的startActivityLocked方法，这个ActivityStarter类是加载Activity的控制类，会收集所有的逻辑来决定如何将Intent和Flags转换为Activity，并将Activity和Task以及Stack相关联，最后在ActivityStackSupervisor的realStartActivityLocked方法中，通过ApplicationThread来与应用程序进程进行Binder通信，ApplicationThread是AMS所在进程system_server进程和应用进程的通信桥梁。</p>
+<h1 id="4activitythread启动activity">4ActivityThread启动Activity</h1>
+<p>在ApplicationThread的scheduleLaunchActivity方法中，会先将启动Activity的参数封装成ActivityClientRecord，然后通过H类发送LAUNCH_ACTIVITY消息，这个H类是ActivityThread的内部类，继承自Handler，是应用进程中主线程的消息管理类，因为ApplicatioThread是一个Binder，它的调用逻辑是运行在Binder线程池中的，所以需要用Handler将代码逻辑切换到主线程中。接下来看看H类中，对LAUNCH_ACTIVITY消息的处理，首先是获取到handler传过来的ActivityClientRecord对象，然后通过getPackageInfoNoCheck方法获得LoadedApk对象并赋值给ActivityClientRecord。应用进程要启动Activity时需要将该Activity所属的APK加载进来，而LoadedApk就是用来描述已加载的APK文件的。然后调用handleLaunchActivity，通过调用performLaunchActivity方法来启动Activity，并将Activity的状态设置为Resume，在performLauncheActivity方法中，首先获取Menifest里面设置的Activity信息，然后获取APK文件的描述类LoadedApk，然后获取Activity的类名和包名，然后创建Activity的上下文环境，然后通过Instrumetation创建Activity的实例，然后创建Application并调用attach方法绑定Context，然后调用Activity的attach方法初始化Activity，在attach方法中，会创建Window对象并与Activity相关联，然后调用Instrumentation的callActivityOnCreate方法启动Activity，先调用performCreate然后调用Activity的onCreate，至此，真正启动了Activity。</p>
+<h1 id="小结">小结</h1>
+<p>应用冷启动（根Activity的启动）过程涉及到4个进程，分别是Launcher进程、AMS所在的system_server进程、Zygote进程、应用程序进程，它们之间的关系如图所示，<br>
+这里放图 todo</p>
+<p>首先Launcher进程向AMS请求创建根Activity，AMS会判断Activity所需的应用进程是否存在，如果不存在就会请求Zygote进程创建应用进程，应用进程启动之后，AMS会请求应用进程启动Activity。其中，AMS和Zygote通信采用Socket方式，Launcher和AMS、AMS和应用进程通信采用Binder方式。<br>
+而如果是普通的Activity启动，只会涉及AMS所在的system_server进程和应用进程。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/foI-czKO2/" class="tag">
+                    framework
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-gong-cheng-shi-jin-jie-34-jiang-android-yuan-ma-fen-xi/">
+                  <h3 class="post-title">
+                    Android工程师进阶34讲-Android源码分析
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

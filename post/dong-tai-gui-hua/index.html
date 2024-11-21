@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>动态规划 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">动态规划</h2>
+            <div class="post-date">2022-04-15</div>
+            
+            <div class="post-content">
+              <p>本文来自对《代码随想录》的学习。<br>
+动态规划五部曲：<br>
+1.确定dp数组以及下标含义；<br>
+2.确定递推公式；<br>
+3.dp数组如何初始化；<br>
+4.确定遍历顺序；<br>
+5.举例推导dp数组。</p>
+<p>动态规划如何debug？<br>
+最好的方式是把dp数组打印出来，看看究竟是不是按照自己的思路推导的；<br>
+写代码前一定要把状态转移在dp数组上的具体情况模拟一遍，确定最后推出的是想要的结果。</p>
+<p>背包问题<br>
+01背包：有n件物品和一个最多能背重量为w的背包。第i件物品的重量是w[i]，得到的价值是v[i]。每件物品只能用一次，求解可以得到的最大总价值。</p>
+<p>二维dp数组<br>
+1.确定dp数组以及下标的含义<br>
+dp[i][j]表示，从n个物品的前i个里面任意取，放进容量为j的背包，价值总和最大是dp[i][j]。</p>
+<p>2.确定递推公式<br>
+对于第i个物品，有两种选择，不放到背包，或者放到背包。如果不放到背包，则dp[i][j]和dp[i-1][j]相等；如果放到背包，则dp[i][j]=dp[i-1][j-w[i]]+v[i]，这里需要限制j&gt;=w[i]。因为要求最大值，所以应该是以上两种情况种较大的值，得到如下递推公式：<br>
+dp[i][j]=max(dp[i-1][j]  ,  dp[i-1][j-w[i]]+v[i]);</p>
+<p>3.dp数组初始化，当i为0时，表示不选物品，所以最大值都为0；当j为0时，表示背包容量为0，最大值也都为0；其他下标的值，都是根据表中左上方的到的，所以初始值都会被覆盖，不需要特殊处理。</p>
+<p>4.确定遍历顺序，先遍历物品和先遍历背包都一样，选择先遍历物品。</p>
+<p>5.举例推导dp数组</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-xing-neng-you-hua/">
+                  <h3 class="post-title">
+                    Android性能优化
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

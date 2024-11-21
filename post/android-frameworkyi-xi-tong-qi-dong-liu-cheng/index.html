@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android Framework（一），系统启动流程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android Framework（一），系统启动流程</h2>
+            <div class="post-date">2022-02-23</div>
+            
+            <div class="post-content">
+              <p><a href="https://toc.codepie.fun/">在线目录生成工具</a></p>
+<p>本文基于android9.0.0_r3版本源码，源码查看工具是<a href="http://androidxref.com/">XRef</a></p>
+<h1 id="0前言">0.前言</h1>
+<p>长按电源键后，系统加载BootLoader到内存中，并拉起Linux kernel内核，然后启动第一个用户空间的进程，init进程，在init进程中，启动Zygote进程，随后所有的应用进程，都由Zygote进程创建，Zygote进程创建之后，启动Binder线程池和SystemServer进程，在SystemServier进程中对系统服务进行创建，启动和管理，包括AMS，PMS，再由AMS启动Launcher，Launcher启动后，将应用的快捷图标显示在桌面上。以上，是Android系统的主要启动流程，后文会对其中几个主要步骤展开学习。<br>
+流程图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1645625862388.png" alt="" loading="lazy"></p>
+<h1 id="1init进程">1.init进程</h1>
+<p>init进程是系统空间内的第一个进程，进程负责初始化资源文件和启动一系列的属性服务，然后解析init.rc这个配置文件，通过fork和execv来启动Zygote进程。</p>
+<h1 id="2zygote进程">2.Zygote进程</h1>
+<p>包括system系统进程在内的所有应用进程，都是Zygote进程负责创建的，因此Zygote进程也被称为进程孵化器，它创建进程的方式是通过复制自身来创建应用进程的，它在启动过程中会在内部创建一个虚拟机实例，所以通过复制Zygote进程而得到的进程，可以快速地在内部获得一个虚拟机实例拷贝。<br>
+首先运行可执行程序app_process的入口main函数，主要做以下几件事：<br>
+1）启动Zygote，执行AndroidRuntime.start函数；<br>
+2）启动VM虚拟机；<br>
+3）注册Android系统框架JNI调用到虚拟机中；<br>
+4）通过JNI调用进入java层执行ZygoteInit的main函数：<br>
+经过以上的步骤，调用到了Java层的ZygoteInit内，代码如下：</p>
+<pre><code class="language-java">**/frameworks/base/core/java/com/android/internal/os/ZygoteInit.java
+
+public static void main(String argv[]) {
+    ZygoteServer zygoteServer = new ZygoteServer();
+
+    // Mark zygote start. This ensures that thread creation will throw
+    // an error.
+    ZygoteHooks.startZygoteNoThreadCreation();
+
+    // Zygote goes into its own process group.
+    try {
+        Os.setpgid(0, 0);
+    } catch (ErrnoException ex) {
+        throw new RuntimeException(&quot;Failed to setpgid(0,0)&quot;, ex);
+    }
+
+    final Runnable caller;
+    try {
+        // Report Zygote start time to tron unless it is a runtime restart
+        if (!&quot;1&quot;.equals(SystemProperties.get(&quot;sys.boot_completed&quot;))) {
+            MetricsLogger.histogram(null, &quot;boot_zygote_init&quot;,
+                    (int) SystemClock.elapsedRealtime());
+        }
+
+        String bootTimeTag = Process.is64Bit() ? &quot;Zygote64Timing&quot; : &quot;Zygote32Timing&quot;;
+        TimingsTraceLog bootTimingsTraceLog = new TimingsTraceLog(bootTimeTag,
+                Trace.TRACE_TAG_DALVIK);
+        bootTimingsTraceLog.traceBegin(&quot;ZygoteInit&quot;);
+        RuntimeInit.enableDdms();
+
+        boolean startSystemServer = false;
+        String socketName = &quot;zygote&quot;;
+        String abiList = null;
+        boolean enableLazyPreload = false;
+        for (int i = 1; i &lt; argv.length; i++) {
+            if (&quot;start-system-server&quot;.equals(argv[i])) {
+                //在init.rc文件中，如果有--start-system-server参数，表示要创建SystemServer
+                startSystemServer = true;
+            } else if (&quot;--enable-lazy-preload&quot;.equals(argv[i])) {
+                enableLazyPreload = true;
+            } else if (argv[i].startsWith(ABI_LIST_ARG)) {
+                abiList = argv[i].substring(ABI_LIST_ARG.length());
+            } else if (argv[i].startsWith(SOCKET_NAME_ARG)) {
+                socketName = argv[i].substring(SOCKET_NAME_ARG.length());
+            } else {
+                throw new RuntimeException(&quot;Unknown command line argument: &quot; + argv[i]);
+            }
+        }
+
+        if (abiList == null) {
+            throw new RuntimeException(&quot;No ABI list supplied.&quot;);
+        }
+
+        //1.创建Socket服务端
+        zygoteServer.registerServerSocketFromEnv(socketName);
+        // In some configurations, we avoid preloading resources and classes eagerly.
+        // In such cases, we will preload things prior to our first fork.
+        if (!enableLazyPreload) {
+            bootTimingsTraceLog.traceBegin(&quot;ZygotePreload&quot;);
+            EventLog.writeEvent(LOG_BOOT_PROGRESS_PRELOAD_START,
+                SystemClock.uptimeMillis());
+            //2.预加载资源
+            preload(bootTimingsTraceLog);
+            EventLog.writeEvent(LOG_BOOT_PROGRESS_PRELOAD_END,
+                SystemClock.uptimeMillis());
+            bootTimingsTraceLog.traceEnd(); // ZygotePreload
+        } else {
+            Zygote.resetNicePriority();
+        }
+
+        // Do an initial gc to clean up after startup
+        bootTimingsTraceLog.traceBegin(&quot;PostZygoteInitGC&quot;);
+        gcAndFinalize();
+        bootTimingsTraceLog.traceEnd(); // PostZygoteInitGC
+
+        bootTimingsTraceLog.traceEnd(); // ZygoteInit
+        // Disable tracing so that forked processes do not inherit stale tracing tags from
+        // Zygote.
+        Trace.setTracingEnabled(false, 0);
+
+        Zygote.nativeSecurityInit();
+
+        // Zygote process unmounts root storage spaces.
+        Zygote.nativeUnmountStorageOnInit();
+
+        ZygoteHooks.stopZygoteNoThreadCreation();
+
+        if (startSystemServer) {
+            //3.fork启动system_server进程
+            Runnable r = forkSystemServer(abiList, socketName, zygoteServer);
+
+            // {@code r == null} in the parent (zygote) process, and {@code r != null} in the
+            // child (system_server) process.
+            if (r != null) {
+                r.run();
+                return;
+            }
+        }
+
+        Log.i(TAG, &quot;Accepting command socket connections&quot;);
+
+        // The select loop returns early in the child process after a fork and
+        // loops forever in the zygote.
+        //4.socket服务端等待AMS请求（AMS会通过socket请求Zygote来创建应用程序进程）
+        caller = zygoteServer.runSelectLoop(abiList);
+    } catch (Throwable ex) {
+        Log.e(TAG, &quot;System zygote died with exception&quot;, ex);
+        throw ex;
+    } finally {
+        zygoteServer.closeServerSocket();
+    }
+
+    // We're in the child process and have exited the select loop. Proceed to execute the
+    // command.
+    if (caller != null) {
+        caller.run();
+    }
+}
+</code></pre>
+<p>从代码中可以看到，主要做了以下的事，<br>
+1）创建Socket服务端；<br>
+2）预加载类，资源等，基于linux的copy-on-write机制，可以加速后续Zygote fork创建进程的启动速度；<br>
+3）fork创建启动系统system_server进程；<br>
+4）Socket服务端进入循环监听等待，等待后续AMS请求（AMS会通过Socket请求Zygote来创建应用进程）。</p>
+<h1 id="3system_server进程的启动">3.system_server进程的启动</h1>
+<p>上文提到，通过forkSystemServer()方法创建system_server进程，跟踪代码可以发现，会先设置相关参数，然后再创建system_server进程，进程创建之后，调用native方法ZygoteInit.nativeZygoteInit();启动进程的Binder线程池，然后调用RuntimeInit.applicationInit()方法，这个方法最终会通过反射的方式创建com.android.server.SystemServer类对象，并执行其main函数，main函数代码如下：</p>
+<pre><code class="language-java">/**
+ * The main entry point from zygote.
+ */
+public static void main(String[] args) {
+    new SystemServer().run();
+}
+
+private void run() {
+    ...
+    //1.创建主线程Looper
+    Looper.prepareMainLooper();
+    
+    //2.创建系统Context上下文
+    createSystemContext();
+
+
+    // Create the system service manager.
+    //3.创建SystemServiceManager，用于后续系统服务（AMS，WMS，PMS）的创建、启动、生命周期管理
+    mSystemServiceManager = new SystemServiceManager(mSystemContext);
+    mSystemServiceManager.setStartInfo(mRuntimeRestart,
+            mRuntimeStartElapsedTime, mRuntimeStartUptime);
+    LocalServices.addService(SystemServiceManager.class, mSystemServiceManager);
+
+    //4.根据优先级，分批启动服务
+    traceBeginAndSlog(&quot;StartServices&quot;);
+    //启动引导服务，如AMS，PMS等
+    startBootstrapServices();
+    //启动核心服务
+    startCoreServices();
+    //启动其他服务
+    startOtherServices();
+    SystemServerInitThreadPool.shutdown();
+
+    // Loop forever.
+    //5.开启looper循环
+    Looper.loop();
+    
+}
+</code></pre>
+<p>在system_server进程创建之后，主要做了以下几件事：<br>
+1）启动进程的Binder线程池；<br>
+2）创建SystemServiceManager，用于后续系统服务（AMS，PMS，WMS等）的创建、启动、生命周期管理；<br>
+3）用SystemServiceManager按照优先级启动系统服务；<br>
+4）创建并启动进程主线程的loop循环。</p>
+<h1 id="4launcher应用启动">4.Launcher应用启动</h1>
+<p>在system_server进程中，创建了SystemServiceManager，然后创建了AMS等系统服务，当所有服务创建完成后，会调用到frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java<br>
+里面的systemReady()方法，并在层层调用后，最终调用startHomeActivity启动Category类型为CATEGORY_HOME类型的应用，也就是Launcher桌面，至此，完成了系统的整个启动流程。<br>
+详细启动流程图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1651573091393.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/foI-czKO2/" class="tag">
+                    framework
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/shu-ju-jie-gou-zhi-hong-hei-shu/">
+                  <h3 class="post-title">
+                    数据结构之红黑树
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

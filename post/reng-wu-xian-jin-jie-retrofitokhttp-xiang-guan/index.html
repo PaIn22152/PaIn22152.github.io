@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Retrofit+okhttp相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Retrofit+okhttp相关</h2>
+            <div class="post-date">2024-04-24</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。Retrofit+okhttp相关</p>
+<!-- more -->
+<h2 id="retrofit源码流程">Retrofit源码流程</h2>
+<p>使用retrofit时，通过Retrofit的构造器构造出Retrofit对象，然后调用create方法创建出自定义的service，再通过这个service对象去调用接口，使用enqueue方法将http请求放入队列，同时传入一个回调去异步处理调用结果。示例代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950615046.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950621617.png" alt="" loading="lazy"></p>
+<p>其中构造retrofit对象是在配置一些默认参数，查看retrofit.create方法的源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950640910.png" alt="" loading="lazy"><br>
+可以看出是通过动态代理的方式创建并返回service对象，其中主要的代码是：loadServiceMethod(service, method).invoke(proxy, args);<br>
+先查看loadServiceMethod这个方法，最终会返回一个CallAdapted对象，CallAdapted的父类是HttpServiceMethod，CallAdapted没有实现invoke方法，所以去看HttpServiceMethod的invoke方法，代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950658675.png" alt="" loading="lazy"></p>
+<p>代码逻辑为先创建出一个Call（实际类型为OkHttpCall）对象，然后再通过adapt方法生成一个新的Call对象，查看CallAdapted的adapt方法，调用的是CallAdapter的adapt方法，这个CallAdapter对象是在HttpServiceMethod中通过createCallAdapter方法创建的，实际调用的是retrofit的callAdapter方法，一直跟进去是通过callAdapterFactories.get(i)这个方法获取到的，然后再跟callAdapterFactories，发现是在BuiltInFactories中将DefaultCallAdapterFactory对象添加进去的，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950684440.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950688852.png" alt="" loading="lazy"></p>
+<p>DefaultCallAdapterFactory的get方法如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950708054.png" alt="" loading="lazy"><br>
+所以最终返回的Call对象实际为ExecutorCallbackCall，ExecutorCallbackCall的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950724780.png" alt="" loading="lazy"><br>
+可以看出主要做两件事，1执行真正的Call（前文提到的OkHttpCall）的enqueue方法；2将执行结果切换到另外一个线程回调（跟踪代码可以发现是主线程，详细过程不再写出）；<br>
+然后再去看OkHttpCall的enqueue方法，可以看到就是在通过OKHttp方式，将http请求放入队列，异步执行，关键代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1713950743575.png" alt="" loading="lazy"><br>
+请求成功返回后，再调用parseResponse方法去解析结果，parseResponse方法里面会调用responseConverter.convert去转换数据，而这个responseConverter的来源是在构建Retrofit对象时手动添加进去的<br>
+<img src="https://PaIn22152.github.io/post-images/1713950762758.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1713950768955.png" alt="" loading="lazy"></p>
+<p>以上就是Retrofit请求接口的源码实现</p>
+<h2 id="okhttp源码流程">okhttp源码流程</h2>
+<p>okhttp的简单使用代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964281294.png" alt="" loading="lazy"><br>
+首先创建出OkHttpClient对象和Request对象，然后通过newCall方法创建出call对象，调用enqueue方法异步执行网络请求，先看一下newcall源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964302903.png" alt="" loading="lazy"><br>
+可以看到就是创建了一个RealCall对象，再看RealCall的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964324339.png" alt="" loading="lazy"><br>
+实际调用的是dispatcher的enqueue方法，创建并传入一个AsyncCall对象，这个dispatcher是一个Dispatcher对象，他的enqueue方法源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964349381.png" alt="" loading="lazy"><br>
+Dispatcher类负责异步任务的调度，其中有两个参数maxRequests和maxRequestsPerHost，分别表示最大同时请求数和每个主机的最大同时请求数，上面的enqueue方法中，先将call放到readyAsyncCalls队列中，然后调用promoteAndExecute，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964369239.png" alt="" loading="lazy"><br>
+在promoteAndExecute方法中，首先按照参数设置的最大请求数将call放到executableCalls队列中，然后遍历所有可以执行的call调用executeOn方法，如果同时发送的请求数大于了最大数，那么多出来的那些请求就会先放在readyAsyncCalls队列中，等有请求执行完成后，才会继续执行。再看AsyncCall的executeOn方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964388518.png" alt="" loading="lazy"><br>
+其中关键代码是executorService.execute(this)，实际就是通过executorService在一个新的线程中执行AsyncCall的run方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964408846.png" alt="" loading="lazy"><br>
+关键代码是val response = getResponseWithInterceptorChain()，到此，得到了http请求的response。</p>
+<p>接下来继续看getResponseWithInterceptorChain这个方法是怎么实现的，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964431683.png" alt="" loading="lazy"><br>
+这个方法是okhttp网络请求的关键，他会链式地调用各种Interceptor来得到最终结果，Interceptor就是拦截器，主要分为三部分，前置工作、中置工作、后置工作，除了最后一个拦截器外，其他所有拦截器的中置工作都是通过realChain.proceed(request)调用下一个拦截器的intercept方法，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964451934.png" alt="" loading="lazy"><br>
+接下来对所有拦截器逐个分析<br>
+第一个是RetryAndFollowUpInterceptor，这个拦截器的作用是请求出错时重试，或者是http返回重定向时，自动请求新的地址，前置工作是做连接准备（初始化ExchangeFinder），后置工作是判断是否出错或者重定向，如果出错或者重定向，组装新的request发起请求；<br>
+第二个是BridgeInterceptor，前置工作是对request增加header，比如Host、Content-Length、Content-Type、Cookie、Accept-Encoding等等，后置工作是解压缩返回的数据（如果数据被压缩了）；<br>
+第三个是CacheInterceptor，前置工作是判断磁盘文件中是否有可用缓存，如果有直接返回，后置工作是将返回的数据缓存到磁盘文件；（CacheInterceptor还有很多细节可以深入学习）；<br>
+第四个是ConnectInterceptor，前置工作是建立连接，没有后置工作，源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964483956.png" alt="" loading="lazy"><br>
+关键代码是realChain.call.initExchange(chain)，一直跟下去会走到ExchangeFinder的findConnection方法，这个方法会返回一个可用连接，步骤如下：<br>
+1.从连接池里面获取一个不支持多路复用的连接（只有http2支持多路复用）<br>
+2.初始化routes路由，再从连接池里面获取一个不支持多路复用或者支持多路复用的连接<br>
+3.创建一个新的连接<br>
+4.从连接池里面获取一个只支持多路复用的连接，如果有，丢弃刚刚创建的连接，使用池里面的连接<br>
+5.重试或者重定向时，判断上一次的连接是否可用，如果可用直接使用，不可用就关闭</p>
+<p>创建连接时，关键代码是establishProtocol(connectionSpecSelector, pingIntervalMillis, call, eventListener)，establishProtocol源码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1714964519896.png" alt="" loading="lazy"><br>
+不进行加密传输时，如果是http2，发送http2的握手数据<br>
+进行加密传输时，建立TLS加密连接，如果是http2，发送http2的握手数据<br>
+okhttp默认协议参数支持http2和http1.1，http请求时，先尝试使用http2，如果服务器不支持，回退到http1.1</p>
+<p>通过ExchangeFinder的findConnection方法得到一个健康的可用连接后，使用连接创建一个编码解码器，用于数据的组装和解析，并包装成一个Exchange对象</p>
+<p>最后一个拦截器是CallServerInterceptor，使用已经获取到的Exchange对象发送请求，获取响应。</p>
+<p>除了这几个okhttp定义的Interceptor外，还可以自定义Interceptor，一个是Interceptors，在所有拦截器之前执行，一般常用于添加header，比如token，还有一个是networkInterceptors，一般用于网络调试时打印日志，比如配合Stetho库使用时会用到。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/ur39x1HK5/" class="tag">
+                    Retrofit
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/4fzckmLpNt/" class="tag">
+                    okhttp
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-kotlin-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-Kotlin相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

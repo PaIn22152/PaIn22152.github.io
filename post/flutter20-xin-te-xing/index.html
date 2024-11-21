@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Flutter2.0新特性 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Flutter2.0新特性</h2>
+            <div class="post-date">2021-03-04</div>
+            
+            <div class="post-content">
+              <h2 id="写在前面">写在前面</h2>
+<p>时间2021-03-04，Flutter发布2.0版本<br>
+更新文档<a href="https://medium.com/flutter/whats-new-in-flutter-2-0-fe8e95ecc65">medium.com</a><br>
+接下来聊一聊Flutter2.0的一些新特性。</p>
+<h2 id="1flutter-web">1.Flutter Web</h2>
+<p>flutter对web的支持，已经从beta channel到了stable channel，可以直接在stable创建一个web应用。为此flutter做了一些针对web的优化，包括CanvasKit-based renderer和 <a href="https://pub.dev/documentation/url_launcher/latest/link/Link-class.html">Link widget</a>等</p>
+<h2 id="2null-safety">2.Null Safety</h2>
+<p>健全的空安全机制，主要得益于dart语言升级到2.12</p>
+<h2 id="3desktop">3.Desktop</h2>
+<p>对桌面的支持已经加入到stable channel中的早期版本，可以视作“beta snapshot”，最终稳定版本即将到来。想要尝试桌面版本，可以切换到beta channel，或者使用‘flutter config’启用某个桌面配置设置（例如enable-macos-desktop）</p>
+<h2 id="4flutter-folio">4.Flutter Folio</h2>
+<p>这是一个示例应用，目前flutter支持三个平台（Android，Ios，Web），以及将来会支持的平台（Windows，MacOS，Linux），那么怎么样才能让编写出来的程序适配不同的屏幕，不同的输入模式，不同的使用习惯。Folio回答了这些问题。<a href="https://github.com/gskinnerTeam/flutter-folio">源码</a>，<a href="https://aloisdeniel.com/#/posts/adaptative-ui">其他博客</a></p>
+<h2 id="5google移动广告插件">5.Google移动广告插件</h2>
+<p>之前做过一个flutter项目，需要接入Admob广告和fb广告，因为没有这两个广告平台都没有flutter端的支持，所以只能是在Android端接入Android 广告sdk，Ios端接入Ios 广告sdk，然后使用flutter和原生端通信，而且还不能实现原生广告。现在Google广告提供了对Flutter端的支持，可以直接在flutter使用Google广告，包括插屏，banner，原生，激励等广告。相信不久的将来，fb广告也会提供对flutter的支持。</p>
+<h2 id="6new-ios-features">6.New iOS features</h2>
+<p>新的<a href="https://api.flutter.dev/flutter/cupertino/CupertinoSearchTextField-class.html">CupertinoSearchTextField</a>提供了iOS搜索栏UI。<br>
+CupertinoFormSection，CupertinoFormRow和CupertinoTextFormFieldRow部件更容易产生与iOS的分段式视觉美学验证表单字段。<br>
+还有一些对于Ios平台性能上的优化</p>
+<h2 id="7new-widgets">7.New widgets</h2>
+<p>Autocomplete和ScaffoldMessenger</p>
+<h2 id="8add-to-app">8.Add-to-App</h2>
+<p>Add-to-App这个功能，支持在现有的原生应用基础上，增加Flutter Module，然后原生和flutter实例相互跳转</p>
+<h2 id="9其他">9.其他</h2>
+<p>Flutter Fix，Flutter DevTools等等，详见以上更新文档。</p>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzAwODY4OTk2Mg==&amp;mid=2652078874&amp;idx=1&amp;sn=be77172366b55027f15fca0b522393ad&amp;chksm=808c235fb7fbaa4956670e6a78552f7d79cb8137eb90d8a4c91bd5cb061cadac3ba91a841bfd&amp;scene=178&amp;cur_album_id=1339408980472561665#rd">官方  无限可能 | Flutter 2 重点更新一览</a></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-zhi-shi-dian-zong-jie/">
+                  <h3 class="post-title">
+                    Android知识点总结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

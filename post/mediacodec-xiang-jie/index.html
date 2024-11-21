@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>MediaCodec详解 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">MediaCodec详解</h2>
+            <div class="post-date">2024-03-09</div>
+            
+            <div class="post-content">
+              <h2 id="是什么">是什么</h2>
+<p>MediaCodec类可用于访问Android底层的多媒体编解码器，是Android底层多媒体支持基础架构的一部分，通常与MediaExtractor, MediaSync, MediaMuxer, MediaCrypto, MediaDrm, Image, Surface, 以及AudioTrack一起使用。简单来说，MediaCodec是Android硬编码（解码）实现的API接口，可以将视频数据在YUV和H264转换，可以将音频数据在PCM和AAC转换。</p>
+<h2 id="怎么用">怎么用</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1709967030465.png" alt="" loading="lazy"><br>
+MediaCodec采用异步方式处理数据，并且使用了一组输入输出buffer（ByteBuffer）。</p>
+<ol>
+<li>使用者从MediaCodec请求一个空的输入buffer（ByteBuffer），填充满数据后将它传递给MediaCodec处理。</li>
+<li>MediaCodec处理完这些数据并将处理结果输出至一个空的输出buffer（ByteBuffer）中。</li>
+<li>使用者从MediaCodec获取输出buffer的数据，消耗掉里面的数据，使用完输出buffer的数据之后，将其释放回编解码器</li>
+</ol>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test(MediaFormat encoderFormat) {
+        try {
+            //获取视频编码器
+            MediaCodec encoder = MediaCodec.createEncoderByType(
+                MediaFormat.MIMETYPE_VIDEO_AVC);
+            //配置编码器
+            encoder.configure(encoderFormat, null, null, 
+            MediaCodec.CONFIGURE_FLAG_ENCODE);
+            //开始编码
+            encoder.start();
+
+            //输入yuv数据到编码器
+            byte[] yuv = new byte[1024];
+            input(encoder, yuv);
+
+            //获取编码后的h264数据
+            output(encoder);
+
+            //停止编码
+            encoder.stop();
+            //释放编码器资源
+            encoder.release();
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void input(MediaCodec encoder, byte[] frame) {
+        //从输入队列中获取数据索引，1s超时
+        int inputBufferIndex = encoder.dequeueInputBuffer(1000 * 1000);
+        if (inputBufferIndex &gt;= 0) {
+            //通过数据索引，获取输入buffer
+            ByteBuffer inputBuffer = encoder.getInputBuffer(inputBufferIndex);
+            inputBuffer.clear();
+            //将数据放入输入buffer
+            inputBuffer.put(frame);
+            //将输入buffer放入队列
+            encoder.queueInputBuffer(inputBufferIndex, 0, frame.length,
+                    System.nanoTime(), 0);
+        }
+    }
+
+    BufferInfo info = new BufferInfo();
+
+    private void output(MediaCodec encoder) {
+        //从输出队列中获取数据索引
+        int outputBufferIndex = encoder.dequeueOutputBuffer(info, 200 * 1000);
+        if (outputBufferIndex &gt;= 0) {
+            //通过数据索引，获取输出buffer
+            ByteBuffer outputBuffer = encoder.getOutputBuffer(outputBufferIndex);
+            if (outputBuffer != null) {
+                outputBuffer.position(0);
+                byte[] h264 = new byte[outputBuffer.remaining()];
+                outputBuffer.get(h264);
+                //todo 使用编码后的h264数据
+                //数据使用后，将buffer释放到codec
+                encoder.releaseOutputBuffer(outputBufferIndex, false);
+                outputBuffer.clear();
+            }
+        }
+    }
+</code></pre>
+<h2 id="生命周期">生命周期</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1709967047085.png" alt="" loading="lazy"><br>
+在编解码器的生命周期内有三种理论状态：停止态-Stopped、执行态-Executing、释放态-Released，停止状态（Stopped）包括了三种子状态：未初始化（Uninitialized）、配置（Configured）、错误（Error）。执行状态（Executing）在概念上会经历三种子状态：刷新（Flushed）、运行（Running）、流结束（End-of-Stream）。</p>
+<p>当你使用任意一种工厂方法（factory methods）创建了一个编解码器，此时编解码器处于未初始化状态（Uninitialized）。首先，你需要使用configure(…)方法对编解码器进行配置，这将使编解码器转为配置状态（Configured）。然后调用start()方法使其转入执行状态（Executing）。在这种状态下你可以通过上述的缓存队列操作处理数据。<br>
+执行状态（Executing）包含三个子状态： 刷新（Flushed）、运行（ Running） 以及流结束（End-of-Stream）。在调用start()方法后编解码器立即进入刷新子状态（Flushed），此时编解码器会拥有所有的缓存。一旦第一个输入缓存（input buffer）被移出队列，编解码器就转入运行子状态（Running），编解码器的大部分生命周期会在此状态下度过。当你将一个带有end-of-stream 标记的输入缓存入队列时，编解码器将转入流结束子状态（End-of-Stream）。在这种状态下，编解码器不再接收新的输入缓存，但它仍然产生输出缓存（output buffers）直到end-of- stream标记到达输出端。你可以在执行状态（Executing）下的任何时候通过调用flush()方法使编解码器重新返回到刷新子状态（Flushed）。<br>
+通过调用stop()方法使编解码器返回到未初始化状态（Uninitialized），此时这个编解码器可以再次重新配置 。当你使用完编解码器后，你必须调用release()方法释放其资源。<br>
+在极少情况下编解码器会遇到错误并进入错误状态（Error）。这个错误可能是在队列操作时返回一个错误的值或者有时候产生了一个异常导致的。通过调用 reset()方法使编解码器再次可用。你可以在任何状态调用reset()方法使编解码器返回到未初始化状态（Uninitialized）。否则，调用 release()方法进入最终的Released状态。</p>
+<h2 id="mediaformat">MediaFormat</h2>
+<p>MediaFormat类用于描述媒体数据的格式信息，比如媒体类型（audio/mp4a-latm 或 video/avc）、编码格式、采样率、通道数、比特率、帧率、码率、分辨率等信息。</p>
+<h3 id="创建对象">创建对象</h3>
+<p>可以使用createAudioFormat 和 createVideoFormat创建音频和视频格式的MediaFormat对象</p>
+<pre><code class="language-java">MediaFormat audioFormat = MediaFormat.createAudioFormat(&quot;audio/mp4a-latm&quot;, 44100, 2);
+MediaFormat videoFormat = MediaFormat.createVideoFormat(&quot;video/avc&quot;, 1920, 1080);
+</code></pre>
+<h3 id="属性设置和查询">属性设置和查询</h3>
+<p>常用的属性类型有3种，分别是Integer、String和ByteBuffer</p>
+<p>Integer常见属性有：<br>
+KEY_BIT_RATE：音频或视频的比特率，单位为比特每秒（bps）。<br>
+KEY_SAMPLE_RATE：音频的采样率，单位为赫兹（Hz）。<br>
+KEY_CHANNEL_COUNT：音频的通道数。<br>
+KEY_WIDTH：视频的宽度，单位为像素。<br>
+KEY_HEIGHT：视频的高度，单位为像素。<br>
+KEY_FRAME_RATE：视频的帧率，单位为帧每秒（fps）。<br>
+KEY_I_FRAME_INTERVAL：视频的 I 帧间隔，单位为秒。通常情况下，视频编码器会在视频中周期性地插入一个 I 帧，以便于视频的随机访问。该属性指定 I 帧之间的时间间隔，如果值为 0，则表示每一帧都是 I 帧，如果值为 1，表示两个相邻的I帧之间相差1秒。<br>
+KEY_MAX_INPUT_SIZE：媒体输入数据的最大大小，单位为字节。通常情况下，编码器需要知道输入数据的最大大小，以便于为输入数据分配足够的缓冲区。</p>
+<p>String常见属性有：<br>
+KEY_MIME：媒体格式的 MIME 类型。MIME（Multipurpose Internet Mail Extensions）类型是一种标准化的方式，用于表示不同类型的数据格式。例如，视频格式的 MIME 类型可能为 video/mp4，音频格式的 MIME 类型可能为 audio/mpeg。<br>
+KEY_LANGUAGE：媒体的语言。<br>
+KEY_TITLE：媒体的标题。<br>
+KEY_ALBUM：媒体所属的专辑。<br>
+KEY_AUTHOR：媒体的作者。<br>
+KEY_GENRE：媒体的流派或类型。<br>
+KEY_MIME_TYPE：同 KEY_MIME。</p>
+<p>ByteBuffer常见属性有：<br>
+csd-0 : 代表H264或者H265编码器中的SPS（Sequence Parameter Set）<br>
+csd-1 : 代表H264或者H265编码器中的PPS（Picture Parameter Set）<br>
+说明：H264 和 H265 编码器在编码视频数据时，会将视频帧数据分为多个 NAL（Network Abstraction Layer）单元，并在每个 NAL 前面添加特定的起始码（start code）或者长度信息（length information）。SPS 和 PPS 分别是 H264 和 H265 编码器中的两个关键信息单元，包含了视频的基本参数信息（如分辨率、帧率、码率等）以及编码参数（如编码方式、压缩比等），是解码器解码视频时必须用到的信息。<br>
+示例代码：</p>
+<pre><code class="language-java">byte[] sps = format.getByteBuffer(&quot;csd-0&quot;).array();
+byte[] pps = format.getByteBuffer(&quot;csd-1&quot;).array();
+</code></pre>
+<h2 id="mediaextractor">MediaExtractor</h2>
+<p>MediaExtractor负责从音视频文件中提取出数据流，比如输入MP4（或者TS）文件，按帧输出视频h264数据。</p>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test() {
+        try {
+            MediaExtractor videoExtractor = new MediaExtractor();
+            //设置文件地址
+            videoExtractor.setDataSource(&quot;file/path/test.mp4&quot;);
+            //获取通道数
+            int trackCount = videoExtractor.getTrackCount();
+            for (int i = 0; i &lt; trackCount; i++) {
+                //获取指定通道的格式信息
+                MediaFormat format = videoExtractor.getTrackFormat(i);
+                //判断当前通道是否为视频
+                String mime = format.getString(MediaFormat.KEY_MIME);
+                if (mime.startsWith(&quot;video&quot;)) {//视频通道
+                    //mime.startsWith(&quot;audio&quot;)  音频通道
+                    videoExtractor.selectTrack(i);
+                }
+            }
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1024 * 1024);
+            while (true) {
+                //获取当前帧的flag
+                int flag = videoExtractor.getSampleFlags();
+                //获取当前帧的时间戳
+                long curSampleTime = videoExtractor.getSampleTime();
+                //获取当前帧数据
+                int size = videoExtractor.readSampleData(byteBuffer, 0);
+                byte[] h264 = new byte[size];
+                byteBuffer.get(h264, 0, size);
+                //跳转到下一帧
+                boolean b = videoExtractor.advance();
+                //没有更多数据，结束
+                if (!b) {
+                    break;
+                }
+            }
+            //释放资源
+            videoExtractor.release();
+        } catch (Exception e) {
+
+        }
+    }
+</code></pre>
+<h2 id="mediamuxer">MediaMuxer</h2>
+<p>MediaMuxer负责将音视频数据流封装成MP4文件（或者TS文件，需要对Framework层代码做改动），和MediaExtractor的作用刚好相反。</p>
+<p>示例代码：</p>
+<pre><code class="language-java">    private void test(MediaFormat videoFormat, MediaFormat audioFormat) {
+        try {
+            //设置输出文件路径和文件格式
+            MediaMuxer mediaMuxer = new MediaMuxer(&quot;outFile.mp4&quot;,
+                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            //添加通道
+            int trackVideo = mediaMuxer.addTrack(videoFormat);
+            int trackAudio = mediaMuxer.addTrack(audioFormat);
+            //开始合成
+            mediaMuxer.start();
+
+            //仅展示API调用，实际使用根据具体情况定
+            boolean running = true;
+            byte[] videoData = new byte[1024];
+            boolean videoIsKey = true;//视频数据是否是关键帧
+            byte[] audioData = new byte[512];
+            BufferInfo mBufferInfoVideo = new BufferInfo();
+            BufferInfo mBufferInfoAudio = new BufferInfo();
+            while (running) {
+                //如果视频帧是关键帧，写入相应flag
+                if (videoIsKey) {
+                    mBufferInfoVideo.flags = MediaCodec.BUFFER_FLAG_KEY_FRAME;
+                }
+                //数据大小
+                mBufferInfoVideo.size = videoData.length;
+                //时间戳
+                mBufferInfoVideo.presentationTimeUs = System.nanoTime() / 1000L;
+                //写入视频数据到视频通道
+                mediaMuxer.writeSampleData(trackVideo,
+                        ByteBuffer.wrap(videoData), mBufferInfoVideo);
+
+                mBufferInfoAudio.presentationTimeUs = System.nanoTime() / 1000L;
+                mBufferInfoAudio.size = audioData.length;
+                //写入音频数据到音频通道
+                mediaMuxer.writeSampleData(trackAudio,
+                        ByteBuffer.wrap(audioData), mBufferInfoAudio);
+            }
+
+            //停止合成
+            mediaMuxer.stop();
+            //释放资源
+            mediaMuxer.release();
+        } catch (Exception e) {
+
+        }
+    }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/wPM1t7fE9/" class="tag">
+                    音视频
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/mfBLcEiCpr/" class="tag">
+                    mediacodec
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-frameworker-ying-yong-leng-qi-dong-guo-cheng/">
+                  <h3 class="post-title">
+                    Android Framework（二），应用冷启动过程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

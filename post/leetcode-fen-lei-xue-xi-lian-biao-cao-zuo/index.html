@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>LeetCode分类学习，链表操作 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">LeetCode分类学习，链表操作</h2>
+            <div class="post-date">2021-02-19</div>
+            
+            <div class="post-content">
+              <h2 id="q206_反转链表"><a href="https://leetcode-cn.com/problems/reverse-linked-list/">q206_反转链表</a></h2>
+<h3 id="思路1双指针法或者叫迭代法">思路1，双指针法，或者叫迭代法</h3>
+<p><a href="https://leetcode-cn.com/problems/reverse-linked-list/solution/dong-hua-yan-shi-206-fan-zhuan-lian-biao-a7rx/">动画题解</a><br>
+代码</p>
+<pre><code class="language-java">public ListNode reverseList(ListNode head) {
+        ListNode pre = null;
+        ListNode cur = head;
+        while (cur != null) {
+            ListNode next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+        return pre;
+    }
+</code></pre>
+<p>复杂度分析<br>
+时间复杂度：O(n)，假设 n 是列表的长度，时间复杂度是 O(n)。<br>
+空间复杂度：O(1)。</p>
+<h3 id="思路2递归法">思路2，递归法</h3>
+<p><a href="https://leetcode-cn.com/problems/reverse-linked-list/solution/yi-bu-yi-bu-jiao-ni-ru-he-yong-di-gui-si-67c3/">图解</a><br>
+代码</p>
+<pre><code class="language-java">    public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode listNode = reverseList(head.next);
+        head.next.next = head;
+        head.next = null;
+        return listNode;
+    }
+</code></pre>
+<p>递归代码中，最不好理解的是</p>
+<pre><code class="language-java"> head.next.next = head;
+</code></pre>
+<p>查看以上的图解过程，当 1（head） 后面的表完成反转后，2 同时被 1 和 3指向，这是要做的是把2指向1，把1指向null。结合图解，多看几遍，还是比较容易理解的。</p>
+<p>复杂度分析<br>
+时间复杂度：O(n)，假设 n 是列表的长度，那么时间复杂度为 O(n)。<br>
+空间复杂度：O(n)，由于使用递归，将会使用隐式栈空间。递归深度可能会达到 n 层。</p>
+<h2 id="q2_两数相加"><a href="https://leetcode-cn.com/problems/add-two-numbers/">q2_两数相加</a></h2>
+<h3 id="思路1递归">思路1，递归</h3>
+<p>从链表第一位开始相加，并增加一个boolean参数，表示是否加1。当两个链表都为空时，结束递归。<br>
+代码</p>
+<pre><code class="language-java">public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        return addTwoNumbers2(l1, l2, false);
+    }
+
+    public ListNode addTwoNumbers2(ListNode l1, ListNode l2, boolean add1) {
+        int val;
+        if (l1 == null &amp;&amp; l2 == null) {
+            if (add1) {
+                return new ListNode(1);
+            } else {
+                return null;
+            }
+        } else if (l1 == null) {
+            val = l2.val + (add1 ? 1 : 0);
+        } else if (l2 == null) {
+            val = l1.val + (add1 ? 1 : 0);
+        } else {
+            val = l1.val + l2.val + (add1 ? 1 : 0);
+        }
+        add1 = val &gt;= 10;
+        val = val % 10;
+        ListNode res = new ListNode(val);
+        res.next = addTwoNumbers2(l1 == null ? null : l1.next, l2 == null ? null : l2.next, add1);
+        return res;
+    }
+</code></pre>
+<p>执行结果<br>
+<img src="https://PaIn22152.github.io/post-images/1613793913485.png" alt="" loading="lazy"></p>
+<h3 id="思路2">思路2</h3>
+<p>迭代，预先指针<br>
+<a href="https://leetcode-cn.com/problems/add-two-numbers/solution/hua-jie-suan-fa-2-liang-shu-xiang-jia-by-guanpengc/">过程和图解</a><br>
+小技巧：对于链表问题，返回结果为头结点时，通常需要先初始化一个预先指针 pre，该指针的下一个节点指向真正的头结点head。使用预先指针的目的在于链表初始化时无可用节点值，而且链表构造过程需要指针移动，进而会导致头指针丢失，无法返回结果。<br>
+代码</p>
+<pre><code class="language-java">    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode pre = new ListNode(0);
+        ListNode tem = pre;
+        int tag = 0;
+        while (l1 != null || l2 != null) {
+            int a = l1 == null ? 0 : l1.val;
+            int b = l2 == null ? 0 : l2.val;
+            int sum = a + b + tag;
+            tag = sum / 10;
+            sum %= 10;
+
+            tem.next = new ListNode(sum);
+            tem = tem.next;
+
+            if (l1 != null)
+                l1 = l1.next;
+            if (l2 != null)
+                l2 = l2.next;
+        }
+        if (tag &gt; 0) {
+            tem.next = new ListNode(tag);
+        }
+        return pre.next;
+    }
+</code></pre>
+<h2 id="q148_排序链表"><a href="https://leetcode-cn.com/problems/sort-list/">q148_排序链表</a></h2>
+<h3 id="思路1">思路1</h3>
+<p>把链表转成list，list排序后，生成新的链表<br>
+代码</p>
+<pre><code class="language-java">    public ListNode sortList(ListNode head) {
+        List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+        while (head != null) {
+            list.add(head.val);
+            head = head.next;
+        }
+        Collections.sort(list);
+        ListNode last = null;
+        for (int i = list.size() - 1; i &gt;= 0; i--) {
+            int v = list.get(i);
+            ListNode listNode = new ListNode(v);
+            listNode.next = last;
+            last = listNode;
+        }
+        return last;
+    }
+</code></pre>
+<p>需要额外的空间</p>
+<h3 id="思路2-2">思路2</h3>
+<p><a href="https://leetcode-cn.com/problems/sort-list/solution/sort-list-gui-bing-pai-xu-lian-biao-by-jyd/">归并排序</a></p>
+<h2 id="q19_删除链表的倒数第n个节点"><a href="https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/">q19_删除链表的倒数第N个节点</a></h2>
+<h3 id="思路1-2">思路1</h3>
+<p>双指针，预先指针<br>
+代码</p>
+<pre><code class="language-java">    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode pre = new ListNode(0);
+        pre.next = head;
+        ListNode right = pre;
+        ListNode left = pre;
+        for (int i = 0; i &lt;= n; i++) {
+            right = right.next;
+        }
+        while (right != null) {
+            right = right.next;
+            left = left.next;
+        }
+        left.next = left.next.next;
+        return pre.next;
+    }
+</code></pre>
+<h2 id="q61_旋转链表"><a href="https://leetcode-cn.com/problems/rotate-list/">q61_旋转链表</a></h2>
+<h3 id="思路">思路</h3>
+<p>把单链表转成环，然后再在合适的地方解环<br>
+代码</p>
+<pre><code class="language-java">public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null || k == 0) {
+            return head;
+        }
+
+        ListNode t = head;
+        int len = 1;
+        while (t.next != null) {
+            t = t.next;
+            len++;
+        }
+        t.next = head;
+
+        k = len - k % len;
+        ListNode t2 = head;//新的链尾，t2的next才是新的head，所以要-1
+        for (int i = 0; i &lt; k - 1; i++) {
+            t2 = t2.next;
+        }
+        ListNode ans = t2.next;
+        t2.next = null;
+        return ans;
+    }
+</code></pre>
+<p>需要注意的是解环的位置，应该是长度len减去 k%len</p>
+<h2 id="q138_复制带随机指针的链表"><a href="https://leetcode-cn.com/problems/copy-list-with-random-pointer/">q138_复制带随机指针的链表</a></h2>
+<h3 id="思路1-3">思路1</h3>
+<p>map+递归<br>
+从链表头开始复制，用map&lt;oldnode,newnode&gt;存数据，当需要复制的节点不存在，构建新的，当节点已经存在，从map获取<br>
+代码</p>
+<pre><code class="language-java">public Node copyRandomList(Node head) {
+        if (head == null) {
+            return null;
+        }
+        if (map.containsKey(head)) {
+            return map.get(head);
+        }
+
+        Node node = new Node(head.val);
+        map.put(head, node);
+        node.next = copyRandomList(head.next);
+        node.random = copyRandomList(head.random);
+        return node;
+    }
+</code></pre>
+<h3 id="思路2-3">思路2</h3>
+<p>详见图解解法1<br>
+<a href="https://leetcode-cn.com/problems/copy-list-with-random-pointer/solution/liang-chong-shi-xian-tu-jie-138-fu-zhi-dai-sui-ji-/">优秀图解</a><br>
+代码</p>
+<pre><code class="language-java"> public Node copyRandomList2(Node head) {
+        if (head == null) {
+            return null;
+        }
+
+        //第一步，在每个原节点后面创建一个新节点
+        Node tem = head;
+        while (tem != null) {
+            Node t = new Node(tem.val);
+            t.next = tem.next;
+            tem.next = t;
+            tem = tem.next.next;
+        }
+
+        //第二步，设置新节点的随机节点
+        tem = head;
+        while (tem != null) {
+            if (tem.random != null) {
+                tem.next.random = tem.random.next;
+            }
+            tem = tem.next.next;
+        }
+
+        //第三步，将两个链表分离
+        Node dummy = new Node(-1);
+        tem = head;
+        Node cur = dummy;
+        while (tem != null) {
+            cur.next = tem.next;
+            cur = cur.next;
+            tem.next = cur.next;
+            tem = tem.next;
+        }
+        return dummy.next;
+    }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/n6jeHTLcf/" class="tag">
+                    链表
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/fAGdqGi-P/" class="tag">
+                    leetcode
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/APbRlo0Wb-/" class="tag">
+                    算法
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-hash-xiang-guan/">
+                  <h3 class="post-title">
+                    LeetCode分类学习，Hash相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

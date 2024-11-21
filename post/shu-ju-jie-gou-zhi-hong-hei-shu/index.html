@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>数据结构之红黑树 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">数据结构之红黑树</h2>
+            <div class="post-date">2022-01-26</div>
+            
+            <div class="post-content">
+              <p>在阅读HashMap和TreeMap的源码时，都涉及到了红黑树的知识，所有有必要先学习红黑树。<br>
+红黑树的五个特性：<br>
+1.每个节点要么是红色，要么是黑色；<br>
+2.根节点是黑色；<br>
+3.每个叶节点（叶节点是指树尾端的Null节点）是黑色；<br>
+4.如果一个节点是红色，那么它的俩儿子都是黑色；<br>
+5.对于任一节点而言，其到叶节点（Null节点）的每一条路径都包含相同数目的黑节点。</p>
+<p>当红黑树插入数据时，先把数据插到合适位置，再通过插入后修正（左旋，右旋，重新着色），使得新的树也成为红黑树。<br>
+删除数据时同理，先把数据删除，然后通过删除后修正（左旋，右旋，重新着色），使得新的树成为红黑树。</p>
+<p>这里只是简单了解红黑树，具体的原理和操作，参考下面的链接<br>
+<a href="https://www.cnblogs.com/skywang12345/p/3245399.html">红黑树(一)之 原理和算法详细介绍 </a><br>
+<a href="https://github.com/julycoding/The-Art-Of-Programming-By-July/blob/master/ebook/zh/03.01.md">教你透彻了解红黑树-github</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/3J3HGY1Nu/" class="tag">
+                    数据结构
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/QgVj6t_m8Z/" class="tag">
+                    红黑树
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/ba-gu-wen-zhi-java-pian/">
+                  <h3 class="post-title">
+                    八股文之Java篇
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

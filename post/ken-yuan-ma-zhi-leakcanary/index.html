@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>啃源码之--LeakCanary | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">啃源码之--LeakCanary</h2>
+            <div class="post-date">2022-01-18</div>
+            
+            <div class="post-content">
+              <h1 id="0前言">0.前言</h1>
+<p>Android开发中，内存泄露是引发OOM的一大原因，为了避免内存泄露的发生，通常使用<a href="https://github.com/square/leakcanary">LeakCanary</a>来检测是否发生了内存泄露，接下来就根据LeakCanary源码（版本 2.8.1 ），来看看是怎么实现内存泄露的检测的。</p>
+<h1 id="1初始化">1.初始化</h1>
+<p>自2.0版本之后，LeakCanary都不需要在代码中主动初始化，只需要在build.gradle中引入项目即可：</p>
+<pre><code class="language-groovy">dependencies {
+  // debugImplementation because LeakCanary should only run in debug builds.
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+}
+</code></pre>
+<p>这是因为项目在自己的ContentProvider中自动初始化了<br>
+这里有一个知识点，那就是ContentProvider的onCreate()方法，会在Application的onCreate()方法之前执行。<br>
+项目中的相关源码如下：<br>
+<a href="https://github.com/square/leakcanary/blob/main/leakcanary-object-watcher-android/src/main/AndroidManifest.xml">leakcanary/leakcanary-object-watcher-android/src/main/AndroidManifest.xml</a></p>
+<pre><code class="language-xml">  &lt;application&gt;
+    &lt;provider
+        android:name=&quot;leakcanary.internal.MainProcessAppWatcherInstaller&quot;
+        android:authorities=&quot;${applicationId}.leakcanary-installer&quot;
+        android:enabled=&quot;@bool/leak_canary_watcher_auto_install&quot;
+        android:exported=&quot;false&quot;/&gt;
+  &lt;/application&gt;
+</code></pre>
+<pre><code class="language-kotlin">/**
+ * Content providers are loaded before the application class is created. [MainProcessAppWatcherInstaller] is
+ * used to install [leakcanary.AppWatcher] on application start.
+ *
+ * [MainProcessAppWatcherInstaller] automatically sets up the LeakCanary code that runs in the main
+ * app process.
+ */
+internal class MainProcessAppWatcherInstaller : ContentProvider() {
+
+  override fun onCreate(): Boolean {
+    val application = context!!.applicationContext as Application
+    AppWatcher.manualInstall(application)
+    return true
+  }
+
+  override fun query(
+    uri: Uri,
+    projectionArg: Array&lt;String&gt;?,
+    selection: String?,
+    selectionArgs: Array&lt;String&gt;?,
+    sortOrder: String?
+  ): Cursor? = null
+
+  override fun getType(uri: Uri): String? = null
+
+  override fun insert(uri: Uri, contentValues: ContentValues?): Uri? = null
+
+  override fun delete(uri: Uri, selection: String?, selectionArgs: Array&lt;out String&gt;?): Int = 0
+
+  override fun update(
+    uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array&lt;out String&gt;?
+  ): Int = 0
+}
+</code></pre>
+<p>可以看到，在MainProcessAppWatcherInstaller这个ContentProvider的子类中，只在onCreate()方法下初始化了LeakCanary库，其他的方法全是空实现。</p>
+<h1 id="2回收监听">2.回收监听</h1>
+<p>首先要知道，LeakCanary检测什么对象的泄露？<br>
+在<a href="https://square.github.io/leakcanary/getting_started/">官网</a>有如下的描述：</p>
+<blockquote>
+<p>LeakCanary automatically detects leaks of the following objects:<br>
+destroyed Activity instances<br>
+destroyed Fragment instances<br>
+destroyed fragment View instances<br>
+cleared ViewModel instances</p>
+</blockquote>
+<p>所以，LeakCanary是在检测Activity，Fragment，Fragment中的View，ViewModel这几种对象是否泄露，接下来看看是怎么监听对象的。</p>
+<p>初始化方法为 AppWatcher.manualInstall(application)，源码如下：</p>
+<pre><code class="language-kotlin">@JvmOverloads
+  fun manualInstall(
+    application: Application,
+    retainedDelayMillis: Long = TimeUnit.SECONDS.toMillis(5),
+    watchersToInstall: List&lt;InstallableWatcher&gt; = appDefaultWatchers(application)
+  ) {
+    checkMainThread()
+    if (isInstalled) {
+      throw IllegalStateException(
+        &quot;AppWatcher already installed, see exception cause for prior install call&quot;, installCause
+      )
+    }
+    check(retainedDelayMillis &gt;= 0) {
+      &quot;retainedDelayMillis $retainedDelayMillis must be at least 0 ms&quot;
+    }
+    installCause = RuntimeException(&quot;manualInstall() first called here&quot;)
+    this.retainedDelayMillis = retainedDelayMillis
+    if (application.isDebuggableBuild) {
+      LogcatSharkLog.install()
+    }
+    // Requires AppWatcher.objectWatcher to be set
+    LeakCanaryDelegate.loadLeakCanary(application)
+
+    watchersToInstall.forEach {
+      it.install()
+    }
+  }
+</code></pre>
+<p>这里有两个关键信息，一个是retained时间默认5秒（后文会详细说retained是什么），另一个是默认观察者是appDefaultWatchers，appDefaultWatchers的源码如下：</p>
+<pre><code class="language-kotlin">  /**
+   * Creates a new list of default app [InstallableWatcher], created with the passed in
+   * [reachabilityWatcher] (which defaults to [objectWatcher]). Once installed,
+   * these watchers will pass in to [reachabilityWatcher] objects that they expect to become
+   * weakly reachable.
+   *
+   * The passed in [reachabilityWatcher] should probably delegate to [objectWatcher] but can
+   * be used to filter out specific instances.
+   */
+  fun appDefaultWatchers(
+    application: Application,
+    reachabilityWatcher: ReachabilityWatcher = objectWatcher
+  ): List&lt;InstallableWatcher&gt; {
+    return listOf(
+      ActivityWatcher(application, reachabilityWatcher),
+      FragmentAndViewModelWatcher(application, reachabilityWatcher),
+      RootViewWatcher(reachabilityWatcher),
+      ServiceWatcher(reachabilityWatcher)
+    )
+  }
+</code></pre>
+<p>看到这里，已经豁然开朗，这些观察者就是在对不同的对象进行监听，除了上文说到的4个外，还可以监听Service，查了一下<a href="https://square.github.io/leakcanary/changelog/">更新日志</a>，这是在Version 2.6 - Christmas Release 🎄 (2020-12-24)版本新增的功能，应该是官网首页没有及时更新显示内容。</p>
+<p>再跟踪ActivityWatcher方法，源码如下：</p>
+<pre><code class="language-kotlin">/**
+ * Expects activities to become weakly reachable soon after they receive the [Activity.onDestroy]
+ * callback.
+ */
+class ActivityWatcher(
+  private val application: Application,
+  private val reachabilityWatcher: ReachabilityWatcher
+) : InstallableWatcher {
+
+  private val lifecycleCallbacks =
+    object : Application.ActivityLifecycleCallbacks by noOpDelegate() {
+      override fun onActivityDestroyed(activity: Activity) {
+          //注释1
+        reachabilityWatcher.expectWeaklyReachable(
+          activity, &quot;${activity::class.java.name} received Activity#onDestroy() callback&quot;
+        )
+      }
+    }
+
+  override fun install() {
+    application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+  }
+
+  override fun uninstall() {
+    application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+  }
+}
+</code></pre>
+<p>监听activity的生命周期，当发生destory后，触发注释1处的检测，最后是由ObjectWatcher.expectWeaklyReachable()方法处理，其他几个的监听和activity类似，最终都交给ObjectWatcher.expectWeaklyReachable()方法处理。</p>
+<h1 id="3回收检测">3.回收检测</h1>
+<p>上文说到，当监听到对象的destory后，触发ObjectWatcher.expectWeaklyReachable()方法执行回收检测，源码如下：</p>
+<pre><code class="language-kotlin">  @Synchronized override fun expectWeaklyReachable(
+    watchedObject: Any,
+    description: String
+  ) {
+    if (!isEnabled()) {
+      return
+    }
+    removeWeaklyReachableObjects()
+    val key = UUID.randomUUID()
+      .toString()
+    val watchUptimeMillis = clock.uptimeMillis()
+    val reference =
+      KeyedWeakReference(watchedObject, key, description, watchUptimeMillis, queue)
+    SharkLog.d {
+      &quot;Watching &quot; +
+        (if (watchedObject is Class&lt;*&gt;) watchedObject.toString() else &quot;instance of ${watchedObject.javaClass.name}&quot;) +
+        (if (description.isNotEmpty()) &quot; ($description)&quot; else &quot;&quot;) +
+        &quot; with key $key&quot;
+    }
+
+    watchedObjects[key] = reference
+    checkRetainedExecutor.execute {
+      moveToRetained(key)
+    }
+  }
+</code></pre>
+<p>先根据当前对象，生成一个弱应用对象，然后放到队列中，5秒后检测队列里面的弱引用对象是否已经回收。<br>
+使用removeWeaklyReachableObjects和moveToRetained方法实现，<br>
+removeWeaklyReachableObjects是移除所有已经回收的引用，<br>
+moveToRetained是在此5秒后执行（5秒就是上文提到的retained时间），再次移除所有回收的引用，如果这个时候还有引用存在，说明对象没用被回收，存在泄露的风险。</p>
+<h1 id="4回调处理">4.回调处理</h1>
+<p>当检测到泄露的对象，通过OnObjectRetainedListener.onObjectRetained()回调处理，处理内容包括获取内存快照，生成hprof文件，解析hprof文件，找到内存泄露对象，计算到对象到GC roots的最短路径并合并成一棵树，输出分析结果等。<br>
+关于回调处理的过程，过于复杂且不是本文的重点，不过多介绍。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/liao-liao-websocket/">
+                  <h3 class="post-title">
+                    聊聊WebSocket
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

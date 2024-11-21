@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://PaIn22152.github.io</id>
+    <title>Payne的小站</title>
+    <updated>2024-11-21T05:46:23.647Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://PaIn22152.github.io"/>
+    <link rel="self" href="https://PaIn22152.github.io/atom.xml"/>
+    <subtitle>克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注</subtitle>
+    <logo>https://PaIn22152.github.io/images/avatar.png</logo>
+    <icon>https://PaIn22152.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, Payne的小站</rights>
+    <entry>
+        <title type="html"><![CDATA[Android Framework（五），setContentView具体过程]]></title>
+        <id>https://PaIn22152.github.io/post/android-frameworkwu-setcontentview-ju-ti-guo-cheng/</id>
+        <link href="https://PaIn22152.github.io/post/android-frameworkwu-setcontentview-ju-ti-guo-cheng/">
+        </link>
+        <updated>2024-10-08T09:14:25.000Z</updated>
+        <content type="html"><![CDATA[<p>在Activity中调用setContentView，会将操作交给PhoneWindow处理，在PhoneWindow的setContentView方法中，先创建出DecorView，DecorView是FrameLayout的子类，默认有一个mContentParent对象，然后将xml中的布局添加到mContentParent中。如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1728379464752.png" alt="" loading="lazy"></p>
+<p>在activity的onCreate阶段只是初始化需要显示的内容，而在onResume阶段才会将PhoneWindow中的DecorView绘制到屏幕。在ActivityThread的handleResumeActivity方法中，会调用WindowManager的addView将DecorView添加到WMS，最终调用到WindowManagerGlobal的addView方法中，WindowManagerGlobal是一个单例，每个进程只有一个实例对象，在他的addView方法中，会创建出ViewRootImpl对象，然后通过ViewRootImpl的setView方法将view添加到WMS。在setView方法中，先通过requestLayout方法执行View的测量布局绘制流程，然后调用mWindowSession的addToDisplay方法将view添加到WMS，最终会通过aidl调用WMS的addWindow方法。另外在setView中还会创建出InputChannel，通过socket的方式接收WMS发送过来的触摸事件，首先是DecorView接收到事件，DecorView再通过dispatchPointerEvent和自己重写的dispatchTouchEvent方法将事件传给对应的activity或者dialog，activity再调用PhoneWindow的superDispatchTouchEvent将事件往view进行分发。</p>
+<p>requestLayout过程<br>
+requestLayout过程包括view的测量、布局和绘制。首先是检查线程，检查当前线程是否是创建ViewRootImpl的线程，一般来说就是指主线程，如果不是就抛出异常（如果想实现在子线程更新UI，可以创建一个子线程，开启Handler的Looper循环，然后在这个子线程创建的view，就可以在这个子线程更新UI）。然后往主线程消息队列中发送同步屏障消息，接着Choreographer监听垂直同步消息后发送异步消息处理UI，同步屏障的目的是保证处理UI的消息优先执行。主线程接收到处理UI的消息后，最终会调用到performTraversals方法，在这个方法中执行测量布局绘制。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android Framework（四），PMS安装和卸载APK流程]]></title>
+        <id>https://PaIn22152.github.io/post/android-frameworksan-pms-an-zhuang-he-xie-zai-apk-liu-cheng/</id>
+        <link href="https://PaIn22152.github.io/post/android-frameworksan-pms-an-zhuang-he-xie-zai-apk-liu-cheng/">
+        </link>
+        <updated>2024-10-08T02:59:57.000Z</updated>
+        <content type="html"><![CDATA[<p>PMS(PackageManagerService)是Android系统中的一个系统服务，负责系统中Package的管理，应用程序的安装、卸载、信息查询等工作。</p>
+<p>apk安装分为有界面和无界面，有界面安装是使用系统提供的packageinstaller应用进行安装，无界面安装是使用adb或者系统应用，直接使用PMS相关接口实现安装。</p>
+<p>PMS安装流程：<br>
+1.向PMS的handler发送init_copy消息，将apk文件复制到data/app目录<br>
+2.解析apk信息，进行签名校验，检查是否和已有的ContentProvider冲突，注册四大组件<br>
+3.dex优化<br>
+4.更新权限信息，判断是否给app授权请求的权限<br>
+5.完成安装，发送广播</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android Framework（三），IMS（InputManagerService）处理触摸事件的流程]]></title>
+        <id>https://PaIn22152.github.io/post/android-frameworksan-imsinputmanagerservicechu-li-hong-mo-shi-jian-de-liu-cheng/</id>
+        <link href="https://PaIn22152.github.io/post/android-frameworksan-imsinputmanagerservicechu-li-hong-mo-shi-jian-de-liu-cheng/">
+        </link>
+        <updated>2024-10-08T02:57:40.000Z</updated>
+        <content type="html"><![CDATA[<p>IMS(InputManagerService)是Android系统中负责处理输入事件的服务，由他负责监听和分发输入事件，事件包括键盘、鼠标、触摸屏、物理按钮、耳机插入等。</p>
+<h3 id="触摸事件整体工作流程">触摸事件整体工作流程</h3>
+<p>1.点击屏幕触发事件；<br>
+2.EventHub监听事件发生；<br>
+3.InputReader捕获事件，预处理后交给InputDispatcher；<br>
+4.InputDispatcher通过WMS找到事件对应的目标窗口，通过socket将事件传给目标进程；<br>
+5.目标进程的ViewRootImpl通过socket接收到事件消息，将事件交给Activity处理，然后就是应用层的事件分发流程</p>
+<h3 id="ims服务">IMS服务</h3>
+<p>Android设备开机后，启动system_server进程，在system_server进程中，在startOtherServices方法中，创建IMS实例，将IMS和WMS做关联，给IMS设置窗体事件监听，然后启动IMS服务。创建IMS实例时，调用nativeInit方法，并传入DisplayThread线程的消息队列，启动服务时，调用nativeStart方法。在native层，EventHub利用Linux的inotify和epoll机制，可以获取到事件的输入，InputReader创建出一个单独的线程InputReaderThread，通过死循环的方式不断地从EventHub读取事件，然后将事件预处理成RawEvent交给InputDispatcher，InputDispatcher也有一个单独的线程InputDispatcherThread做事件分发，和Handler的消息分发一样，当没有事件时线程阻塞，当有事件时唤醒线程。InputDispatcher分发触摸事件时，先通过WMS找到事件对应的目标窗口，然后通过InputChannel类，通过socket方式将事件发送到目标窗口对应的App进程，由App端的WindowInputEventReceiver对象接受Input事件，然后再把事件分发到目标view，view再把事件交给对应的DecorView，DecorView再交给对应的activity或者dialog。<br>
+处理流程图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1728377381722.jpg" alt="" loading="lazy"></p>
+<h3 id="inputchannel和app进程为什么采用socket通信不用binder">InputChannel和App进程为什么采用Socket通信，不用Binder</h3>
+<p>1.Binder在处理大量连续的输入事件时，性能不如Socket<br>
+2.每创建一对Binder，就会创建一个binder线程池，而socket只需要一个线程，更节省资源<br>
+3.socket可以保证事件的有序性，binder在高频操作下无法保证有序<br>
+4.binder处理大量事件有可能会丢失</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[NMEA-0183格式]]></title>
+        <id>https://PaIn22152.github.io/post/nmea-0183-ge-shi/</id>
+        <link href="https://PaIn22152.github.io/post/nmea-0183-ge-shi/">
+        </link>
+        <updated>2024-09-26T05:45:36.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="nmea-0183">NMEA-0183</h3>
+<pre><code>NMEA-0183是美国国家海洋电子协会（National Marine Electronics Association ）为海用电子设备制定的标准格式。已成了GPS导航设备统一的RTCM（Radio Technical Commission for Maritime services）标准协议。
+NMEA-0183 协议采用 ASCII 码来传递 GPS 定位信息，我们称之为帧，帧格式形如：$aaccc,ddd,ddd,…,ddd*hh(CR)(LF)
+1、“$”：帧命令起始位
+2、aaccc：地址域，前两位为识别符（aa），后三位为语句名（ccc）
+3、ddd…ddd：数据
+4、“*”：校验和前缀（也可以作为语句数据结束的标志）
+5、hh：校验和（check sum），$与*之间所有字符 ASCII 码的校验和（各字节做异或运算，得到校验和后，再转换 16 进制格式的 ASCII 字符）
+6、(CR)(LF)：帧结束，回车和换行符
+</code></pre>
+<h3 id="开头标识符">开头标识符：</h3>
+<p>GN：GNSS，全球导航卫星系统<br>
+GP：GPS<br>
+BD：BDS北斗<br>
+GL：Galileo<br>
+GL：GLONASS</p>
+<h3 id="常见nmea-0183语句">常见NMEA-0183语句</h3>
+<p>GPGSA：当前卫星信息<br>
+GPGGA：定位信息<br>
+GPGSV：可见卫星信息<br>
+GPRMC：推荐定位信息<br>
+GPVTG：地面速度信息<br>
+GPGLL：地理定位信息</p>
+<h3 id="gprmc详解">GPRMC详解：</h3>
+<pre><code>$GPRMC,&lt;1&gt;,&lt;2&gt;,&lt;3&gt;,&lt;4&gt;,&lt;5&gt;,&lt;6&gt;,&lt;7&gt;,&lt;8&gt;,&lt;9&gt;,&lt;10&gt;,&lt;11&gt;,&lt;12&gt;*hh
+&lt;1&gt; UTC时间，hhmmss.sss(时分秒.毫秒)格式
+&lt;2&gt; 定位状态，A=有效定位，V=无效定位
+&lt;3&gt; 纬度ddmm.mmmm(度分)格式(前面的0也将被传输)
+&lt;4&gt; 纬度半球N(北半球)或S(南半球)
+&lt;5&gt; 经度dddmm.mmmm(度分)格式(前面的0也将被传输)
+&lt;6&gt; 经度半球E(东经)或W(西经)
+&lt;7&gt; 地面速率(000.0~999.9节，前面的0也将被传输)
+&lt;8&gt; 地面航向(000.0~359.9度，以正北为参考基准，前面的0也将被传输)
+&lt;9&gt; UTC日期，ddmmyy(日月年)格式
+&lt;10&gt; 磁偏角(000.0~180.0度，前面的0也将被传输)
+&lt;11&gt; 磁偏角方向，E(东)或W(西)
+&lt;12&gt; 模式指示(仅NMEA0183 3.00版本输出，A=自主定位，D=差分，E=估算，N=数据无效)
+*后hh为$到*所有字符的异或和
+</code></pre>
+<h3 id="gpgsa详解">GPGSA详解：</h3>
+<pre><code>$GPGSA,A,3,01,20,19,13,,,,,,,,,40.4,24.4,32.2*0A
+字段0：$GPGSA，语句ID，表明该语句为GPS DOP and Active Satellites（GSA）当前卫星信息
+字段1：定位模式，A=自动手动2D/3D，M=手动2D/3D
+字段2：定位类型，1=未定位，2=2D定位，3=3D定位
+字段3：PRN码（伪随机噪声码），第1信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段4：PRN码（伪随机噪声码），第2信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段5：PRN码（伪随机噪声码），第3信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段6：PRN码（伪随机噪声码），第4信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段7：PRN码（伪随机噪声码），第5信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段8：PRN码（伪随机噪声码），第6信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段9：PRN码（伪随机噪声码），第7信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段10：PRN码（伪随机噪声码），第8信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段11：PRN码（伪随机噪声码），第9信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段12：PRN码（伪随机噪声码），第10信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段13：PRN码（伪随机噪声码），第11信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段14：PRN码（伪随机噪声码），第12信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段15：PDOP综合位置精度因子（0.5 - 99.9）
+字段16：HDOP水平精度因子（0.5 - 99.9）
+字段17：VDOP垂直精度因子（0.5 - 99.9）
+字段18：校验值
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SmartConfig、WebSocket、蓝牙入门]]></title>
+        <id>https://PaIn22152.github.io/post/smartconfigwebsocketlan-ya-ru-men/</id>
+        <link href="https://PaIn22152.github.io/post/smartconfigwebsocketlan-ya-ru-men/">
+        </link>
+        <updated>2024-08-19T06:01:10.000Z</updated>
+        <summary type="html"><![CDATA[<p>简单了解SmartConfig、WebSocket、蓝牙。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>简单了解SmartConfig、WebSocket、蓝牙。</p>
+<!-- more -->
+<h2 id="smartconfig">SmartConfig</h2>
+<p>原理：发送UDP包时，利用数据包的长度进行数据传递。比如约定连续3个长度666表示开始，连续3个长度888表示结束，长度100-227表示不同的ASCII码，APP需要向设备发送abc字符串时，先发生连续3个666长度的报文，然后发送a对应的报文长度比如150，发送b对应的报文长度151，发生c对应的报文长度152，再发送连续3个888长度的报文，设备端收到连续3个666长度报文后开始监听发送源的报文，收到同一发送源150长度的报文表示a，151长度表示b，152长度表示c，收到连续3个888长度表示结束，这样就能将abc字符串，通过UDP从APP发送到设备。</p>
+<p>具体流程：长按设备按钮进入配网模式（或者叫混杂模式），用户在APP上输入需要配网的SSID和密码，App向后台获取配网token，App发送UDP广播，广播内容包括SSID、密码、token，设备收到完整信息后，连接网络，设备和后台建立tcp连接，并将自己的唯一标识deviceId和配网token发送到后台注册设备，App向后台轮询该token新增的设备，获取到设备列表，完成设备的配网和绑定流程。</p>
+<p>缺点：当网络环境比较复杂时，可能需要重复好几次才能接收到正确的数据，甚至有可能一直失败。</p>
+<h2 id="websocket">WebSocket</h2>
+<p>基本概念：WebSocket是一种应用层协议，基于TCP实现，可以客户端和服务器直接双向数据传输。HTTP只能客户端主动请求数据，然后服务器响应，不能实现服务器主动发送数据，WebSocket可以服务器主动发送数据。WebSocket可以发送字符串数据，也可以直接发送二进制数据，所以游戏领域和音视频领域都会使用到WebSocket发送数据。</p>
+<p>连接过程：客户端和服务器之间建立TCP连接，然后通过HTTP发送握手包，通过101状态码将HTTP协议升级为WebSocket，此后客户端和服务器保持长连接，并且通过WebSocket协议收发数据。</p>
+<p>实现：Android中可以使用OkHttp库实现WebSocket通信。示例代码如下：</p>
+<pre><code class="language-kotlin">    private lateinit var wsUrl: String
+    private lateinit var wsClient: OkHttpClient
+    private lateinit var webSocket: WebSocket
+    private val webSocketListener = object : WebSocketListener() {
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            super.onOpen(webSocket, response)//建立连接
+        }
+        
+        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+            super.onClosed(webSocket, code, reason)//连接关闭
+        }
+        
+        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+            super.onMessage(webSocket, bytes)//接收到二进制消息
+        }
+        
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            super.onMessage(webSocket, text)//接收到字符串消息
+        }
+    }
+    
+    fun wsInit() {
+        wsUrl = &quot;wss://test.com&quot;
+        wsClient = OkHttpClient.Builder()
+            .pingInterval(10, TimeUnit.SECONDS)//设置心跳间隔
+            .build()
+    }
+    
+    fun wsConnect() {
+        val wsRequest = Request.Builder().url(wsUrl).build()
+        webSocket = wsClient.newWebSocket(wsRequest, webSocketListener)//建立WebSocket连接
+    }
+    
+    fun wsTest() {
+        wsInit()
+        wsConnect()
+        
+        webSocket.send(&quot;test&quot;)//发送字符串数据
+        webSocket.send(ByteString.of(0x11, 0x22, 0x33))//发送二进制数据
+        webSocket.close(1000, &quot;normal closure&quot;)//1000正常关闭
+    }
+</code></pre>
+<h2 id="蓝牙">蓝牙</h2>
+<p>Ble低功耗蓝牙通信流程：扫描设备、连接设备、发现设备、收发数据。</p>
+<p>扫描设备：通过广播的形式可以扫描附近的蓝牙设备，扫描到的数据包括蓝牙名称name和信号强度rssi<br>
+连接设备：扫描到的设备，连接Gatt<br>
+发现设备：设备可能提供多个服务，每个服务有多个特征，根据服务值和特征值匹配到指定的特征<br>
+收发数据：使用获取到的特征收发数据</p>
+<p>需要权限：蓝牙权限、定位权限，Android12之后不再需要定位权限</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-深入理解JVM]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-shen-ru-li-jie-jvm/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-shen-ru-li-jie-jvm/">
+        </link>
+        <updated>2024-08-16T05:44:23.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。深入理解JVM。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。深入理解JVM。</p>
+<!-- more -->
+<h2 id="字节码class结构">字节码class结构</h2>
+<p>class文件中只存在无符号数和表两种基本数据结构，由无符号数和表组成class中的各个结构，这些结构按照预先规定好的顺序紧密排序，如下图所示。<br>
+<img src="https://PaIn22152.github.io/post-images/1723787802418.png" alt="" loading="lazy"><br>
+每个结构占据多少空间参考下图：<br>
+<img src="https://PaIn22152.github.io/post-images/1723788218246.png" alt="" loading="lazy"></p>
+<h3 id="基本结构">基本结构</h3>
+<p>无符号数：以u1、u2、u4、u8来表示1个字节到8个字节，可以用来描述数字、索引引用、数据长度等</p>
+<p>表：由多个无符号数或者其他表作为数据项构成的符合数据类型，所有表都以“_info”结尾。</p>
+<h3 id="结构介绍">结构介绍</h3>
+<p>魔数：是class文件开头的四个字节，固定值0xCAFEBABE（cafe babe），是class文件的标识<br>
+版本号：分为主版本和次版本<br>
+常量池：常量池大小描述了常量的数量，常量池表示了具体的常量。注意这里常量的概念和java代码中static final修饰的常量不同，这里的常量是指类中的各种相关信息，比如类名称，方法名称，参数名称等都会保存在常量池，这些信息都以表的形式保存在常量池中<br>
+访问标志：描述类或者接口的访问信息，比如该class文件时类还是接口，是否public，是否abstruct，是否final等；<br>
+类索引：描述类名称，父类和实现的接口<br>
+字段集合：描述类中申明的全局变量<br>
+方法集合：描述类中声明的方法</p>
+<h3 id="constant_utf8_info">CONSTANT_Utf8_info</h3>
+<p>java代码中的String在class文件中的存储格式是CONSTANT_Utf8_info表，结构如下：</p>
+<pre><code class="language-java">table CONSTANT_Utf8_info {
+    u1  tag;
+    u2  length;
+    u1[] bytes;
+}
+</code></pre>
+<p>可以看到长度使用的u2修饰，所以字符串的最大长度为2^16=65536，实际长度限制为最大65534</p>
+<h2 id="jvm运行时数据区域">JVM运行时数据区域</h2>
+<p><img src="https://PaIn22152.github.io/post-images/1723789979721.png" alt="" loading="lazy"><br>
+JVM运行时数据区域如上图所示，主要包含5部分，其中所有线程共享的区域为堆和方法区，每个线程私有的区域为虚拟机栈、本地方法栈和程序计数器。</p>
+<h3 id="堆和方法区">堆和方法区</h3>
+<p>堆：Java堆（Heap）是JVM管理的内存中最大的一块，用于存放对象实例，几乎所有对象的实例都在堆里面分配，因此也是垃圾回收的主要区域，因此也叫GC堆。</p>
+<p>方法区：主要用来存储已经被JVM加载的类信息、常量、静态变量等数据。</p>
+<h3 id="栈和程序计数器">栈和程序计数器</h3>
+<p>程序计数器：Java程序是多线程的，CPU可以在多个线程间分配时间片段，当某个线程被CPU挂起时，需要记录代码已经执行到的位置，方便CPU重新执行此线程时，知道从哪个指令开始执行。这就是程序计数器的作用。其他说明：1.Java虚拟机规范中，对程序计数器这一区域没有规定任何OOM的情况；2.是线程私有的，生命周期跟随线程的生命周期；3.当一个线程正在执行一个Java方法时，这个程序计数器记录的是正在执行的虚拟机字节码指令的地址，如果执行的是native方法，计数器值为空。</p>
+<p>虚拟机栈：用于存储执行Java方法时的局部变量、操作数栈、方法返回值等信息。Java虚拟机规范对这区域规定了两种异常：1.StackOverFlowError，当线程请求栈深度超出虚拟机栈锁允许的深度时抛出；2.OutOfMemoryError，当Java虚拟机动态扩展到无法申请足够内存时抛出。</p>
+<p>本地方法栈：作用和虚拟机栈类似，虚拟机栈针对Java方法，本地方法栈针对native方法。</p>
+<h2 id="垃圾回收">垃圾回收</h2>
+<p>没有用的对象就是垃圾，垃圾回收就是要找到没有用的对象，将他占用的内存回收。</p>
+<h3 id="判断垃圾的算法">判断垃圾的算法：</h3>
+<p>引用计数法：当有循环引用时，计数器永远不会为0，导致不会被回收</p>
+<p>可达性分析：从GC Roots作为起点进行搜索，可达的对象是存活的，不可达对象是可以被回收的。<br>
+以下几种对象可以作为GC Roots：</p>
+<ol>
+<li>虚拟机栈中局部变量表引用的对象；</li>
+<li>本地方法栈中JNI引用的对象；</li>
+<li>方法区中静态属性引用的对象</li>
+<li>方法区中常量引用的对象</li>
+</ol>
+<h3 id="垃圾收集算法">垃圾收集算法</h3>
+<p>标记-清除：将垃圾对象标记，回收内存。缺点：会产生大量不连续的内存碎片<br>
+标记-整理：将所有存活对象向一端移动，回收边界外的内存。缺点：需要移动大量对象，处理效率低<br>
+复制：将内存划分为相等的两块，一块使用完后，将存活对象复制到另外一块。缺点：内存只能使用一半<br>
+分代回收：根据对象存活时间分类，使用不同算法处理。</p>
+<h3 id="分代回收">分代回收</h3>
+<p>JVM将堆里面的对象分类，分为新生代和老年代，然后再将新生代划分为一个Eden区域和两个Servivor，大小比例8:1:1。当需要给对象分配内存时，先在Eden区域分配，如果空间不足时，触发Minor GC，将Eden区域和servivor from中的存活对象复制到servivor to区域。大对象和长期存活对象会进入老年代，当老年代的空间也不足时，会触发Major GC，将整个堆里面的垃圾对象都进行回收。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-HashMap、LeakCanary、BlockCanary源码]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-yuan-ma/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-yuan-ma/">
+        </link>
+        <updated>2024-08-05T07:13:12.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。HashMap、LeakCanary、BlockCanary源码分析。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。HashMap、LeakCanary、BlockCanary源码分析。</p>
+<!-- more -->
+<h2 id="hashmap">HashMap</h2>
+<p>存储结构：数组+链表+红黑树<br>
+原理：存数据时，根据key计算出hash值，然后根据hash值和数组大小，确定索引index，判断数组在index这个索引上有没有数据。如果没有，直接创建链表添加当前数据，并把链表放在数组的index位置；如果有链表数据，判断在链表中有没有相同的key，如果有覆盖value值，如果没有将新数据添加到链表尾部，并判断是否需要将链表树化，如果需要，将链表结构变成红黑树结构；如果有红黑树数据，判断树中有没有相同的key，如果有覆盖value值，如果没有将新数据添加到树中，并对红黑树做自平衡处理。添加数据后，判断当前数据量是否大于阈值，这个阈值是使用容量*装载因子得到的，如果大于了阈值，会对数组做扩容，创建一个新的数组，大小为原来的两倍，然后将原数组数据复制到新数组。<br>
+查数据时，根据key计算出hash，然后根据hash和数组大小确定索引，然后在索引处的链表或者红黑树中查数据。</p>
+<p>创建HashMap时，传入容量大小和装载因子，如果不写，默认使用16和0.75，此时并不会创建出数组，而是在第一次调用put方法时才创建，并且会保证容量大小为2的整数次方，为什么要将数组长度限制为2的整数次，主要有以下几个原因：1根据hash和数组大小确定索引时，len-1的二进制所有位都为1，可以使用hash&amp;(len - 1)，二进制&amp;计算效率比hash%len要高；2发生扩容的时候，也可以使用二进制计算快速确定新的索引位置，如果hash的二进制左边一位是0，那索引不变，如果是1，那索引为原索引+原数组长度。</p>
+<h2 id="leakcanary">LeakCanary</h2>
+<h2 id="blockcanary">BlockCanary</h2>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-注解处理器APT]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zhu-jie-chu-li-qi-apt/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zhu-jie-chu-li-qi-apt/">
+        </link>
+        <updated>2024-07-31T07:08:24.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。注解处理器APT</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。注解处理器APT</p>
+<!-- more -->
+<h3 id="元注解">元注解</h3>
+<p>元注解，就是用来注解自定义注解的注解。<br>
+有6个，@Target、@Retention、@Documented、@Inherited、@Repeatable、@Native</p>
+<p>@Target，目标，表示自定义注解修饰的目标，用来描述注解的使用范围。常用参数有ElementType.TYPE（表示注解可以修饰类、接口、枚举、注解类），ElementType.FIELD（表示注解可以修饰字段），ElementType.METHOD（表示注解可以修饰方法）。</p>
+<p>@Retention，保留级别，表示需要在什么级别保存该注解信息，用来表述注解保留的时间范围。可选参数有RetentionPolicy.SOURCE（只会保留在源文件，编译器会将注解丢弃），RetentionPolicy.CLASS（注解会被编译器记录在class文件中，在虚拟机运行时没有注解信息），RetentionPolicy.RUNTIME（注解信息会被保留到运行时，因此可以被反射读取）。</p>
+<p>@Documented，文档记录，描述在使用javadoc工具为类生成帮助文档时，是否要保留其注解信息。</p>
+<p>@Inherited，继承，使被他修饰的注解具有继承性，自定义注解被@Inherited修饰后，使用自定义注解去注解类时，子类会自动继承此注解。</p>
+<p>@Repeatable，可重复，使被他修饰的注解可以在相同的程序元素中重复使用，java8新增。</p>
+<p>@Native，使用@Native修饰成员变量，表示这个变量可以被本地代码引用，常被代码生成工具使用，java8新增。</p>
+<p>自定义注解源码：</p>
+<pre><code class="language-java">@Target({ElementType.TYPE, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface MyAnnotation {
+
+}
+</code></pre>
+<h3 id="反射实现butterknife">反射实现ButterKnife</h3>
+<ol>
+<li>创建@BindView注解</li>
+<li>用反射获取Field[]，然后找到加了@BindView 的字段，自动调用findViewById来绑定对象</li>
+</ol>
+<p>代码：</p>
+<pre><code class="language-java">//注解类
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BindView {
+
+    int value();
+}
+
+//Binder类
+public class Binder {
+
+    public static void bind(Activity activity) {
+        Log.d(&quot;JmBinder&quot;, &quot;JmBinder.bind  start&quot;);
+        for (Field field : activity.getClass().getDeclaredFields()) {
+            BindView jmBindView = field.getAnnotation(BindView.class);
+            if (jmBindView != null) {
+                try {
+                    field.setAccessible(true);
+                    field.set(activity, activity.findViewById(jmBindView.value()));
+                    Log.d(&quot;JmBinder&quot;, &quot;JmBinder.bind  success.  field=&quot; + field);
+                } catch (Exception e) {
+
+                }
+            }
+        }
+    }
+}
+
+
+//在activity的使用
+    @BindView(R.id.btn_retrofit)
+    lateinit var btn_retrofit: Button
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        Binder.bind(this)
+        
+        btn_retrofit.setOnClickListener {
+            startActivity(Intent(this@MainActivity, RetrofitActivity::class.java))
+        }
+ }
+
+</code></pre>
+<p>可以看到，使用简单的几行代码，就可以实现一个简化版本的ButterKnife。但是用这种方式实现有性能问题，反射遍历activity的所有字段，找到注解修饰的字段后，再反射赋值，会随着字段的增多和注解的增多，bind的耗时也会增多。</p>
+<h3 id="依赖注入">依赖注入</h3>
+<p>什么是依赖注入？把依赖的决定权交给外部，就是依赖注入。<br>
+Dagger：外部的依赖图来决定依赖的值，对象自己只负责索要，而不负责指定值，所以是依赖注入。<br>
+ButterKnife：类自己决定依赖的获取，只把执行过程交给ButterKnife，所以只是一个视图绑定，而不是依赖注入。</p>
+<h3 id="apt">APT</h3>
+<p>APT：Annotation Processing Tool，注解处理器。<br>
+原理：编译过程中读取源码，然后生成新的代码和文件，再放在一起进行编译。<br>
+思路：每个使用@BindView注解修饰字段的Activity，都通过APT生成一个ActivityBinding类，然后在将findViewById的代码添加到ActivityBinding类的构造方法中，在activity中调用Binder.bind时，通过反射创建ActivityBinding类对象，就等同于调用所有的findViewById。</p>
+<h3 id="apt实战">APT实战</h3>
+<p>在wifikit中，通过APT的方式将所有的页面id类添加到数组，生成代码，初始化时通过反射拿到所有的id类。</p>
+<p>注解类：</p>
+<pre><code class="language-java">@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE)
+@Inherited
+public @interface WifikitUi {
+
+}
+</code></pre>
+<p>AnnotationProcessor项目结构：<br>
+<img src="https://PaIn22152.github.io/post-images/1722493436141.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1722493507660.jpg" alt="" loading="lazy"></p>
+<p>Processor代码：</p>
+<pre><code class="language-java">
+//@AutoService(Processor.class) //使用auto-service添加Processor
+public class WifikitUiProcessor extends AbstractProcessor {
+
+    @Override
+    public Set&lt;String&gt; getSupportedAnnotationTypes() {
+        return Collections.singleton(WifikitUi.class.getCanonicalName());
+    }
+
+    private Filer filer = null;
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        filer = processingEnv.getFiler();
+        System.out.println(&quot;WifikitUiProcessor  init  filer=&quot; + filer);
+    }
+
+    private static final String      PACK_NAME  = &quot;com.android.gps.tracker.wifikit.ui&quot;;
+    private static final String      CLASS_NAME = &quot;InterfaceIds2&quot;;
+    private static final Set&lt;String&gt; ids        = new HashSet&lt;&gt;();
+    private static       boolean     created    = false;
+
+    @Override
+    public boolean process(Set&lt;? extends TypeElement&gt; set, RoundEnvironment roundEnv) {
+        System.out.println(&quot;WifikitUiProcessor  process start&quot;);
+
+        Set&lt;? extends Element&gt; elements = roundEnv.getElementsAnnotatedWith(WifikitUi.class);
+        for (Element element : elements) {
+//            System.out.println(&quot;WifikitUiProcessor  WifikitUi element.getClass=&quot; + element.getClass());
+            Symbol symbol = (Symbol) element;
+            boolean isInterface = symbol.isInterface();
+            boolean isAbstract = symbol.getModifiers().contains(Modifier.ABSTRACT);
+            if (!isInterface &amp;&amp; !isAbstract) {
+                String qualifiedName = symbol.getQualifiedName().toString();
+                ids.add(qualifiedName);
+                System.out.println(&quot;WifikitUiProcessor  WifikitUi qualifiedName=&quot; + qualifiedName);
+            }
+
+        }
+
+        createFile();
+
+        return true;
+    }
+
+    private void createFile() {
+        if (created) {
+            return;
+        }
+        created = true;
+        System.out.println(&quot;WifikitUiProcessor  createFile start.  ids.size=&quot; + ids.size());
+        try {
+            ClassName className = ClassName.get(PACK_NAME, CLASS_NAME);
+
+            FieldSpec idList = FieldSpec.builder(ArrayList.class, &quot;idList&quot;)
+                    .addModifiers(Modifier.PUBLIC)
+                    .build();
+
+            String initList = &quot;    idList=new ArrayList&lt;&gt;();\n&quot;;
+            StringBuilder addId = new StringBuilder();
+            for (String id : ids) {
+                addId.append(&quot;    idList.add(\&quot;&quot;).append(id).append(&quot;\&quot;);\n&quot;);
+            }
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addCode(initList)
+                    .addCode(addId.toString())
+                    .build();
+
+            TypeSpec builtClass = TypeSpec.classBuilder(className)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addField(idList)
+                    .addMethod(constructor)
+                    .build();
+
+            JavaFile javaFile = JavaFile.builder(PACK_NAME, builtClass).build();
+
+            javaFile.writeTo(filer);
+
+//            try {
+//                if (filer instanceof JavacFiler) {
+//                    JavacFiler javacFiler = (JavacFiler) filer;
+//                    javacFiler.close();
+//                }
+//            } catch (Exception ee) {
+//
+//            }
+            System.out.println(&quot;WifikitUiProcessor  createFile end&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;WifikitUiProcessor  createFile e=&quot; + e);
+        }
+    }
+}
+
+
+//gradle配置
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    implementation project(path:':jm-annotations')
+//    implementation 'com.google.auto.service:auto-service:1.0-rc2'
+    implementation 'com.squareup:javapoet:1.13.0'
+}
+</code></pre>
+<p>在Processor中使用javapoet库来生成java代码</p>
+<p>申明注解有两种方式，1是通过配置javax.annotation.processing.Processor路径实现，2是使用@AutoService注解实现</p>
+<p>app项目中使用APT的gradle配置</p>
+<pre><code class="language-groovy">dependencies {
+
+    //apt处理注解
+    implementation project(path:':jm-annotations')
+    annotationProcessor project(path:':jm-apt')
+}
+</code></pre>
+<p>app项目中的注解使用如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722494094395.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1722494114079.jpg" alt="" loading="lazy"><br>
+自动生成的代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722494164324.jpg" alt="" loading="lazy"></p>
+<pre><code class="language-java">package com.android.gps.tracker.wifikit.ui;
+
+import java.util.ArrayList;
+
+public class InterfaceIds2 {
+  public ArrayList idList;
+
+  public InterfaceIds2() {
+        idList=new ArrayList&lt;&gt;();
+        idList.add(&quot;com.android.gps.tracker.wifikit.ui.ids.ID11&quot;);
+  }
+}
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-Android架构]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-android-jia-gou/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-android-jia-gou/">
+        </link>
+        <updated>2024-07-31T02:48:39.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Android架构</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。Android架构</p>
+<!-- more -->
+<p>主流的架构有MVC、MVP、MVVM、MVI</p>
+<p>架构最主要的一个思想是【拆】，把项目拆的足够分散，降低耦合。</p>
+<h2 id="mvc和mvp">MVC和MVP</h2>
+<p>MVC：Model View Controller。<br>
+MVP：Model View Presenter。<br>
+MVC和MVP基本理念都是一样的，把项目拆分成Model层+View层+中间层，其中Model层负责存取数据，View层负责界面展示以及和用户的交互，中间层负责处理Model层和View层的交互，这么拆的目的是让结构清晰，代码解耦，如果不引入架构思想，所有的事都在activity里面做，当项目功能越来越多，代码越来越复杂后，就会显得很乱，而且activity里面的代码也会越发膨胀，不方面管理和扩展功能。如果从activity中抽象出一个Model层后，这时activity负责view层和中间层，这时有两种拆法，如果将View的工作拆到另外的类中，activity只负责中间层的功能，称为Controller，这种实现称为MVC；如果将中间层的工作拆到Presenter类中，activity只负责View的工作，这种实现称为MVP。<br>
+网上大多数文章对MVC的讲解不全面，没有把View从avtivity中拆出来，导致activity中既有View，又有Controller，然后还说这是MVC的缺点，耦合度太高，其实不是架构的问题，而是没有拆完全。</p>
+<h2 id="mvvm">MVVM</h2>
+<p>MVVM：Model View ViewModel。<br>
+MVVM是MVP+数据绑定，中间层称为ViewModel，并且ViewModel层和View层实现了数据的双向绑定。<br>
+数据绑定是什么？首先可以把数据分为三类，外部数据，内存数据，表现数据。外部数据指数据库数据、文件数据、网络数据等；内存数据指Java代码中的变量；表现数据指界面中展示的数据。数据绑定是指表现数据和内存数据互相自动更新，一个改变了，另外一个跟着改变，另外有时候还可以将内存数据和数据库数据做关联监听，让三种数据进一步联动。</p>
+<p>数据绑定功能可以自己实现，也可以使用Jetpack的Databinding库。</p>
+<p>Jetpack的ViewModel库和MVVM没有相关性，ViewModel库的作用是，当屏幕发生旋转导致activity重建，ViewModel用来做数据存储的。当然实际开发中ViewModel也会和Dadabinding一起使用。</p>
+<h2 id="mvi">MVI</h2>
+<p>MVI：Model View Intent。<br>
+MVI的思想是靠数据来驱动页面，Model主要指UI状态，View和其他架构一样，还是负责页面展示，Intent不是activity跳转时的Intent，而是用户的任何操作，都会被包装成Intent发送给Model进行数据处理。交互图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1722397049926.webp" alt="" loading="lazy"><br>
+MVI思想和Compose这种声明式UI比较契合，所有的View都是根据不同的数据有不同状态，不同状态显示不同效果。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[扔物线进阶-插件化和热更新]]></title>
+        <id>https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-cha-jian-hua-he-re-geng-xin/</id>
+        <link href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-cha-jian-hua-he-re-geng-xin/">
+        </link>
+        <updated>2024-07-30T08:56:27.000Z</updated>
+        <summary type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。插件化和热更新</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>学习扔物线进阶视频课程笔记。插件化和热更新</p>
+<!-- more -->
+<h2 id="插件化">插件化</h2>
+<h3 id="基本概念">基本概念</h3>
+<p>什么是组件化？<br>
+组件化，又叫模块化，指将Android工程拆分成多个module进行开发</p>
+<p>什么是插件化？<br>
+App的部分功能在打包时并不以传统方式打包进apk文件中，而是以另一种形式二次封装进apk内部，或者放在网络适时下载，然后在需要的时候动态对这些模块进行加载，这种方式叫插件化。这些单独二次封装的功能模块apk或者dex文件，就称为插件，初始安装的apk称为宿主。插件化是组件化的更进一步。具体过程是先下载插件，然后通过classLoader把插件里面的类加载到虚拟机，然后通过反射调用里面的类。</p>
+<p>实现插件化的基础是反射，通过java提供的反射机制，可以让开发者动态加载新的类，或者调用一些被隐藏的方法和属性。</p>
+<h3 id="关于dex">关于dex</h3>
+<p>class：java编译后的字节码文件就是class文件，每个类对应一个class<br>
+dex：Dalvik Executable，是把class文件打包在一起，一个dex可以包含多个class<br>
+odex：Optimized DEX，被优化后的dex，在手机安装apk后，会针对当前系统优化dex里面的指令<br>
+oat：Optimized Android file Type，apk安装时，会将DEX预先编译成本地机器指令，这样在运行阶段就可以直接使用机器码运行，以达到更快运行的目的，代价就是apk在安装时速度会变慢。</p>
+<h3 id="插件化作用">插件化作用</h3>
+<p>最早是用来解决dex文件65535问题<br>
+减少安装包大小<br>
+动态部署功能<br>
+bug热修复</p>
+<p>怎么通过插件化的方式，来实现activity的跳转？<br>
+首先要在宿主apk中提前注册一个壳activity，每次跳转时都是跳同一个activity，加载不同的fragment。或者是使用flutter开发需要动态加载的插件apk，因为flutter开发的应用本身就只有一个activity，可以在宿主中提前注册。</p>
+<h2 id="热更新">热更新</h2>
+<h3 id="基本概念-2">基本概念</h3>
+<p>热更新指不安装新版本软件，直接从网络下载新的功能模块对软件进行布局更新。</p>
+<p>热更新和插件化的区别</p>
+<ol>
+<li>插件化的内容在原APP没有，属于新增，而热更新时会对原APP中的内容做改动</li>
+<li>插件化在代码中有固定的入口，而热更新没有，因为热更新可能改变任何位置的代码</li>
+</ol>
+<p>热更新实现原理：<br>
+有两种，一是使用ClassLoader替换dex文件，二是直接修改字节码</p>
+<p>小Tip，AOSP源码查看，通过GoogleGit获取到源码的git路径，clone到本地后，复制到.android-sdk/source/android-29下面</p>
+<h3 id="关于classloader">关于ClassLoader</h3>
+<p>ClassLoader类加载器，作用是将class文件加载到虚拟机中，然后就可以使用对应的class，虚拟机加载class时是按需加载的。</p>
+<p>loadClass过程<br>
+源码：</p>
+<pre><code class="language-java">    protected Class&lt;?&gt; loadClass(String name, boolean resolve)
+            throws ClassNotFoundException {
+        // 检查类是否已经加载，如果是，直接使用缓存的class
+        Class&lt;?&gt; c = findLoadedClass(name);
+        if (c == null) {
+            try {
+                if (parent != null) {
+                    //如果没有缓存，优先使用父加载器的loadClass
+                    c = parent.loadClass(name, false);
+                } else {
+                    c = findBootstrapClassOrNull(name);
+                }
+            } catch (ClassNotFoundException e) {
+            }
+
+            if (c == null) {
+                // 如果父加载器不能加载这个类时，才会尝试自己加载
+                c = findClass(name);
+            }
+        }
+        return c;
+    }
+</code></pre>
+<p>整个加载类的过程，就是一个带缓存的，从上到下的加载过程（即双亲委托机制）<br>
+对于具体的一个ClassLoader，加载class的过程是，先从自己的缓存中取；如果没有，通过自己的父加载器去加载；如果父加载器也没有，就自己加载。</p>
+<p>Android中dex加载过程：<br>
+BaseDexClassLoader或者他的子类（DexClassLoader、PathClassLoader）的findClass中，会通过他的pathList调用findClass，然后走到dexElements的findClass，这里会将dex加载到一个dexElements数组，所以热更新的原理就是通过放射干预loadClass过程，把补丁dex文件加载出来的Element插入到dexElements数组的前面，这样后面再放进来的同样的类就不会被加载，达到替换的效果。</p>
+<h3 id="手写热更新">手写热更新</h3>
+<p>原理：创建ClassLoader加载插件，获取到Element，并把Element插入到应用ClassLoader的dexElements数组前面。加载过程应该在应用生命周期中尽早发生，通常放在Application的attachBaseContext中，这种方式实现的热更新，需要杀死程序才能让补丁生效。通常是将需要热更新的类打包成class，再用d8工具将class打包成dex，dex作为热更新的插件。<br>
+替换dex的代码实现如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1722334206222.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+</feed>

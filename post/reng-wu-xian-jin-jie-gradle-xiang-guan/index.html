@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Gradle相关 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Gradle相关</h2>
+            <div class="post-date">2024-07-29</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。Gradle相关</p>
+<!-- more -->
+<h2 id="gradle配置">Gradle配置</h2>
+<h3 id="基本概念">基本概念</h3>
+<p>Gradle是Android的构建工具，使用Groovy语言，Groovy是一种动态语言<br>
+配置文件里面的buildscript、allprojects、dependencies等都是方法的调用，用闭包来写成看起来是JSON的格式<br>
+Groovy闭包，Closure，是一个可以传递的方法，和Lambda类似<br>
+methodMissing，groovy中尝试调用方法时，如果找不到方法不会报错，会尝试在methodMissing找方法的定义，比如classpath，可以动态添加方法</p>
+<h3 id="buildtypes和productflavors">buildTypes和productFlavors</h3>
+<p>buildTypes用于指定版本类型，比如发布版本release，内测版本test，自测版本debug等，比如如果是测试版本在界面的角落添加色块用于提示。在src目录下面创建不同的目录（和buildTypes同名），和main同级，不同的buildTypes会执行对应目录下面的代码</p>
+<p>productFlavors产品风味，可以用于区分免费版和付费版，或者区分上架平台，使用flavorDimensions来指定维度，和buildTypes一样可以添加目录，执行对应的代码</p>
+<p>buildTypes针对开发的不同，productFlavors针对用户的不同，可以管理不同的资源</p>
+<h3 id="compileimplementation和api">compile，implementation和api</h3>
+<p>implementation不会传递依赖<br>
+compile/api，会传递依赖，api是compile的替代品，效果相同<br>
+传递依赖时，0级项目可以使用二级依赖的代码，不传递时不可以使用<br>
+当依赖被传递时，二级依赖的改动会导致0级项目重新编译；当依赖不传递时，二级依赖的改动不会导致0级项目重新编译，在库项目中才会生效</p>
+<h3 id="gradle-wrapper">gradle wrapper</h3>
+<p>通过【只同步版本，不同步文件】的方式来减少协作项目的大小<br>
+每个人电脑上的gradle存放在固定位置，然后使用GradleWrapper取用对应版本，而不用把gradle放进项目</p>
+<h3 id="task">task</h3>
+<p>task任务，是Gradle构建执行的一个原子工作单元，Android使用Gradle构建时，就是在执行多个task<br>
+执行方式：./gradlew taskName<br>
+结构：<br>
+<img src="https://PaIn22152.github.io/post-images/1722222514649.png" alt="" loading="lazy"><br>
+普通代码块：在task创建过程中就会被执行，发生在configuration（配置）阶段<br>
+doFirst和doLast，在task执行过程中被执行，发生在execution（执行）阶段，如果用户没有直接或者间接执行task，那么doLast和doFirst代码不会被执行<br>
+doFirst和doLast都是task代码，启动doFirst是往队列的前面插入代码，doLast是往队列的后面插入代码<br>
+task的依赖，可以使用task taskName(dependsOn:b)的形式来定依赖，指定依赖后，task会在自己执行前先执行自己依赖的task</p>
+<h3 id="gradle生命周期">gradle生命周期</h3>
+<p>三个阶段：<br>
+初始化阶段：执行setting.gradle  确定project和子project<br>
+配置阶段：执行每个project的build.gradle，确定出所有task所组成的有向无环图<br>
+执行阶段：按照上一阶段所确定出的有向无环图来执行指定的task<br>
+如果想要在阶段之间插入代码<br>
+在一二阶段之间：在settings.gradle的最后<br>
+在二三阶段之间：在项目的build.gradle中使用afterEvaluate{ 插入代码 }</p>
+<h2 id="gradle-plugin">Gradle Plugin</h2>
+<p>Gradle Plugin即Gradle插件，本质是把逻辑独立的代码抽取和封装，方便复用</p>
+<h3 id="自定义插件">自定义插件</h3>
+<p>创建名为buildSrc的JavaLib类型的Model，在settings.gradle中删除对这个Model的引用，在buildSrc的main下创建目录resources/META-INF/gradle-plugins/，目录下创建文件*.properties，目录结构如下：<img src="https://PaIn22152.github.io/post-images/1722232931956.png" alt="" loading="lazy"></p>
+<p>*是插件的名称，例如com.hencoder.plugindemo.properties，最终在应用插件的代码为：apply plugin: 'com.hencoder.plugindemo'<img src="https://PaIn22152.github.io/post-images/1722233000308.jpg" alt="" loading="lazy"></p>
+<p>在*.properties文件中只有一行内容，格式为：implementation-class=com,hencoder.plugin_demo.DemoPlugin，等号右边指定了Plugin具体是哪个类<br>
+<img src="https://PaIn22152.github.io/post-images/1722233041193.jpg" alt="" loading="lazy"></p>
+<p>关于buildSrc目录：这是gradle的一个特殊目录，这个目录的build.gradle会自动被执行，所以不需要也不能配置仅settings.gradle中。buildSrc所配置出来的Plugin会被自动添加到编译过程中的每一个project的classpath，因此可以直接使用apply plugin:&quot;xxx'的方式来应用plugin</p>
+<h3 id="transform">Transform</h3>
+<p>Transform是由Android提供的，在项目构建过程中把编译后的文件（jar文件和class文件）添加自定义的中间处理过程的工具</p>
+<p>先在buildSrc的gradle中添加依赖：<br>
+<img src="https://PaIn22152.github.io/post-images/1722233478152.png" alt="" loading="lazy"><br>
+然后创建一个类继承com.android.build.api.transform.Transform<br>
+在这个类的transform方法中进行处理<br>
+对class文件修改字节码，可以使用javassist或者ASM工具</p>
+<p>使用transform在编译时动态修改字节码，可以实现以下功能：<br>
+对全局的class插桩，做UI、内存、网络等方面的性能监控，或者统计和分析用户行为<br>
+某个三方依赖使用起来有点问题，又不想拿他的源码重新编译，可以直接对他的class做修改</p>
+<p>注：在新的Gradle8.0中，Transform被移除</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/ia-AF2bPl/" class="tag">
+                    Gradle
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-io-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-IO相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

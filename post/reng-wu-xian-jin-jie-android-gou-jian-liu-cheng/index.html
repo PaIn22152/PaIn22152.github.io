@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Android构建流程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Android构建流程</h2>
+            <div class="post-date">2024-07-29</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。Android构建流程</p>
+<!-- more -->
+<p>先上总的构建流程图：<br>
+<img src="https://PaIn22152.github.io/post-images/1722235361720.png" alt="" loading="lazy"><br>
+Android的构建流程，就是执行gradle中各种task的过程</p>
+<p>查看task源码<br>
+先在build.gradle中导入包：compileOnly 'com.android.tools.build:gradle:3.0.1'<br>
+<img src="https://PaIn22152.github.io/post-images/1722235557015.png" alt="" loading="lazy"><br>
+然后找到com.android.application对应的实现类AppPlugin</p>
+<p>关键Task分析：<br>
+aidl task：通过aidl命令将.aidl文件生成对应的.java文件<br>
+buildConfig task：生成BuildConfig文件，内部用JavaWriter实现<br>
+mergeResource task：将res文件夹中的资源整合，使用aapt2命令编译资源，生成.flat文件（aapt2 compile），然后把所有的.flat文件和manifest进行连接（aapt2 link），生成R.java文件和.ap_文件<br>
+javac：使用javac命令将所有的java文件编译成.class文件<br>
+自定义transform：如果有自定义的transform会在java文件编译成class之后，class编译成dex文件之前执行，达到在dex之前修改字节码的目的。<br>
+transform task：使用R8进行代码混淆和资源缩减，使用d8工具将.class文件编译成dex文件<br>
+zip：zip命令将所有的资源文件和dex文件合并压缩成.apk文件<br>
+apksigner：使用apksigner工具对apk签名，生成最终的.apk文件</p>
+<p>以上task执行过程，就是android构建过程。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/gCb1ACa-r/" class="tag">
+                    Android构建
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-gradle-xiang-guan/">
+                  <h3 class="post-title">
+                    扔物线进阶-Gradle相关
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

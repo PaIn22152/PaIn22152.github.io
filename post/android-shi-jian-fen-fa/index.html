@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android事件分发 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android事件分发</h2>
+            <div class="post-date">2021-12-12</div>
+            
+            <div class="post-content">
+              <p><a href="https://toc.codepie.fun/">在线目录生成工具</a></p>
+<h1 id="前言">前言</h1>
+<p>个人学习、整理和记录Android事件分发用。其中部分内容来自以下地址，表示感谢。<br>
+<a href="https://www.jianshu.com/p/38015afcdb58">Android事件分发机制详解：史上最全面、最易懂</a><br>
+参考书籍：《Android开发艺术探索》</p>
+<h1 id="什么是事件">什么是事件</h1>
+<p>事件是用户与手机交互时的一系列动作所产生的，然后被封装成MotionEvent类，常见的包括以下四种</p>
+<p><img src="https://PaIn22152.github.io/post-images/1639896932738.png" alt="" loading="lazy"><br>
+从手指触摸屏幕开始，一直到手指离开，会发生一个ACTION_DOWN事件，一个ACTION_UP事件，和无数个ACTION_MOVE事件，如果是非人为原因导致的事件结束，还会包括一个ACTION_CANCEL事件。事件分发的本质就是将事件传递到具体View的过程。<br>
+对于以上四种事件，后文均简称为DOWN，MOVE，UP和CANCEL。</p>
+<p>先说一下事件分发的大概流程，用户和屏幕的交互，系统会生成对应的事件，然后通过WMS和IMS把事件传递到Activity，然后通过Window传递到ViewGroup，再由ViewGroup传递到View，如果下级的View不处理消费事件，事件会依次回溯到Activity。后文有个事件传递的细节，只会从Activity开始。事件传递过程中比较关键的方法有如下三个，其中onInterceptTouchEvent方法只在ViewGroup中有</p>
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent ev) {}
+public boolean onTouchEvent(MotionEvent event) {}
+public boolean onInterceptTouchEvent(MotionEvent ev) {}
+</code></pre>
+<h2 id="cancel事件的产生">CANCEL事件的产生</h2>
+<p>前面三种事件的产生都比较好理解，现在详细看一下CANCEL的产生：<br>
+情况1，除DOWN以外的事件，被ViewGroup拦截后，View会收到从ViewGroup下发的CANCEL事件。<br>
+举例，Activity下有ViewGroup，ViewGroup下有View，重写ViewGroup的onInterceptTouchEvent方法如下</p>
+<pre><code class="language-kotlin">override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+    if (ev?.action != MotionEvent.ACTION_DOWN) {
+        return true
+    }
+    return super.onInterceptTouchEvent(ev)
+}
+</code></pre>
+<p>点击View并滑动抬起，一开始会把DOWN事件从Activity一直传递到View，当MOVE事件到来时，被ViewGroup拦截，这时就会在ViewGroup生成一个CANCEL事件，并传递给View，之后的所有事件都会被ViewGroup拦截，且不再生成CANCEL事件给View。</p>
+<p>情况2，事件分发过程中出现界面跳转，Activity会收到CANCEL事件，并依次下发到View。<br>
+举例，Activity下有ViewGroup，ViewGroup下有View，重写Activity的dispatchTouchEvent方法如下：</p>
+<pre><code class="language-kotlin">override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+    if (ev?.action == MotionEvent.ACTION_MOVE) {
+        startActivity(Intent(applicationContext, SettingsActivity::class.java))
+    }
+    return super.dispatchTouchEvent(ev)
+}
+</code></pre>
+<p>点击View，一开始会把DOWN事件从Activity一直传递到View，当MOVE事件到来时，发生页面跳转，MOVE事件也会传递到View，随即Activity会收到CANCEL事件，并依次传递到View，此后这次点击将不再产生事件。</p>
+<h1 id="重要结论">重要结论</h1>
+<p>关于事件分发，有以下几条重要结论<br>
+1.同一事件序列是指从手指接触屏幕的那一刻起，到手指离开屏幕的那一刻结束，在这个过程中所产生的一系列事件，一般是以DOWN开始，然后是数量不定的MOVE，最终以UP结束。<br>
+2.正常情况下，一个事件序列只能被一个view拦截且消耗。这一条的原因可以参考（3），因为一旦一个元素拦截了此事件，那么同一个事件序列的所有事件都会直接交给他处理，因此同一事件序列中的事件不能分别由两个view同时处理，但是也可以通过特殊手段做到，比如一个view将本该自己处理的事件通过onTouchEvent强行传递给其他View处理。<br>
+3.某个View或者ViewGroup一旦决定拦截，那么这一事件序列都只能由他来处理，并且他的onInterceptEvent不会被调用。<br>
+4.某个view一旦开始处理事件，如果他不消耗DOWN事件（onTouchEvent返回false），那么同一序列的其他事件都不会再交给他处理。<br>
+5.view没有onInterceptEvent方法，一旦有点击事件传递给他，那么他的onTouchEvent方法就会被调用。<br>
+6.view的onTouchEvent默认都会消耗事件（返回true），除非他是不可点击的（clickable和longClickable同时为false）。view的longClickable属性默认false，clickable属性要分情况，比如Button的clickable默认true，而TextView的clickable默认false。<br>
+7.view的enable属性不影响onTouchEvent的默认返回值，哪怕一个view是disable状态，只要他的clickable或者longClickable有一个为true，那么他的onTouchEvent就会返回true。<br>
+8.onClick会发生的前提是当前view是可点击的，并且他收到了DOWN和UP事件。<br>
+9.事件传递是由外向内的，即事件总是先传递给父元素，然后再由父元素分发给子view，通过requestDisallowIntercepetTouchEvent方法可以在子元素中干预父元素的事件分发（DOWN事件除外）</p>
+<h1 id="activity的事件分发">Activity的事件分发</h1>
+<p>用户点击屏幕，android系统会将事件通过WMS和IMS传到viewRootImpl，并最终调用Activity的dispatchTouchEvent()方法，至此开始我们要聊的事件分发过程，至于前面部分的过程，不属于事件分发过程就不展开了，<a href="https://juejin.cn/post/6918272111152726024">这篇文章有详细说明</a>。<br>
+先看Activity中，dispatchTouchEvent方法的源码</p>
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent ev) {
+    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+        onUserInteraction();
+    }
+    if (getWindow().superDispatchTouchEvent(ev)) {
+        return true;
+    }
+    return onTouchEvent(ev);
+}
+</code></pre>
+<p>源码逻辑很简单清晰，如果是ACTION_DOWN事件，会先调用onUserInteraction方法再开始事件分发，这个onUserInteraction是一个空实现方法，我们可以在需要的时候重写这个方法，这个方法会在我们以任意的方式开始与Activity进行交互的时候被调用。比较常见的场景就是屏保：当我们一段时间没有操作会显示一张图片，当我们开始与Activity交互的时候可在这个方法中取消屏保；另外还有没有操作自动隐藏工具栏，可以在这个方法中让工具栏重新显示。<br>
+然后执行windown的superDispatchTouchEvent方法，Window是一个抽象类，那么他的具体实现在哪里呢，可以看到Window类有这么一段注释</p>
+<blockquote>
+<p>Abstract base class for a top-level window look and behavior policy. An instance of this class should be used as the top-level view added to the window manager. It provides standard UI policies such as a background, title area, default key processing, etc.<br>
+The only existing implementation of this abstract class is android.view.PhoneWindow, which you should instantiate when needing a Window.</p>
+</blockquote>
+<p>所以可以在android.view.PhoneWindow类下面看superDispatchTouchEvent方法的实现，这个类是被隐藏的，不能在androidStudio中看到源码，要在AOSP中才能看到，可以通过AOSP源码在线查看网站看到源码，<a href="https://android.googlesource.com/platform/frameworks/base/+/master/core/java/com/android/internal/policy/PhoneWindow.java">这个链接是android.view.PhoneWindow类的源码</a>，然后找到superDispatchTouchEvent方法，源码如下：</p>
+<pre><code class="language-java">private DecorView mDecor;
+@Override
+public boolean superDispatchTouchEvent(MotionEvent event) {
+    return mDecor.superDispatchTouchEvent(event);
+}
+</code></pre>
+<p><a href="https://android.googlesource.com/platform/frameworks/base/+/master/core/java/com/android/internal/policy/DecorView.java">再找到DecorView的源码</a>，superDispatchTouchEvent方法源码如下</p>
+<pre><code class="language-java">public boolean superDispatchTouchEvent(MotionEvent event) {
+    return super.dispatchTouchEvent(event);
+}
+</code></pre>
+<p>发现在DecorView中是调用父类的dispatchTouchEvent方法，再看DecorView的继承关系，会发现DecorView基础FrameLayout，是ViewGroup的子类。</p>
+<p>再看activity的onTouchEvent方法：</p>
+<pre><code class="language-java">public boolean onTouchEvent(MotionEvent event) {
+  if (mWindow.shouldCloseOnTouch(this, event)) {
+    finish();
+    return true;
+  }
+  return false;
+}
+</code></pre>
+<p>先调用Window的shouldCloseOnTouch方法判断是否关闭现在的Activity，源码如下:</p>
+<pre><code class="language-java">public boolean shouldCloseOnTouch(Context context, MotionEvent event) {
+    final boolean isOutside =
+            event.getAction() == MotionEvent.ACTION_UP &amp;&amp; isOutOfBounds(context, event)
+                    || event.getAction() == MotionEvent.ACTION_OUTSIDE;
+    if (mCloseOnTouchOutside &amp;&amp; peekDecorView() != null &amp;&amp; isOutside) {
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>如果是UP事件，且点击事件在边界外，且设置了外界点击关闭，就会消费事件且关闭当前的activity，否则不消费事件。<br>
+以上，是事件在Activity中的处理过程。<br>
+总结来说：<br>
+(01) Activity中的dispatchTouchEvent会将触摸事件传递给Activity所包含的视图。具体的实现方式在通过调用到Activity所属Window的superDispatchTouchEvent，进而调用到Window的DecorView的superDispatchTouchEvent，进一步的又调用到ViewGroup的dispatchTouchEvent()。<br>
+如果Activity所包含的视图拦截或者消费了该触摸事件的话，就不会再执行Activity的onTouchEvent()；<br>
+如果Activity所包含的视图没有拦截或者消费该触摸事件的话，则会执行Activity的onTouchEvent()。<br>
+(02) Activity中的onTouchEvent是Activity自身对触摸事件的处理。如果该Activity的android:windowCloseOnTouchOutside属性为true，并且当前触摸事件是ACTION_UP，而且该触摸事件的坐标在Activity之外，同时Activity还包含了视图的话；就会导致Activity被结束。</p>
+<h1 id="viewgroup的事件分发">ViewGroup的事件分发</h1>
+<p>可以用以下的伪代码来准确的描述事件在ViewGroup中的分发过程：</p>
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent event){
+// 先判断是否拦截
+if (onInterceptTouchEvent()){
+    // 如果拦截调用自身的onTouchEvent方法判断是否消费事件
+    return onTouchEvent(event);
+}
+// 否则调用子view的分发方法判断是否处理事件
+if (childView.dispatchTouchEvent(event)){
+    return true;
+}else{
+    return onTouchEvent(event);
+}
+}
+</code></pre>
+<p>ViewGroup先通过onInterceptTouchEvent方法判断是否拦截，如果拦截了，调用自身的onTouchEvent方法，且不再把事件传给子view，如果viewGroup不拦截事件，则调用子view的dispatchTouchEvent，看子view是否消费事件，如果不消费，调用自身的onTouchEvent。</p>
+<p>再来看看ViewGroup源码中的关键代码片段：</p>
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent ev) {
+// Check for interception.
+final boolean intercepted;
+if (actionMasked == MotionEvent.ACTION_DOWN
+        || mFirstTouchTarget != null) {//注释1
+    final boolean disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0;//注释2
+    if (!disallowIntercept) {
+        intercepted = onInterceptTouchEvent(ev);//注释3
+        ev.setAction(action); // restore action in case it was changed
+    } else {
+        intercepted = false;
+    }
+} else {
+    // There are no touch targets and this action is not an initial down
+    // so this view group continues to intercept touches.
+    intercepted = true;
+}
+
+
+//注释5
+// 1. 通过for循环，遍历当前ViewGroup下的所有子View
+for (int i = count - 1; i &gt;= 0; i--) {
+    final View child = children[i];
+    if ((child.mViewFlags &amp; VISIBILITY_MASK) == VISIBLE
+            || child.getAnimation() != null) {
+        child.getHitRect(frame);
+
+        // 2. 判断当前遍历的View是不是正在点击的View，从而找到当前被点击的View
+        if (frame.contains(scrolledXInt, scrolledYInt)) {
+            final float xc = scrolledXFloat - child.mLeft;
+            final float yc = scrolledYFloat - child.mTop;
+            ev.setLocation(xc, yc);
+            child.mPrivateFlags &amp;= ~CANCEL_NEXT_UP_EVENT;
+
+            // 3. 条件判断的内部调用了该View的dispatchTouchEvent()
+            // 即 实现了点击事件从ViewGroup到子View的传递（具体请看下面章节介绍的View事件分发机制）
+            if (child.dispatchTouchEvent(ev)) {
+
+                // 调用子View的dispatchTouchEvent后是有返回值的
+                // 若该控件可点击，那么点击时dispatchTouchEvent的返回值必定是true，因此会导致条件判断成立
+                // 于是给ViewGroup的dispatchTouchEvent()直接返回了true，即直接跳出
+                // 即该子View把ViewGroup的点击事件消费掉了
+
+                mMotionTarget = child;
+                return true;
+            }
+        }
+    }
+}
+
+//mFirstTouchTarget赋值
+             while (target != null) {
+                    final TouchTarget next = target.next;
+                    if (alreadyDispatchedToNewTouchTarget &amp;&amp; target == newTouchTarget) {
+                    } else {
+                        if (cancelChild) {
+                            if (predecessor == null) {
+                                mFirstTouchTarget = next;//注释4
+                            } else {
+                                predecessor.next = next;
+                            }
+                            continue;
+                        }
+                    }
+                } 
+}
+</code></pre>
+<p>注释1，第一种情况，如果事件是DOWN，会直接开始判断是否要拦截；第二种情况，如果是DOWN以外的事件，而且mFirstTouchTarget不为空，判断是否拦截，其余情况直接拦截。上述的结论2，3.就是在此通过mFirstTouchTarget控制的，注释4是对mFirstTouchTarget赋值<br>
+注释2，标签FLAG_DISALLOW_INTERCEPT，如果设置了这个flag，那么viewGroup就不会拦截事件，可以调用viewGroup的requestDisallowInterceptTouchEvent方法来设置是否允许拦截，源码如下:</p>
+<pre><code class="language-java">public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+    if (disallowIntercept == ((mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0)) {
+        // We're already in this state, assume our ancestors are too
+        return;
+    }
+
+    if (disallowIntercept) {
+        mGroupFlags |= FLAG_DISALLOW_INTERCEPT;
+    } else {
+        mGroupFlags &amp;= ~FLAG_DISALLOW_INTERCEPT;
+    }
+
+    // Pass it up to our parent
+    if (mParent != null) {
+        mParent.requestDisallowInterceptTouchEvent(disallowIntercept);
+    }
+}
+</code></pre>
+<p>注释3，调用viewGroup的onInterceptTouchEvent方法，判断是否拦截<br>
+注释5，遍历子view，找到点击位置的view，并调用其dispatchTouchEvent方法。<br>
+以上流程和伪代码一致</p>
+<h1 id="view的事件分发">View的事件分发</h1>
+<p>先看dispatchTouchEvent的关键源码</p>
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent event) {
+
+    if (onFilterTouchEventForSecurity(event)) {
+        if ((mViewFlags &amp; ENABLED_MASK) == ENABLED &amp;&amp; handleScrollBarDragging(event)) {
+            result = true;
+        }
+        //noinspection SimplifiableIfStatement
+        ListenerInfo li = mListenerInfo;
+        if (li != null &amp;&amp; li.mOnTouchListener != null
+                &amp;&amp; (mViewFlags &amp; ENABLED_MASK) == ENABLED
+                &amp;&amp; li.mOnTouchListener.onTouch(this, event)) {
+            result = true;
+        }
+
+        if (!result &amp;&amp; onTouchEvent(event)) {
+            result = true;
+        }
+    }
+}
+</code></pre>
+<p>如果view设置了TouchListener，并且返回true表示消费该事件，那么就会执行设置的onTouch事件，不分发事件到onTouchEvent方法，否则调用onTouchEvent方法</p>
+<p>再看onTouchEvent关键源码</p>
+<pre><code class="language-java">public boolean onTouchEvent(MotionEvent event) {
+    final boolean clickable = ((viewFlags &amp; CLICKABLE) == CLICKABLE
+            || (viewFlags &amp; LONG_CLICKABLE) == LONG_CLICKABLE)
+            || (viewFlags &amp; CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE;
+
+    if (clickable || (viewFlags &amp; TOOLTIP) == TOOLTIP) {
+        switch (action){
+            case MotionEvent.ACTION_UP:
+                performClick();//li.mOnClickListener.onClick(this);
+            ......
+        }
+    }
+}
+</code></pre>
+<p>当设置了clickable或者longclickable，view的onTouchEvent就会消耗事件，验证了上述的结论6。<br>
+再有就是会在UP事件时，判断是否满足调用onClick的条件。<br>
+从源码也能看出，view的TouchListener是比ClickListener优先的。</p>
+<p>？？？？存疑，当viewGroup拦截事件时，源码是怎么调用到viewGroup的onTouchEvent的<br>
+todo  绘制流程图</p>
+<p><a href="https://segmentfault.com/a/1190000039254459">事件分发面试题</a></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/ken-yuan-ma-zhi-handler/">
+                  <h3 class="post-title">
+                    啃源码之--Handler
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

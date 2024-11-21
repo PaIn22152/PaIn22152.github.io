@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>LeetCode分类学习，动态规划 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">LeetCode分类学习，动态规划</h2>
+            <div class="post-date">2021-02-24</div>
+            
+            <div class="post-content">
+              <p>动态规划（英语：Dynamic programming，简称 DP）是一种在数学、管理科学、计算机科学、经济学和生物信息学中使用的，通过把原问题分解为相对简单的子问题的方式求解复杂问题的方法。<br>
+动态规划常常适用于有重叠子问题和最优子结构性质的问题，动态规划方法所耗时间往往远少于朴素解法。<br>
+dp算法有两个要点，1是状态转移方程，2是中间结果的记录。<br>
+<a href="https://www.zhihu.com/question/23995189">详细解释</a></p>
+<h2 id="q5_最长回文子串"><a href="https://leetcode-cn.com/problems/longest-palindromic-substring/">q5_最长回文子串</a></h2>
+<p><a href="https://leetcode-cn.com/problems/longest-palindromic-substring/solution/zhong-xin-kuo-san-dong-tai-gui-hua-by-liweiwei1419/">优秀题解</a></p>
+<h3 id="思路1">思路1</h3>
+<p>暴力求解，遍历所有的子串，然后依次判断是不是回文，找到最长的回文。<br>
+复杂程度太高，效率极差，代码就不贴了。</p>
+<h3 id="思路2">思路2</h3>
+<p>动态规划<br>
+代码</p>
+<pre><code class="language-java">public String longestPalindrome2(String s) {
+        int len = s.length();
+        if (len &lt;= 1) {
+            return s;
+        }
+
+        //pass[i][j] 表示s的子串 [i,j]是否是回文
+        //状态转移方程 pass[i][j]= s[i]==s[j] &amp;&amp; pass[i+1][j-1]
+        boolean[][] pass = new boolean[len][len];
+        char[] chars = s.toCharArray();
+        int start = 0;
+        int maxLen = 1;
+        for (int i = 0; i &lt; len; i++) {
+            pass[i][i] = true;
+        }
+
+        for (int j = 1; j &lt; len; j++) {
+            for (int i = 0; i &lt; j; i++) {
+                if (chars[i] != chars[j]) {
+                    pass[i][j] = false;
+                } else {
+                    if (j - i &lt;= 2) {
+                        pass[i][j] = true;
+                    } else {
+                        //外层循环是j++，所以在此之前，一定已经给pass[0到j][j-1]赋值了
+                        pass[i][j] = pass[i + 1][j - 1];
+                    }
+                }
+
+                if (pass[i][j] &amp;&amp; j - i + 1 &gt; maxLen) {
+                    start = i;
+                    maxLen = j - i + 1;
+                }
+            }
+        }
+        return s.substring(start, start + maxLen);
+    }
+</code></pre>
+<h3 id="思路3">思路3</h3>
+<p>中心扩散<br>
+代码</p>
+<pre><code class="language-java">    public String longestPalindrome3(String s) {
+        if (s.length() &lt;= 1) {
+            return s;
+        }
+        String ans = &quot;&quot;;
+        for (int i = 0; i &lt; s.length() - 1; i++) {
+            ans = maxStr(ans, spread(s, i, false));
+            ans = maxStr(ans, spread(s, i, true));
+        }
+        return ans;
+
+    }
+
+    private String maxStr(String s1, String s2) {
+        if (s1.length() &gt;= s2.length()) {
+            return s1;
+        }
+        return s2;
+    }
+
+    private String spread(String s, int center, boolean even) {
+        int left = center;
+        int right = center;
+        if (even) {
+            right = center + 1;
+        }
+        while (left &gt;= 0 &amp;&amp; right &lt; s.length()) {
+            if (s.charAt(left) == s.charAt(right)) {
+                left--;
+                right++;
+            } else {
+                break;
+            }
+        }
+        return s.substring(left + 1, right);
+    }
+</code></pre>
+<p>实际执行结果，中心扩散优于动态规划</p>
+<h3 id="思路4">思路4</h3>
+<p>封神的马拉车算法，思路2和3，复杂度都是O(n²)，马拉车可以把复杂度降到O(n)。<br>
+<a href="https://zhuanlan.zhihu.com/p/70532099">马拉车具体怎么拉？</a><br>
+代码</p>
+<pre><code class="language-java">    public String longestPalindrome4(String s) {
+        char space = '#';
+        char header = '^';
+        char tail = '$';
+        StringBuilder sb = new StringBuilder();
+        sb.append(header).append(space);
+        int len = s.length();
+        for (int i = 0; i &lt; len; i++) {
+            sb.append(s.charAt(i)).append(space);
+        }
+        sb.append(tail);
+        String newS = sb.toString();
+
+        int p[] = new int[newS.length()];
+        int left, right, value;
+        for (int i = 1; i &lt; newS.length() - 1; i++) {
+            left = i - 1;
+            right = i + 1;
+            value = 0;
+            while (newS.charAt(left) != tail &amp;&amp; newS.charAt(right) != tail
+                    &amp;&amp; newS.charAt(left) == newS.charAt(right)) {
+                left--;
+                right++;
+                value++;
+            }
+            p[i - 1] = value;
+        }
+
+        int maxLen = 0;
+        int start = 0;
+        for (int i = 0; i &lt; p.length; i++) {
+            if (p[i] &gt;= maxLen) {
+                start = i;
+                maxLen = p[i];
+            }
+        }
+        start = (start - maxLen) / 2;
+        return s.substring(start, start + maxLen);
+    }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/fPyGT0Ib9/" class="tag">
+                    动态规划
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/fAGdqGi-P/" class="tag">
+                    leetcode
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/APbRlo0Wb-/" class="tag">
+                    算法
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/leetcode-fen-lei-xue-xi-lian-biao-cao-zuo/">
+                  <h3 class="post-title">
+                    LeetCode分类学习，链表操作
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

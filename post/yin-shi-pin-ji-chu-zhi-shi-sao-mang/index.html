@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>音视频基础知识扫盲 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">音视频基础知识扫盲</h2>
+            <div class="post-date">2024-03-09</div>
+            
+            <div class="post-content">
+              <p>下图展示了两种音视频的过程，一是从采集到保存成文件，二是从采集到网络流传输到播放。<br>
+<img src="https://PaIn22152.github.io/post-images/1710323277121.png" alt="" loading="lazy"></p>
+<h3 id="名词解释">名词解释</h3>
+<p>编码：视频的原始数据量很大，不利于传输和存储，所以需要通过一定的算法压缩数据。常见的音频编解码标准有MP3、AAC，视频编解码标准有H264、H265。<br>
+解码：将编码后的数据还原成原始数据，以显示画面，是编码的逆过程。<br>
+封装：将编码后的音频和视频，按照一定的格式存储在一个文件中。常见的封装格式有MP4、TS、AVI等。<br>
+解封装：从文件中分离出音频数据和视频数据，是封装的逆过程。</p>
+<p>PCM：是一种音频原始数据格式。<br>
+AAC：是一种音频编解码标准。<br>
+YUV：是一种视频原始数据格式。此外还有RGB格式。<br>
+H264：是一种视频编解码标准。<br>
+MP4：是一种音视频封装格式。</p>
+<p>帧：视频是利用人眼视觉暂留的原理，通过播放一系列的图片画面，使人眼产生运动的感觉。这些画面中的一张画面为一帧。<br>
+帧率：帧率也称为FPS(Frames PerSecond)的缩写——帧/秒，指每秒钟的帧数，影响画面流畅度<br>
+码率：是数据传输时单位时间传送的数据位数,一般用的单位是kbps即千位每秒，或者mbps及兆位每秒<br>
+分辨率：是图片的宽*高，比如1920*1080表示图片宽1920个像素点，高1080个像素点，通常称为1080P，影响图片大小</p>
+<p>I帧：即Intra-coded picture（帧内编码图像帧），I帧表示关键帧，可以理解为这一帧画面的完整保留；解码时只需要本帧数据就可以完成。<br>
+关键帧间隔：表示两个关键帧直接相差多少秒，对应属性MediaFormat.KEY_I_FRAME_INTERVAL。<br>
+P帧：即Predictive-coded Picture（前向预测编码图像帧）。P帧表示的是这一帧跟之前的一个关键帧（或P帧）的差别，解码时需要用之前缓存的画面叠加上本帧定义的差别，生成最终画面。<br>
+B帧：即Bidirectionally predicted picture（双向预测编码图像帧)。B帧是双向差别帧，也就是B帧记录的是本帧与前后帧的差别，换言之，要解码B帧，不仅要取得之前的缓存画面，还要解码之后的画面，通过前后画面的与本帧数据的叠加取得最终的画面。B帧压缩率高，但是解码时CPU会比较累。<br>
+GOP：GOP即Group of picture（图像组），指两个I帧之间的距离。<br>
+PTS和DTS：P帧需要参考前面的I帧或P帧才可以生成一张完整的图片，而B帧则需要参考前面I帧或P帧及其后面的一个P帧才可以生成一张完整的图片。这样就带来了一个问题：在视频流中，先到来的 B 帧无法立即解码，需要等待它依赖的后面的 I、P 帧先解码完成，这样一来播放时间与解码时间不一致了，顺序打乱了，那这些帧该如何播放呢？这时就引入了另外两个概念：DTS 和 PTS，在编码的时候由编码器生成。<br>
+DTS（Decoding Time Stamp）：即解码时间戳，这个时间戳的意义在于告诉播放器该在什么时候解码这一帧的数据。<br>
+PTS（Presentation Time Stamp）：即显示时间戳，这个时间戳用来告诉播放器该在什么时候显示这一帧的数据。<br>
+SPS和PPS：H264码流由一个一个的NALU组成，其中每个NALU之间通过起始码进行分隔，起始码有两种，0x000001（3Byte）或者0x00000001（4Byte），SPS和PPS是两种特殊的NALU，在解码过程中起关键作用。SPS(Sequence Paramater Set)序列参数集，保存了一组视频编码序列的全局参数，例如编码的 Profile、level、图像宽高等，帧头数据为起始码+0x67，长度18byte。PPS(Picture Paramater Set)图像参数集，对应的是一个序列中某一副图像或者几幅图像的参数，帧头数据为起始码+0x68，长度8byte。一般情况下，SPS和PPS位于码流的起始位置，比如在封装文件中位于文件头部，但是对于实时流，通常需要从流中间开始解码，所以需要在每个I帧前添加SPS和PPS。下图为简单的H264码流结构<br>
+<img src="https://PaIn22152.github.io/post-images/1710387508027.png" alt="" loading="lazy"></p>
+<p>音频样本：一个音频样本是一个数字，代表在一个特定时间点的测量声波值<br>
+采样率：指每秒记录的音频样本数，单位为赫兹（Hz）或者千赫兹（kHz），比如采样率为8kHz，表示每1/8000秒的时间采集一次音频样本<br>
+采样精度：又叫采样位深或者采样大小或者采样格式，以每个样本的比特（bit）为单位，代表了每个样本的细节质量，比如16bit的精度，意味着每个样本有2^16=65536个不同的振幅，有越多的振幅，数字录音听起来就越接近原声<br>
+音频帧：指一个时间段内的音频样本组，ACC格式一帧采样1024个样本，即由连续的1024个样本组成一个音频帧<br>
+声道数：指声音的频道数，常见的有单声道（mono），双声道（stereo），声道数增加表示音频大小也会成倍增加<br>
+ADTS：ADTS（Audio Data Transport Stream）音频数据传输流是AAC音频流的容器格式，它是一种通过网络传输音频流的标准格式之一。在ADTS文件中，每个AAC音频帧都以一个长度为7或9个字节的ADTS帧头开始，其中包含了同步标记、帧长度、采样率、声道数和其他元数据。接下来是AAC编码的原始音频数据，这些数据会被添加到ADTS帧中，以形成完整的音频帧。有的时候当你编码AAC裸流的时候，会遇到写出来的AAC⽂件并不能在PC和⼿机上播放，很⼤的可能就是AAC⽂件的每⼀帧⾥缺少了ADTS头信息⽂件的包装拼接，只需要加⼊头⽂件ADTS即可。<br>
+ADIF：Audio Data Interchange Format 音频数据交换格式。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。ADIF只有一个文件头，ADTS每个包前面有一个文件头。<br>
+计算举例：采样率44.1kHz，精度16bit，声道数2，AAC格式<br>
+60s的音频文件大小：采样率*采样精度*通道数*时间<br>
+44100*16bit*2*60s / 8bit=10584000Byte=10.09MB<br>
+一帧音频的大小为：通道数*每帧采样数*采样精度<br>
+2*1024*16 bit=32768 bit=32768/8 Byte=4096 Byte<br>
+一帧音频的播放时长（ms）：每帧采样数*1000/采样率<br>
+1024*1000/44100=23.2ms<br>
+音频帧率：采样率/每帧采样数<br>
+44100/1024=43帧/s</p>
+<p>推流：将编码后的音视频数据，以流的形式，按照指定协议推送到服务器的过程<br>
+拉流：从服务器拉取数据流，然后将数据解码后播放<br>
+RTMP：是一种常用的流媒体传输协议，广泛用于视频直播，基于tcp协议实现<br>
+RTSP：是一种多媒体播放控制协议，和RTMP相比，提供了更多的控制，RTSP支持多种传输协议，包括UDP、TCP和HTTP</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/wPM1t7fE9/" class="tag">
+                    音视频
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/mediacodec-xiang-jie/">
+                  <h3 class="post-title">
+                    MediaCodec详解
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

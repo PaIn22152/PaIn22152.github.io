@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Android Framework（三），IMS（InputManagerService）处理触摸事件的流程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Android Framework（三），IMS（InputManagerService）处理触摸事件的流程</h2>
+            <div class="post-date">2024-10-08</div>
+            
+            <div class="post-content">
+              <p>IMS(InputManagerService)是Android系统中负责处理输入事件的服务，由他负责监听和分发输入事件，事件包括键盘、鼠标、触摸屏、物理按钮、耳机插入等。</p>
+<h3 id="触摸事件整体工作流程">触摸事件整体工作流程</h3>
+<p>1.点击屏幕触发事件；<br>
+2.EventHub监听事件发生；<br>
+3.InputReader捕获事件，预处理后交给InputDispatcher；<br>
+4.InputDispatcher通过WMS找到事件对应的目标窗口，通过socket将事件传给目标进程；<br>
+5.目标进程的ViewRootImpl通过socket接收到事件消息，将事件交给Activity处理，然后就是应用层的事件分发流程</p>
+<h3 id="ims服务">IMS服务</h3>
+<p>Android设备开机后，启动system_server进程，在system_server进程中，在startOtherServices方法中，创建IMS实例，将IMS和WMS做关联，给IMS设置窗体事件监听，然后启动IMS服务。创建IMS实例时，调用nativeInit方法，并传入DisplayThread线程的消息队列，启动服务时，调用nativeStart方法。在native层，EventHub利用Linux的inotify和epoll机制，可以获取到事件的输入，InputReader创建出一个单独的线程InputReaderThread，通过死循环的方式不断地从EventHub读取事件，然后将事件预处理成RawEvent交给InputDispatcher，InputDispatcher也有一个单独的线程InputDispatcherThread做事件分发，和Handler的消息分发一样，当没有事件时线程阻塞，当有事件时唤醒线程。InputDispatcher分发触摸事件时，先通过WMS找到事件对应的目标窗口，然后通过InputChannel类，通过socket方式将事件发送到目标窗口对应的App进程，由App端的WindowInputEventReceiver对象接受Input事件，然后再把事件分发到目标view，view再把事件交给对应的DecorView，DecorView再交给对应的activity或者dialog。<br>
+处理流程图如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1728377381722.jpg" alt="" loading="lazy"></p>
+<h3 id="inputchannel和app进程为什么采用socket通信不用binder">InputChannel和App进程为什么采用Socket通信，不用Binder</h3>
+<p>1.Binder在处理大量连续的输入事件时，性能不如Socket<br>
+2.每创建一对Binder，就会创建一个binder线程池，而socket只需要一个线程，更节省资源<br>
+3.socket可以保证事件的有序性，binder在高频操作下无法保证有序<br>
+4.binder处理大量事件有可能会丢失</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/OsxlQUkFBL/" class="tag">
+                    IMS
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/foI-czKO2/" class="tag">
+                    framework
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/nmea-0183-ge-shi/">
+                  <h3 class="post-title">
+                    NMEA-0183格式
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

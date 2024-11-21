@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>LeetCode每日一题（20201022） | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">LeetCode每日一题（20201022）</h2>
+            <div class="post-date">2020-10-22</div>
+            
+            <div class="post-content">
+              <h3 id="原题地址"><a href="https://leetcode-cn.com/problems/partition-labels/">原题地址</a></h3>
+<h3 id="思考过程">思考过程：</h3>
+<p>从最左字符开始，找到该字符在串中的最右位置，然后从左到右遍历字符，依次找到不同字符的最右位置，如果比上一次记录的最右大，更新最右，直到遍历完成后，左到右表示的字符串，即为一个片段，然后把更新最左，一直到遍历完整个串。</p>
+<h3 id="代码实现">代码实现</h3>
+<pre><code class="language-java">public List&lt;Integer&gt; partitionLabels(String s) {
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+        int lastP = 0;
+        int p = 1;
+        Set&lt;Character&gt; set = new HashSet&lt;&gt;();
+        while (p &lt;= s.length()) {
+            for (int i = lastP; i &lt; p; i++) {
+                char c = s.charAt(i);
+                if (!set.contains(c)) {
+                    int rightPosition = getRightPosition(s, c);
+                    p = Math.max(p, rightPosition);
+                    set.add(c);
+                }
+            }
+            ans.add(p - lastP);
+            lastP = p;
+            p++;
+
+        }
+        return ans;
+    }
+
+    private int getRightPosition(String s, char c) {
+        for (int i = s.length() - 1; i &gt;= 0; i--) {
+            if (s.charAt(i) == c) {
+                return i + 1;
+            }
+        }
+        return 0;
+    }
+</code></pre>
+<h3 id="执行结果">执行结果：</h3>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1609313320382.png" alt="" loading="lazy"></figure>
+<h3 id="查看官方解法"><a href="https://leetcode-cn.com/problems/partition-labels/solution/hua-fen-zi-mu-qu-jian-by-leetcode-solution/">查看官方解法</a></h3>
+<p>贪心算法+双指针（有待深入理解）</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/fAGdqGi-P/" class="tag">
+                    leetcode
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/APbRlo0Wb-/" class="tag">
+                    算法
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/flutter-kai-fa-zhi-shi-dian-quan-ji-lu/">
+                  <h3 class="post-title">
+                    Flutter开发知识点全记录
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

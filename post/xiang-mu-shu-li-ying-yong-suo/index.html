@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>项目梳理--应用锁 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">项目梳理--应用锁</h2>
+            <div class="post-date">2022-04-01</div>
+            
+            <div class="post-content">
+              <h1 id="0简介">0.简介</h1>
+<p>可以锁定应用、照片、视频、文件，需要正确输入密码才可使用；</p>
+<h1 id="1功能">1.功能</h1>
+<p>1.锁定应用：打开应用后弹悬浮窗（后改为Activity），遮盖其他应用，正确输入密码后，activity消失，正常使用其他应用，多次输入错误密码或者点击返回按钮，跳转到系统桌面。<br>
+2.锁照片、视频、文件：用户可以选定指定的照片、视频或者其他文件，锁定后将文件移动至应用私有文件夹，并按照一定规则，修改文件内容（加密），解锁文件时，按照规则把文件内容修改回去，再移动回原位置。<br>
+3.输入密码：包括三种密码方式，滑动图案密码、数字密码、指纹。</p>
+<h1 id="2实现细节">2.实现细节</h1>
+<p>可以深入展开的技术点有：<br>
+锁定功能细节实现，悬浮窗，Window相关知识点，保活<br>
+mmkv原理<br>
+view相关（自定义view，事件传递）自定义guideView、图案解锁、<br>
+RXJava原理，</p>
+<p>其他问题<br>
+handler锁屏后不可用，<br>
+1.监听用户解锁屏，锁屏后记录系统时间，不再计时，解锁屏后用获取系统时间做差</p>
+<p>做过的自定义view：<br>
+guideView，实现原理<br>
+滑动解锁：move事件时绘制图案</p>
+<p>广告sdk：<br>
+使用JavaFX开发桌面应用<br>
+熟悉打包流程、ant构建工具的使用<br>
+熟悉dex文件机构，dexdiff算法实现原理</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/android-gong-cheng-shi-34-jiang-jvm-yu-dvm-bi-zhi-bi-hui/">
+                  <h3 class="post-title">
+                    Android工程师34讲-JVM与DVM必知必会
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

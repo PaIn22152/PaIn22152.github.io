@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-HashMap、LeakCanary、BlockCanary源码 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-HashMap、LeakCanary、BlockCanary源码</h2>
+            <div class="post-date">2024-08-05</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。HashMap、LeakCanary、BlockCanary源码分析。</p>
+<!-- more -->
+<h2 id="hashmap">HashMap</h2>
+<p>存储结构：数组+链表+红黑树<br>
+原理：存数据时，根据key计算出hash值，然后根据hash值和数组大小，确定索引index，判断数组在index这个索引上有没有数据。如果没有，直接创建链表添加当前数据，并把链表放在数组的index位置；如果有链表数据，判断在链表中有没有相同的key，如果有覆盖value值，如果没有将新数据添加到链表尾部，并判断是否需要将链表树化，如果需要，将链表结构变成红黑树结构；如果有红黑树数据，判断树中有没有相同的key，如果有覆盖value值，如果没有将新数据添加到树中，并对红黑树做自平衡处理。添加数据后，判断当前数据量是否大于阈值，这个阈值是使用容量*装载因子得到的，如果大于了阈值，会对数组做扩容，创建一个新的数组，大小为原来的两倍，然后将原数组数据复制到新数组。<br>
+查数据时，根据key计算出hash，然后根据hash和数组大小确定索引，然后在索引处的链表或者红黑树中查数据。</p>
+<p>创建HashMap时，传入容量大小和装载因子，如果不写，默认使用16和0.75，此时并不会创建出数组，而是在第一次调用put方法时才创建，并且会保证容量大小为2的整数次方，为什么要将数组长度限制为2的整数次，主要有以下几个原因：1根据hash和数组大小确定索引时，len-1的二进制所有位都为1，可以使用hash&amp;(len - 1)，二进制&amp;计算效率比hash%len要高；2发生扩容的时候，也可以使用二进制计算快速确定新的索引位置，如果hash的二进制左边一位是0，那索引不变，如果是1，那索引为原索引+原数组长度。</p>
+<h2 id="leakcanary">LeakCanary</h2>
+<h2 id="blockcanary">BlockCanary</h2>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/KxNc_d5sJ/" class="tag">
+                    HashMap
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/OvxJwmm8sH/" class="tag">
+                    LeakCanary
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/VooB9aY-FC/" class="tag">
+                    BlockCanary
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/gYLRDnqqS/" class="tag">
+                    源码
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-zhu-jie-chu-li-qi-apt/">
+                  <h3 class="post-title">
+                    扔物线进阶-注解处理器APT
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

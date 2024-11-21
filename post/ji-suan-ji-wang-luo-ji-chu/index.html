@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>计算机网络基础 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">计算机网络基础</h2>
+            <div class="post-date">2021-05-06</div>
+            
+            <div class="post-content">
+              <ul>
+<li><a href="#head1"> 前言</a></li>
+<li><a href="#head2"> 1OSI体系结构分层</a>
+<ul>
+<li><a href="#head3"> 1.1物理层</a></li>
+<li><a href="#head4"> 1.2数据链路层</a>
+<ul>
+<li><a href="#head5"> 封装成帧</a></li>
+<li><a href="#head6"> 透明传输</a></li>
+<li><a href="#head7"> 差错检测</a></li>
+</ul>
+</li>
+<li><a href="#head8"> 1.3网络层</a>
+<ul>
+<li><a href="#head10"> IP数据报格式</a></li>
+<li><a href="#head11"> 地址解析协议ARP</a></li>
+<li><a href="#head12"> 网际控制报文协议ICMP</a></li>
+<li><a href="#head13"> 路由器</a></li>
+</ul>
+</li>
+<li><a href="#head14">1.4 传输层</a></li>
+<li><a href="#head15">1.5 应用层</a>
+<ul>
+<li><a href="#head16"> 域名系统DNS</a></li>
+<li><a href="#head17"> 文件传输系统FTP</a></li>
+<li><a href="#head18"> 电子邮件协议</a></li>
+<li><a href="#head19"> 远程登录协议</a></li>
+<li><a href="#head20"> 动态主机配置协议</a></li>
+<li><a href="#head21"> 常用端口号</a></li>
+<li><a href="#head22"> Web页面请求过程</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#head23">2 TCP/IP协议</a></li>
+<li><a href="#head24">3 数据处理</a></li>
+<li><a href="#head25">4 传输层协议</a>
+<ul>
+<li><a href="#head26"> UDP</a></li>
+<li><a href="#head27"> TCP</a></li>
+<li><a href="#head28"> TCP三次握手</a></li>
+<li><a href="#head29"> 三次握手的原因</a></li>
+<li><a href="#head30"> TCP四次挥手</a></li>
+<li><a href="#head31"> 四次挥手的原因</a></li>
+<li><a href="#head32"> TCP可靠传输</a></li>
+<li><a href="#head33"> TCP流量控制</a>
+<ul>
+<li><a href="#head34"> TCP滑动窗口</a></li>
+<li><a href="#head35"> 流量控制引发的死锁</a></li>
+</ul>
+</li>
+<li><a href="#head36"> TCP拥塞控制</a>
+<ul>
+<li><a href="#head37"> 慢开始与拥塞避免</a></li>
+<li><a href="#head38"> 快重传与快恢复</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#head39"> Socket</a></li>
+<li><a href="#head40"> HTTP</a>
+<ul>
+<li><a href="#head41"> 基本概念</a>
+<ul>
+<li><a href="#head42"> 请求和响应报文</a></li>
+<li><a href="#head43"> URL</a></li>
+</ul>
+</li>
+<li><a href="#head44"> HTTP方法</a></li>
+<li><a href="#head45"> HTTP状态码</a></li>
+<li><a href="#head46"> HTTP首部</a></li>
+<li><a href="#head47"> 具体应用</a>
+<ul>
+<li><a href="#head48"> 连接管理</a></li>
+<li><a href="#head49"> Cookie</a></li>
+<li><a href="#head50"> 缓存</a></li>
+<li><a href="#head51"> 内容协商</a></li>
+<li><a href="#head52"> 内容编码</a></li>
+<li><a href="#head53"> 范围请求</a></li>
+<li><a href="#head54"> 分块传输编码</a></li>
+<li><a href="#head55"> 多部分对象集合</a></li>
+<li><a href="#head56"> 虚拟主机</a></li>
+<li><a href="#head57"> 通信数据转发</a></li>
+</ul>
+</li>
+<li><a href="#head58"> HTTPS</a>
+<ul>
+<li><a href="#head59"> 加密</a></li>
+<li><a href="#head60"> 认证</a></li>
+<li><a href="#head61"> 完整性保护</a></li>
+<li><a href="#head62"> HTTPS的缺点</a></li>
+</ul>
+</li>
+<li><a href="#head63"> HTTP/2.0</a></li>
+<li><a href="#head64"> GET方法和POST方法比较</a></li>
+</ul>
+</li>
+<li><a href="#head65">RESTful api</a></li>
+<li><a href="#head66"> 其他</a>
+<ul>
+<li><a href="#head67"> 地址</a></li>
+<li><a href="#head68"> 网络性能指标</a></li>
+<li><a href="#head69"> 网络协议</a></li>
+</ul>
+</li>
+<li><a href="#head70"> 思考，电脑挂香港vpn，在浏览器输入google后，整个数据是怎么传输的？使用到哪些协议？</a></li>
+</ul>
+<h2 id="span-idhead1-前言span"><span id="head1"> 前言</span></h2>
+<p>个人学习、整理和记录计算机网络基础相关知识点用。其中大部分内容来自以下地址，表示感谢<br>
+<a href="https://www.cyc2018.xyz/">cyc 计算机基础和HTTP</a><br>
+<a href="https://segmentfault.com/u/shulv/articles?page=3">书旅- 计算机网络基础相关博客</a><br>
+<a href="https://www.liaoxuefeng.com/wiki/1016959663602400/1017788916649408">廖雪峰的官方网站  TCP编程</a><br>
+<a href="http://www.ruanyifeng.com/blog/2011/09/restful.html">阮一峰的网络日志</a><br>
+还有一些其他地址。</p>
+<h2 id="span-idhead2-1osi体系结构分层span"><span id="head2"> 1OSI体系结构分层</span></h2>
+<p>从下至上，物理层 -&gt; 数据链路层 -&gt; 网络层 -&gt; 传输层 -&gt; 会话层 -&gt; 表示层 -&gt; 应用层。<br>
+<img src="https://PaIn22152.github.io/post-images/1620266233694.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1620298598416.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1621237590870.png" alt="" loading="lazy"></p>
+<h3 id="span-idhead3-11物理层span"><span id="head3"> 1.1物理层</span></h3>
+<p>主要作用，1.连接不同的物理设备（比如路由器到计算机通过网线连接）。2.传输比特流（比特流就是0、1这样的高低电平，或者说是数字信号）。<br>
+传输介质，包括有线介质（双绞线、光纤）和无线介质（红外线、无线、激光）<br>
+信道，可以分为单工通信信道，半双工通信信道，全双工通信信道</p>
+<h3 id="span-idhead4-12数据链路层span"><span id="head4"> 1.2数据链路层</span></h3>
+<p>主要解决的问题：1.封装成帧；2.透明传输；3.差错检测。</p>
+<h4 id="span-idhead5-封装成帧span"><span id="head5"> 封装成帧</span></h4>
+<p>“帧”是数据链路层数据的基本单位，就好比比特位是物理层数据的单位。发送端在网络层的一段数据前后添加特定标记（控制字符）形成帧，接收端根据前后特定标记识别出帧。</p>
+<h4 id="span-idhead6-透明传输span"><span id="head6"> 透明传输</span></h4>
+<p>指的是不管所传数据是什么样的比特组合（比如数据包含控制字符），都应该能在链路上传输，处理的方法是在控制字符前加转义字符，接收端接收到数据帧之后，先判断在帧数据中的控制字符是否存在转义字符，如果存在，就会把这个控制字符当做数据内容，而不是控制字符，如果帧数据中出现转义字符，把转义字符重新转义一次即可</p>
+<h4 id="span-idhead7-差错检测span"><span id="head7"> 差错检测</span></h4>
+<p>物理层在比特流的传输过程中，可能会受外界干扰导致出错，这在物理层是察觉不到的，所以数据链路层负责差错检测的工作。具体方式有奇偶校验码，和循环冗余校验码（CRC），其中循环冗余校验码是广泛使用的检测算法。</p>
+<p>数据链路层只进行数据的检测，不进行纠正，数据链路层发现错误数据，会直接丢弃。<br>
+最大传送单元MTU，MTU描述的是，链路中可以传输的数据帧的最大值，这个值太大或者太小都会影响传输效率，常用的以太网一般使用1500字节</p>
+<h3 id="span-idhead8-13网络层span"><span id="head8"> 1.3网络层</span></h3>
+<p>网络层是整个网络的核心，因此应当尽可能简单。网络层向上只提供简单灵活的，无连接的，尽最大努力交互的数据报服务。使用IP协议，把异构的物理网络连接起来，使得在网络层看起来好像是一个统一的网络。</p>
+<p>与IP协议配套使用的还有以下三个协议，1.地址解析协议ARP（Address Resolution Protocol）；2.网际控制报文协议ICMP（Intent Control Message Protocol）；3.网际组管理协议IGMP（Internet Groud Management Protocol）。</p>
+<h4 id="span-idhead10-ip数据报格式span"><span id="head10"> IP数据报格式</span></h4>
+<p>由首部和数据部分组成，首部内容包括版本（4位，有4和6两个值）、首部长度（4位，值1表示1个32为字的长度，即4字节，因为首部固定部分为20字节，所以此值最小为5）、区分服务（8位，一般不使用）、总长度（16位，包括首部长度和数据部分长度）、标识（16位，当数据报过长从而发生分片时，相同数据报的不同分片具有相同的标识符）、片偏移（和标识符一起，用于发生分片的情况）、生存时间TTL（8位，他的存在是为了防止无法交付的数据报在互联网中不断兜圈子，以路由器跳数为单位，每一跳减1，当TTL为0时丢弃数据）、协议（8位，指出携带的数据应该交给哪个协议处理，比如ICMP、TCP、UDP等）、首部校验和（16位，数据报每次经过一个路由器，都要重新计算校验和，因此校验和不包括数据部分，可以减少计算的工作量）、源IP地址（32位，发送IP数据报的网络设备的IP地址）、目的IP地址（32位，IP数据报要到达的目的设备的IP地址）、<br>
+<img src="https://PaIn22152.github.io/post-images/1620354987671.jpg" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1620377854937.png" alt="" loading="lazy"></p>
+<h4 id="span-idhead11-地址解析协议arpspan"><span id="head11"> 地址解析协议ARP</span></h4>
+<p>ARP协议是用于根据给定的网络层地址（通常是IPV4地址），查找其对应的数据链路层地址（MAC地址）的协议。<a href="https://juejin.cn/post/6844903666445451272">解析的具体过程见此</a><br>
+ARP协议是局域网内部协议。它解决的是同一局域网内部的主机或路由器的IP地址和其对应的硬件地址的映射问题。</p>
+<h4 id="span-idhead12-网际控制报文协议icmpspan"><span id="head12"> 网际控制报文协议ICMP</span></h4>
+<p>ICMP是为了更有效地转发IP数据报和提高交付成功的机会。封装在IP数据报中，但是不属于高层协议。<br>
+<img src="https://PaIn22152.github.io/post-images/1620356353857.jpg" alt="" loading="lazy"></p>
+<p>Ping<br>
+是ICMP的一个重要应用，主要用来测试两台主机之间的连通性。原理是通过向目的主机发送ICMP Echo请求报文，目的主机收到之后会发送Echo回答报文，然后根据响应的时间和次数，估算出数据包往返时间以及丢包率。</p>
+<p>Traceroute<br>
+是ICMP的另一个应用，用来跟踪一个分组从源点到终点的路径。原理如下：<br>
+源主机向目的主机发送一连串的 IP 数据报。第一个数据报 P1 的生存时间 TTL 设置为 1，当 P1 到达路径上的第一个路由器 R1 时，R1 收下它并把 TTL 减 1，此时 TTL 等于 0，R1 就把 P1 丢弃，并向源主机发送一个 ICMP 时间超过差错报告报文；<br>
+源主机接着发送第二个数据报 P2，并把 TTL 设置为 2。P2 先到达 R1，R1 收下后把 TTL 减 1 再转发给 R2，R2 收下后也把 TTL 减 1，由于此时 TTL 等于 0，R2 就丢弃 P2，并向源主机发送一个 ICMP 时间超过差错报文。<br>
+不断执行这样的步骤，直到最后一个数据报刚刚到达目的主机，主机不转发数据报，也不把 TTL 值减 1。但是因为数据报封装的是无法交付的 UDP，因此目的主机要向源主机发送 ICMP 终点不可达差错报告报文。<br>
+之后源主机知道了到达目的主机所经过的路由器 IP 地址以及到达每个路由器的往返时间。</p>
+<h4 id="span-idhead13-路由器span"><span id="head13"> 路由器</span></h4>
+<p>路由器从功能上可以划分为路由选择和分组转发。<br>
+分组转发结构由三个部分组成，交换结构、一组输入端口和一组输出端口<br>
+路由表的重点部分是目的IP地址和下一跳IP地址，计算机和路由器都拥有路由表<br>
+<img src="https://PaIn22152.github.io/post-images/1620379580950.png" alt="" loading="lazy"></p>
+<p>分组转发流程<br>
+1.从数据报的首部提取目的主机的IP地址D，得到目的网络地址N；<br>
+2.若N就是与此路由直接相连的某个网络地址，则直接交付；<br>
+3.若路由表中有目的地址为D的特定主机路由，则把数据报传送给表中指明的下一跳路由器；<br>
+4.若路由表中有到达网络N的路由，则把数据报传送给路由表中所指明的下一跳路由器；<br>
+5.若路由表中有一个默认路由，则把数据报传送给路由表中指明的默认路由器；<br>
+6.否则报告转发分组出错。</p>
+<p>路由选择协议<br>
+分为两大类，1.自治系统内部的路由选择，RIP和OSPF；2.自治系统间的路由选择，BGP。</p>
+<h3 id="span-idhead1414-传输层span"><span id="head14">1.4 传输层</span></h3>
+<p>网络层负责把数据报发送到目的主机，但是真正通信的不是主机，而是主机中的进程。传输层提供了进程间的逻辑通信，传输层向高层用户屏蔽了下面网络层的核心细节，使应用程序看起来像是在两个传输层实体之间有一条端到端的逻辑通信信道。</p>
+<h3 id="span-idhead1515-应用层span"><span id="head15">1.5 应用层</span></h3>
+<p>应用层协议定义了运行在不同端系统上的应用进程如何互相传递报文，包括：<br>
+1.交换的报文类型，如请求报文和响应报文；<br>
+2.各种报文类型的语法，如报文中的各个字段公共详细描述；<br>
+3.字段的语义，即包含在字段中的信息的含义；<br>
+4.进程何时、如何发送报文和响应报文。</p>
+<p>应用层协议分类：<br>
+1.域名系统（Domain Name System，DNS）：用于实现网络设备名字到IP地址映射的网络服务；<br>
+2.文件传输协议（File Transfer Protocol，FTP）：用于实现交互式文件传输功能；<br>
+3.邮件传送协议（Simple Mail Trsansfer Protocol，SMTP）：用于实现电子邮箱传送功能；<br>
+4.超文本传输协议（HyperText Transfer Protocol，HTTP）：用于实现Web服务；<br>
+5.远程登录协议（Telnet）：用于实现远程登录功能；</p>
+<h4 id="span-idhead16-域名系统dnsspan"><span id="head16"> 域名系统DNS</span></h4>
+<p>域名系统DNS，是一个分布式数据库，提供了主机名和IP地址之间相互转换的服务。这里的分布式数据库是指，每个站点只保留自己的那部分数据。<br>
+域名具有层次结构，从上到下依次为：根域名、顶级域名、二级域名。<br>
+比如www.example.com中，.com是顶级域名，example.com是二级域名，有些场合下会被写作www.example.com.  ，即后面会多出一个点，这个点就是根域名<br>
+<img src="https://PaIn22152.github.io/post-images/1620636025989.jpg" alt="" loading="lazy"><br>
+DNS可以使用UDP或者TCP进行传输，使用的端口号都是53。多数情况下使用UDP，以下两种情况使用TCP<br>
+1.如果返回的响应超过512字节（UDP最大支持512字节数据）；<br>
+2.区域传送（主域名服务器向辅助域名服务器传送变化的那部分数据）。</p>
+<h4 id="span-idhead17-文件传输系统ftpspan"><span id="head17"> 文件传输系统FTP</span></h4>
+<p>FTP使用TCP进行连接，需要两个连接来传输数据：<br>
+1.控制连接：服务器打开端口21等待客户端的连接，客户端主动建立连接后，使用这个连接将客户端的命令传送给服务器，并传回服务器的应答。<br>
+2.数据连接：用来传送文件数据。</p>
+<p>两种模式：主动模式和被动模式。主动模式要求客户端开发端口号给服务器端，需要配置客户端的防火墙。被动模式只需要哦服务器端开发端口号即可，无需客户端配置防火墙，但是这会导致服务器端的安全性减弱，因为开发了过多的端口号。<br>
+主动模式，服务器端主动建立数据连接，其中服务器端端口20，客户端端口随机，但是必须大于1024，因为0-1023是熟知端口号。<br>
+<img src="https://PaIn22152.github.io/post-images/1620637151042.jpg" alt="" loading="lazy"><br>
+被动模式，客户端主动建立数据连接，其中客户端的端口号由客户端自己指定，服务器端端口号随机。<br>
+<img src="https://PaIn22152.github.io/post-images/1620637249500.jpg" alt="" loading="lazy"></p>
+<h4 id="span-idhead18-电子邮件协议span"><span id="head18"> 电子邮件协议</span></h4>
+<p>一个电子邮件系统由三部分组成：用户代理、邮件服务器、邮件协议<br>
+邮件协议包含发送协议和读取协议，发送协议常用SMTP，读取协议常用POP3和IMAP。<br>
+<img src="https://PaIn22152.github.io/post-images/1620637816618.png" alt="" loading="lazy"></p>
+<h4 id="span-idhead19-远程登录协议span"><span id="head19"> 远程登录协议</span></h4>
+<p>TELNET用于登录到远程主机上，并且远程主机上的输出也会返回。<br>
+TELNET可以适应许多计算机和操作系统的差异，比如不同操作系统的换行符定义。</p>
+<h4 id="span-idhead20-动态主机配置协议span"><span id="head20"> 动态主机配置协议</span></h4>
+<p>动态主机配置协议（Dynamic Host Configuration Protocol，DHCP），提供了即插即用的联网方式，使得用户不需要手动配置IP地址等信息。DHCP配置的内容有IP地址，子网掩码，网关IP地址。<br>
+DHCP工作过程：<br>
+1.客户端发送Discover报文，该报文的目的地址为255.255.255.255:67，源地址为0.0.0.0:68，被放入UDP中，该报文被广播到同一个子网的所有主机上。如果客户端和DHCP服务器不在同一个子网，就需要使用中继代理；<br>
+2.DHCP服务器收到Discover报文后，发送Offer报文给客户端，该报文包含了客户端所需要的信息。因为客户端可能收到多个DHCP服务器提供的信息，所以客户端需要进行选择；<br>
+3.客户端选择某个DHCP服务器提供的信息后，发送Request报文给该DHCP服务器；<br>
+4.DHCP服务器发送Acl报文，表示该客户端此时可以使用提供给他的信息。<br>
+<a href="https://zhuanlan.zhihu.com/p/74394924">DHCP协议工作过程详解</a></p>
+<h4 id="span-idhead21-常用端口号span"><span id="head21"> 常用端口号</span></h4>
+<figure data-type="image" tabindex="1"><img src="https://PaIn22152.github.io/post-images/1620637865250.png" alt="" loading="lazy"></figure>
+<h4 id="span-idhead22-web页面请求过程span"><span id="head22"> Web页面请求过程</span></h4>
+<p>1.DHCP配置主机信息；<br>
+2.ARP解析MAC地址；<br>
+3.DNS解析域名；<br>
+4.HTTP请求页面。<br>
+<a href="https://www.cyc2018.xyz/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%20-%20%E5%BA%94%E7%94%A8%E5%B1%82.html#web-%E9%A1%B5%E9%9D%A2%E8%AF%B7%E6%B1%82%E8%BF%87%E7%A8%8B">详见</a></p>
+<h2 id="span-idhead232-tcpip协议span"><span id="head23">2 TCP/IP协议</span></h2>
+<p>从字面意思上，指TCP和IP两种协议。然而多数情况下，泛指利用IP进行通信时所必须用到的协议群的统称。具体包括IP、ICMP、TCP、UDP、FTP、HTTP等等<br>
+<img src="https://PaIn22152.github.io/post-images/1620266594202.png" alt="" loading="lazy"></p>
+<h2 id="span-idhead243-数据处理span"><span id="head24">3 数据处理</span></h2>
+<p>每个分层中，都会对所发送的数据加一个首部，在这个首部中，包含了该层必要的信息，如发送的目标地址以及协议相关信息。通常，为协议提供的信息为包首部，所要发送的内容为数据。在下一层的角度看，从上一层收到的包全部被认为是本层的数据。<br>
+数据处理流程<br>
+<img src="https://PaIn22152.github.io/post-images/1620267074421.png" alt="" loading="lazy"></p>
+<h2 id="span-idhead254-传输层协议span"><span id="head25">4 传输层协议</span></h2>
+<p>TCP协议和UDP协议，是传输层最具代表性的协议。<br>
+TCP是面向连接的、可靠的流协议。为提供可靠性传输，实行“顺序控制”或“重发控制”机制，此外还具备“流控制（流量控制）”、“拥塞控制”、提高网络利用率等众多功能。<br>
+UDP是不具有可靠性的数据报协议。细微的处理会交给上层的应用去完成。可以确保发送消息的大小，但是不能保证消息一定会到达。因此应用会根据自己的需要进行重发处理。<br>
+TCP和UDP的优缺点不能简单地、绝对地做比较。TCP常用于有必要实现可靠传输的情况，而UDP常用于那些对高速传输和实时性有较高要求的通信或广播通信。</p>
+<p>UDP和TCP<br>
+用户数据报协议UDP（User Datagram Protocol），是无连接的，尽最大可能支付，没有拥塞控制，面向报文（对于应用程序传下来的报文，不合并也不拆分，只是添加UDP首部），支持一对一，一对多，多对一，多对多的交互通信。<br>
+传输控制协议TCP（Transmission Control Protocol），是面向连接的，提供可靠交付，有流量控制，拥塞控制，提供全双工通信，面向子节流（把应用层传下来的报文看成子节流，把子节流组织成大小不等的数据块），每一条TCP连接都只能是点对点的（一对一）。</p>
+<h3 id="span-idhead26-udpspan"><span id="head26"> UDP</span></h3>
+<p>首部格式<br>
+<img src="https://PaIn22152.github.io/post-images/1620440146188.jpg" alt="" loading="lazy"><br>
+首部字段只有8个字节，包括源端口，目的端口，长度，校验和，12字节的伪首部是为了计算校验和零时添加的。</p>
+<p>UDP的特点<br>
+1.UDP是一个无连接的协议；<br>
+2.UDP不能保证可靠的交付数据；<br>
+3.UDP是面向报文传输的；<br>
+4.UDP没有拥塞控制；<br>
+5.UDP的首部开销非常小。</p>
+<h3 id="span-idhead27-tcpspan"><span id="head27"> TCP</span></h3>
+<p>首部格式<br>
+<img src="https://PaIn22152.github.io/post-images/1620440743030.png" alt="" loading="lazy"><br>
+如图，首部格式包括源端口、目的端口、序号（用于对子节流编号，比如序号301，表示第一个字节的编号是301，如果携带的数据长度为100字节，那么下一个报文段的序号为401）、确认号（期望收到的下一个报文段的序号。比如B正确收到A发送来的301报文，长度100，因此B期望下一个报文段序号是401，B发送给A的确认报文段中，确认号就是401）、数据偏移（指数据部分距离报文段起始处的偏移量，实际上就是首部的长度）、确认ACK（当ACK=1时，确认号字段有效，否则无效，TCP规定，在连接建立后所有传送的报文段，ACK都必须置为1）、同步SYN（在连接建立时，用来同步序号。当SYN=1，ACK=0时，表示这是一个连接请求报文段，若对方同意建立连接，则响应报文中SYN=1，ACK=1）、终止FIN（用来释放一个连接，当FIN=1时，表示此报文的发送方的数据已经发送完毕，并要求释放连接）、窗口（窗口值作为接收方让发送方设置其发送窗口的依据。之所以要有这个限制，是因为接收方的数据缓存空间是有限的）。</p>
+<h3 id="span-idhead28-tcp三次握手span"><span id="head28"> TCP三次握手</span></h3>
+<p><img src="https://PaIn22152.github.io/post-images/1620442370136.png" alt="" loading="lazy"><br>
+如图A是客户端，B是服务器端。<br>
+1.B处于LISTEN监听状态，等待客户的连接请求；<br>
+2.A向B发送连接请求报文，SYN=1，ACK=0，选择一个初始的序号x；<br>
+3.B收到连接请求报文，如果同意建立连接，则向A发送连接确认报文，SYN=1，ACK=1，确认号为x+1，同时也选择一个初始的序号y；<br>
+4.A收到B的连接确认报文后，还要向B发出确认，确认号为y+1，序号x+1；<br>
+5.B收到A的确认后，连接建立。</p>
+<h3 id="span-idhead29-三次握手的原因span"><span id="head29"> 三次握手的原因</span></h3>
+<p>为了防止失效的连接请求到达服务器，让服务器错误打开连接。<br>
+客户端发送的连接请求如果在网络中滞留，那么就会隔很长一段时间才能收到服务器发回的连接确认。客户端在等待一个超时重传时间之后，就会重新请求连接。但是这个滞留的连接请求最后还是会到达服务器，如果不进行三次握手，那我服务器就会打开两个连接。有了三次握手，客户端会忽略掉服务器之后发送的对滞留连接请求的连接确认，不进行第三次握手，这样就避免了服务器再次打开连接。</p>
+<h3 id="span-idhead30-tcp四次挥手span"><span id="head30"> TCP四次挥手</span></h3>
+<p><img src="https://PaIn22152.github.io/post-images/1620443729855.jpg" alt="" loading="lazy"><br>
+以下描述不讨论序号和确认号，因为其规则比较简单，上文有做说明。也不讨论ACK，因为连接建立后，ACK都为1.<br>
+1.A发送连接释放报文，FIN=1；<br>
+2.B收到之后，发出确认，此时TCP属于半关闭状态，B能向A发送数据，A不能向B发送；<br>
+3.当B不再需要连接时，发送连接释放报文，FIN=1；<br>
+4.A收到后，发出确认，进入TIME-WAIT状态，等待2MSL（最大报文存活时间）后释放连接；<br>
+5.B收到A的确认后释放连接。</p>
+<h3 id="span-idhead31-四次挥手的原因span"><span id="head31"> 四次挥手的原因</span></h3>
+<p>客户端发送了FIN的连接释放报文后，服务器收到这个报文，就进入了CLOSE-WAIT状态。这个状态是为了让服务器端发送还未发送完毕的数据，在服务器发送完毕后，服务器才发送FIN连接释放报文；<br>
+客户端在收到服务器端的FIN报文后，进入TIME-WAIT状态，并且等待2MSL，有以下两个原因，1.确保最后一个确认报文能够到达（如果B没有收到A发送的确认报文，就会重发连接释放请求报文，A等待就是为了处理这种情况）；2.为了让本连接持续时间内所产生的所有报文都从网络中消失，使得下一个新的连接不会出现旧的连接请求报文。</p>
+<h3 id="span-idhead32-tcp可靠传输span"><span id="head32"> TCP可靠传输</span></h3>
+<p>TCP使用超时重传机制实现可靠传输。如果一个已经发送的报文段，在超时时间内没有收到确认，那么就会重传这个报文段。<br>
+除了超时重传机制外，流量控制、拥塞控制等也保证了TCP的可靠传输</p>
+<h3 id="span-idhead33-tcp流量控制span"><span id="head33"> TCP流量控制</span></h3>
+<p>流量控制是为了控制发送方发送速率，保证接收方来得及接收。靠窗口滑动实现，既保证了分组无差错、有序接收，也实现了流量控制。</p>
+<h4 id="span-idhead34-tcp滑动窗口span"><span id="head34"> TCP滑动窗口</span></h4>
+<p>窗口是缓存的一部分，用来暂时存放子节流。发送方和接收方各一个窗口，接收方通过TCP报文中的窗口字段告诉发送发自己的窗口大小，发送方根据这个值和其他信息设置自己的窗口大小。</p>
+<p>发送窗口内的字节都允许被发送，接收窗口内的字节都允许被接收，如果发送窗口左部的字节已经发送并且收到了确认，那我就将发送窗口向右滑动一定距离，直到左部第一个字节不是已发送且确认的状态；接收窗口的滑动类似，接收窗口左部字节已经发送确认且交付主机，就向右滑动接收窗口。</p>
+<p>接收窗口只会对窗口内最后一个按序到达的字节进行确认，例如接收窗口已经收到的字节为（31，34，35），其中31是按序到达，而34，35不是，因此只对字节31进行确认，发送方得到一个字节的确认后，就知道这个字节之前的所有字节都已经被接收。<br>
+<img src="https://PaIn22152.github.io/post-images/1620613229343.jpg" alt="" loading="lazy"></p>
+<h4 id="span-idhead35-流量控制引发的死锁span"><span id="head35"> 流量控制引发的死锁</span></h4>
+<p>当发送者收到了一个窗口为0的应答，发送者便停止发送，等待接收者的下一个应答。但是如果这个窗口不为0的应答在传输过程丢失了，发送者一直等待，而接收者以为发送者已经收到了改应答，等待发送者发送数据，这样双方都在互相等待，导致死锁。<br>
+为了避免以上情况的产生，TCP使用了持续计时器。每当发送者收到一个0窗口的应答后，就启动改计时器，时间一到便主动发送报文询问接受者的窗口大小，若接收者仍然返回0窗口，则重置计时器继续等待；若窗口不为0，则表示应答报文丢失了，发送方使用新的窗口发送数据。</p>
+<h3 id="span-idhead36-tcp拥塞控制span"><span id="head36"> TCP拥塞控制</span></h3>
+<p>如果网络出现拥塞，分组将会丢失，此时发送方会继续重传，进而导致网络拥塞加剧。因此，当出现拥塞时，应当控制发生方的速率，避免造成更大的拥塞。<br>
+和流量控制相比，出发点不同，流量控制是为了让接收方能来得及接收，考虑的是点对点的通信量控制，拥塞控制是为了降低整个网络的拥塞程度，考虑的是整个网络。<br>
+<img src="https://PaIn22152.github.io/post-images/1620613910275.jpg" alt="" loading="lazy"></p>
+<p>TCP主要通过4个算法进行拥塞控制：慢开始、拥塞避免、快重传、快恢复。<br>
+发送方需要维护一个叫做拥塞窗口(cwnd)的状态变量，和发送窗口不同，这个拥塞窗口是一个状态变量，拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口，另外考虑到接受方的接收能力，发送窗口可能小于拥塞窗口。<br>
+为了便于讨论，做如下两个假设：<br>
+1.接收方有足够大的接收缓存，因此不会发生流量控制；<br>
+2.虽然TCP的窗口基于字节，但是这里设窗口的大小单位为报文段。</p>
+<h4 id="span-idhead37-慢开始与拥塞避免span"><span id="head37"> 慢开始与拥塞避免</span></h4>
+<p>发送的最初，执行慢开始，令cwnd=1，发送方只能发送一个报文段；每次接收到确认后，将cwnd加倍，然后发送方能发送的报文段数量为2、4、8、16...<br>
+需要注意，因为每次cwnd都是加倍的，所以到了后面增长速度非常快，这会导致拥塞的可能性更高。所以设置一个慢开始门限ssthresh，当cwnd&gt;=ssthresh时，进入拥塞避免，每次只将cwnd加1。如果出现超时，令ssthresh=cwnd/2，然后重新执行慢开始。<br>
+<img src="https://PaIn22152.github.io/post-images/1620615264998.png" alt="" loading="lazy"></p>
+<h4 id="span-idhead38-快重传与快恢复span"><span id="head38"> 快重传与快恢复</span></h4>
+<p>在接收方，要求每次接收到报文段都应该对最后一个已收到的有序报文段进行确认。例如收到M1，M2，此时再收到M4，应当发送对M2的确认。<br>
+在发送方，如果收到三个重复确认，那么就可以知道下一个报文段丢失，此时执行快重传，立即重传下一个报文段。例如收到三个M2的确认，则认为M3丢失，立即重传M3（快重传）。<br>
+这种情况下，因为只是丢失个别报文段，而不是真正的网络拥塞，所以执行快恢复，令ssthresh=cwnd/2，  cwnd=ssthresh，注意到此时直接进入拥塞避免。<br>
+慢开始和快恢复的快慢指的是cwnd的设定值大小，而不是cwnd的增长速率。慢开始cwnd设定为1，而快重传cwnd设定为ssthresh。<br>
+<img src="https://PaIn22152.github.io/post-images/1620615731527.png" alt="" loading="lazy"></p>
+<p><a href="https://zhuanlan.zhihu.com/p/37379780">TCP流量控制、拥塞控制 更多细节</a></p>
+<h2 id="span-idhead39-socketspan"><span id="head39"> Socket</span></h2>
+<p>什么是套接字Socket？Socket是网络编程的一个抽象概念，如果一个进程在使用网络的话，一定会占用一个端口，作为TCP连接的一端，这个一端称为套接字Socket，所以可以把套接字简单理解成是网络IP+端口Port（[IP:Port])。<br>
+通过Socket可以进行数据的发送和接收，一般是c/s结构，即服务器客户端<br>
+服务器：<br>
+1.建立通信ServerSocket；<br>
+2.服务器建立Socket接收客户端连接；<br>
+3.建立IO输入流读取客户端发送的数据；<br>
+4.建立IO输出流向客户端发送数据。<br>
+客户端：<br>
+1.建立Socket通信，设置服务器的IP和Port；<br>
+2.建立IO输出流向服务器发送数据；<br>
+3.建立IO输入流读取服务器发送的数据<br>
+java代码</p>
+<pre><code class="language-java">Service.java
+class Service {
+
+    private static void d(String s) {
+        System.out.println(&quot;service___log: &quot; + s);
+    }
+
+    private static final int PORT = 5678;
+
+    public static void main(String[] s) {
+        d(&quot;启动服务器&quot;);
+        try {
+            ServerSocket serverSocket = new ServerSocket(PORT);
+            for (; ; ) {//监听到客户端连接，开启新线程
+                final Socket socket = serverSocket.accept();
+                final SocketAddress sd = socket.getRemoteSocketAddress();
+                d(&quot;监听到连接 = &quot; + sd);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            for (; ; ) {
+                                InputStream is = socket.getInputStream();
+                                OutputStream os = socket.getOutputStream();
+                                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os));
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                                char[] cs=new char[1024];
+//                                reader.read(cs,0,1);
+                                String msg = reader.readLine();
+                                d(&quot;来自客户端的消息：&quot; + msg);
+                                writer.write(&quot;服务器回复，old_msg=&quot; + msg + &quot;\n&quot;);
+                                writer.flush();
+                                if (&quot;exit&quot;.equals(msg)) {
+                                    d(&quot;客户端 &quot; + sd + &quot; 断开连接&quot;);
+                                    socket.close();
+                                    break;
+                                }
+                            }
+                            d(&quot; Thread finish.&quot;);
+                        } catch (Exception e) {
+                        }
+                    }
+                }).start();
+            }
+        } catch (Exception e) {
+            d(&quot;main e=&quot; + e.toString());
+        }
+    }
+
+}
+
+
+Client.java
+class Client {
+
+    private static void d(String s) {
+        System.out.println(&quot;client_log: &quot; + s);
+    }
+
+    private static final int PORT = 5678;//服务器端口
+
+    public static void main(String[] s) {
+        d(&quot;连接服务器&quot;);
+        try {
+            Socket socket = new Socket(&quot;localhost&quot;, PORT);
+            d(&quot;服务器连接成功，服务器地址：&quot; + socket.getRemoteSocketAddress());
+            OutputStream outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
+            handle(inputStream, outputStream);
+            socket.close();
+            d(&quot;断开连接。。。&quot;);
+        } catch (Exception e) {
+            d(&quot;main e=&quot; + e.toString());
+        }
+    }
+
+    private static void handle(InputStream input, OutputStream output) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        Scanner scanner = new Scanner(System.in);
+//        System.out.println(&quot;[server] &quot; + reader.readLine());
+        for (; ; ) {
+            d(&quot;&gt;&gt;&gt; （输入\&quot;exit\&quot;断开服务器连接）输入发送给服务器的消息 &gt;&gt;&gt; &quot;); // 打印提示
+            String s = scanner.nextLine(); // 读取一行输入
+            writer.write(s);
+            writer.newLine();
+            writer.flush();
+            String resp = reader.readLine();
+            d(&quot;&lt;&lt;&lt; &quot; + resp);
+            if (s.equals(&quot;exit&quot;)) {
+                break;
+            }
+        }
+    }
+
+}
+
+</code></pre>
+<p>需要注意的是，以上代码只是一个简单的测试demo，其中使用reader.readLine()eader.readLine()读取数据时，如果发送的数据没有换行符\n，则会一直读取，实际项目中，应该使用reader.read(chars,0,1)。</p>
+<h2 id="span-idhead40-httpspan"><span id="head40"> HTTP</span></h2>
+<p>HTTP是基于TCP/IP协议的应用层协议。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的通信格式，默认使用80端口。</p>
+<h3 id="span-idhead41-基本概念span"><span id="head41"> 基本概念</span></h3>
+<h4 id="span-idhead42-请求和响应报文span"><span id="head42"> 请求和响应报文</span></h4>
+<p>客户端发送一个请求报文给服务器，服务器根据请求报文中的信息进行处理，并将处理结果放入响应报文中返回给客户端。</p>
+<p>请求报文结构：<br>
+第一行包含了请求方法、URL、协议版本；<br>
+接下来的多行都是请求首部Header，每个首部都有一个首部名称，以及对应的值；<br>
+然后是一个空行用来分割首部和内容主体Body；<br>
+最后是请求的内容主体。<br>
+<img src="https://PaIn22152.github.io/post-images/1620723585673.png" alt="" loading="lazy"></p>
+<p>响应报文结构：<br>
+第一行包含协议版本、状态码以及描述，最常见的是 200 OK 表示请求成功；<br>
+接下来的多行也是首部内容；<br>
+一个空行分割首部和内容主体；<br>
+最后是响应的内容主体。<br>
+<img src="https://PaIn22152.github.io/post-images/1620723731203.png" alt="" loading="lazy"></p>
+<h4 id="span-idhead43-urlspan"><span id="head43"> URL</span></h4>
+<p>HTTP使用URL（Uniform Resource Locator，统一资源定位符）来定位资源，它是URI（Uniform Resource Identifier，统一资源标识符）的子集，URL在URI的基础上增加了定位能力。URI除了包含URL，还包含URN（Uniform Resource Name，统一资源名称），他只是用来定义一个资源的名称，并不具备定位该资源的能力。<br>
+<a href="https://waylau.com/difference-of-uri-url-urn/">URI、URL、URN 的联系和区别</a></p>
+<h3 id="span-idhead44-http方法span"><span id="head44"> HTTP方法</span></h3>
+<p>在客户端发送的请求报文第一行，包含了方法字段。HTTp的方法有：<br>
+GET（获取资源）、HEAD（获取报文首部）、POST（传输实体主体）、PUT（上传文件）、PATCH（对资源进行部分修改）、DELETE（删除文件）、OPTIONS（查询支持的方法）、CONNECT（要求在与代理服务器通信时建立隧道）、TRACE（追踪路径）</p>
+<h3 id="span-idhead45-http状态码span"><span id="head45"> HTTP状态码</span></h3>
+<p><img src="https://PaIn22152.github.io/post-images/1620784306557.png" alt="" loading="lazy"><br>
+100 Continue：表明到目前为止都很正常，客户端可以继续发送请求或者忽略这个响应。<br>
+200 OK：成功。<br>
+204 No Content：请求已经成功处理，但是返回的响应报文不包含实体的主体部分。一般在只需要从客户端往服务器发送信息，而不需要返回数据时使用。<br>
+206 Partial Content：表示客户端进行了范围请求，响应报文包含由Content-Range指定范围的实体内容。<br>
+301 Moved Permanently：永久性重定向。<br>
+302 Found：临时性重定向。<br>
+303 See Other：和302有着相同的功能，但是303明确要求客户端应该采用GET方法获取资源。<br>
+304 Not Modified：如果请求报文首部包含一些条件，例如：If-Match，If-Range等，如果不满足条件，则服务器返回304。<br>
+307 Temporary Redirect：临时重定向，于302含义类似，但是307不要求把POST方法改成GET方法。<br>
+400 Bad Request：请求报文存在语法错误。<br>
+401 Unauthorized：该状态码表示发送的请求需要有认证信息（BASIC认证、DIGEST认证）。如果之前已经进行一次请求，则表示用户认证失败。<br>
+403 Forbidden：请求拒绝。<br>
+404 Not Found。<br>
+500 Internal Server Error：服务器正在执行请求时发生错误。<br>
+502 Bad Gateway：表示网关或代理角色的服务器，从上游服务器中接收到的响应是无效的。<br>
+503 Service Unavailable：服务器暂时处于超负载或者正在进行停机维护，现在无法处理请求。</p>
+<h3 id="span-idhead46-http首部span"><span id="head46"> HTTP首部</span></h3>
+<p>有4种类型的首部字段：通用首部字段、请求首部字段、响应首部字段和实体首部字段。<br>
+各个首部字段及其含义如下（不需要全记，仅供查阅）：<br>
+<img src="https://PaIn22152.github.io/post-images/1620786191176.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1620786223793.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1620786251308.png" alt="" loading="lazy"><br>
+<img src="https://PaIn22152.github.io/post-images/1620786282306.png" alt="" loading="lazy"></p>
+<h3 id="span-idhead47-具体应用span"><span id="head47"> 具体应用</span></h3>
+<h4 id="span-idhead48-连接管理span"><span id="head48"> 连接管理</span></h4>
+<p>短连接和长连接<br>
+当浏览器访问一个包含多张图片的HTML页面时，除了请求访问的HTML页面资源，还会请求图片资源。如果每进行一次HTTP通信就要建立一个TCP连接，那么开销会很大。<br>
+长连接只需要建立一次TCP连接就能进行多次HTTP通信。<br>
+从HTTP/1.1开始默认是长连接，如果要断开连接，需要由客户端或者服务器提出断开，使用Connection：close；<br>
+在HTTP/1.1之前默认是短连接，如果需要使用长连接，使用Connection：Keep-Alive。</p>
+<p>流水线<br>
+默认情况下，HTTP请求是按顺序发出的，下一个请求只有在当前请求收到响应之后才会被发出。由于受到网络延迟和带宽的限制，在下一个请求被发送到服务器之前，可能需要等待很长时间。流水线是在同一条长连接上，连续发出请求，而不用等待响应返回，这样可以减少延迟。</p>
+<h4 id="span-idhead49-cookiespan"><span id="head49"> Cookie</span></h4>
+<p>HTTP协议是无状态的，目的是为了让HTTP协议尽可能简单，使得它能够处理大量事务。在HTTP/1.1引入Cookie来保存状态信息。<br>
+Cookie是服务器发送到用户浏览器保存在本地的一小块数据，它会在浏览器之后向同一服务器再次发送请求时被携带上，用于告知服务器端两个请求是来自同一浏览器。由于之后每次请求都会需要携带Cookie数据，因此会带来额外的性能开销。<br>
+Cookie曾一度用于客户端数据的存储，因为当时并没有其他合适的存储办法而作为唯一的存储手段，但现在随着现代浏览器开始支持各种各样的存储方式，Cookie存储逐渐被淘汰。新的浏览器API已经允许开发者直接将数据存储到本地，如使用Web storage API（本地存储和会话存储）或IndexedDB。</p>
+<p>用途<br>
+1.会话状态管理（如用户登录状态、购物车、游戏分数或其他需要记录的信息）；<br>
+2.个性化设置（如用户自定义设置、主题等）；<br>
+3.浏览器行为跟踪（如跟踪分析用户行为等）。</p>
+<p>创建过程<br>
+服务器发送的响应报文包含Set-Cookie首部字段，客户端得到响应报文后把Cookie内容保存到浏览器中。</p>
+<pre><code class="language-html">HTTP/1.0 200 OK
+Content-type: text/html
+Set-Cookie: yummy_cookie=choco
+Set-Cookie: tasty_cookie=strawberry
+
+[page content]
+</code></pre>
+<p>客户端之后对同一个服务器发送请求时，会从浏览器中取出Cookie信息并通过Cookie请求字段首部字段发送给服务器。</p>
+<pre><code class="language-html">GET /sample_page.html HTTP/1.1
+Host: www.example.org
+Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+</code></pre>
+<p>分类<br>
+1.会话期Cookie：浏览器关闭之后他会被自动删除，也就是说他仅在会话期内有效。<br>
+2.持久性Cookie：指定过期时间（Expires)或有效期（max-age），之后就在指定时间内成为持久性的Cookie。</p>
+<pre><code class="language-html">Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+</code></pre>
+<p>作用域<br>
+Domain标识指定了哪些主机可以接受Cookie。如果不指定，默认为当前文档的主机（不包含子域名）。如果指定了Domain，则一般包含子域名。例如，如果设置Domain=mozilla.org，则Cookie也包含在子域名中（如developer.mozilla.org）。<br>
+Path标识指定了主机下的哪些路径可以接受Cookie（该路径必须存在于请求URL中）。以字符%x2F(&quot;/&quot;)作为路径分隔符，子路径也会被分配。例如，设置Path=/docs，则以下路径都会分配：/docs    /docs/Web/   /docs/Web/HTTP。</p>
+<p>JavaScript<br>
+浏览器通过document.cookie属性创建新的Cookie，也可通过该属性访问非HttpOnly标记的Cookie。</p>
+<pre><code class="language-html">document.cookie = &quot;yummy_cookie=choco&quot;;
+document.cookie = &quot;tasty_cookie=strawberry&quot;;
+console.log(document.cookie);
+</code></pre>
+<p>HttpOnly<br>
+标记为HttpOnly的Cookie不能被JavaScript脚步调用。跨站脚本攻击（XSS）常常使用JavaScriprt的document.cookie API窃取用户的Cookie信息，因此使用HttpOnly标记可以在一定程度上避免XSS攻击。</p>
+<pre><code class="language-html">Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
+</code></pre>
+<p>Secure<br>
+标记为Secure的Cookie只能通过被HTTPS协议加密过的请求发送给服务端。但是即便设置了Secure标记，敏感信息也不应该通过Cookie传输，因为Cookie有其固有的不安全性，Secure标记也无法提供确实的安全保障。</p>
+<p>Session<br>
+除了将用户信息通过Cookie存储在用户浏览器中，也可以利用Session存储在服务器端，且存储在服务器端的信息更加安全。<br>
+Session可以存储在服务器上的文件、数据库或者内存中。也可以将Session存储在Redis这种内存型数据库中，效率会更高。<br>
+使用Session维护用户登录状态的过程如下：<br>
+1.用户进行登录时，用户提交包含用户名和密码的表单，放在HTTP请求报文中；<br>
+2.服务器验证该用户名和密码，如果正确则把用户信息存储到Redis中，他的Redis中的Key称为Session ID；<br>
+3.服务器返回的响应报文的Set-Cookie首部字段包含了这个Session ID，客户端收到响应报文后将该Cookie值存入浏览器；<br>
+4.客户端之后对同一个服务器进行 请求时会包含该Cookie值，服务器收到之后取出Session ID，从Redis中取出用户信息，继续之前的业务操作。</p>
+<p>应该注意Session ID的安全性问题，不能让他被恶意攻击者轻易获取，那么就不能产生一个容易被猜到的Session ID值。此外，还需要经常重新生成Session ID。在对安全性要求极高的场景下，例如转账等操作，除了使用Session管理用户状态之外，还需要对用户进行重新验证，比如重新输入密码，或者使用短信验证码等方式。<br>
+浏览器禁用Cookie的情况下，无法使用Cookie来保存用户信息，只能使用Session，除此之外，不能再将Session ID存放到Cookie中，而是使用URL重写技术，将Session ID作为URL的参数进行传递。</p>
+<p>Cookie与Session选择<br>
+1.Cookie只能存储ASCII码字符串，而Session则可以存储任何类型的数据，因此在考虑数据复杂性时首选Session；<br>
+2.Cookie存储在浏览器，容易被恶意查看。如果非要将一些隐私数据存在Cookie中，可以将Cookie值进行加密，然后在服务器进行解密；<br>
+3.对于大型网站，如果用户所有的信息都存储在Session中，那么开销是非常大的，因此不建议将所有的用户信息都存储在Session中。</p>
+<h4 id="span-idhead50-缓存span"><span id="head50"> 缓存</span></h4>
+<p>HTTP通过复用以前获取的资源，提高网站和应用程序的性能，这就是缓存，复用是指保存资源副本，并在下次请求时直接使用该副本。</p>
+<p>优点<br>
+1.缓解服务器压力；<br>
+2.降低客户端获取资源的延迟：缓存通常位于内存中，读取缓存的速度更快，并且缓存服务器在地理位置上也有可能比源服务器来得近，例如浏览器缓存。</p>
+<p>实现方法<br>
+1.让代理服务器进行缓存；<br>
+2.让客户端浏览器进行缓存。</p>
+<p>Cache-Control<br>
+HTTP/1.1通过Cache-Control首部字段来控制缓存；</p>
+<p>没有缓存，no-store 指令规定不能对请求或响应的任何一部分进行缓存。</p>
+<pre><code class="language-html">Cache-Control: no-store
+</code></pre>
+<p>缓存但重新验证，no_cache 指令规定缓存服务器需要先向源服务器验证缓存资源的有效性，只有当缓存资源有效时才能使用该缓存对客户端的请求进行响应。</p>
+<pre><code class="language-html">Cache-Control: no-cache
+</code></pre>
+<p>私有缓存，private 指令规定了将资源作为私有缓存，只能被单独用户使用，一般存储在用户浏览器中。</p>
+<pre><code class="language-html">Cache-Control: private
+</code></pre>
+<p>公共缓存，public 指令规定了将资源作为缓存，可以被多个用户使用，一般存储在代理服务器中。</p>
+<pre><code class="language-html">Cache-Control: public
+</code></pre>
+<p>过期，max-age 指令，如果出现在请求报文中，并且缓存资源的缓存时间小于该指令指定的时间，那么就能接受该缓存；<br>
+如果出现在响应报文中，表示缓存资源在缓存服务器中保存的时间。</p>
+<pre><code class="language-html">Cache-Control: max-age=31536000
+</code></pre>
+<p>Expires 首部字段也可以用于告知缓存服务器该资源什么时候会过期。</p>
+<pre><code class="language-html">Expires: Wed, 04 Jul 2012 08:26:05 GMT
+</code></pre>
+<p>在HTTP/1.1中，会优先处理max-age指令；<br>
+在HTTP/1.0中，max-age指令会被忽略。</p>
+<p>缓存验证<br>
+ETag首部字段，是资源唯一标识。URL不能唯一表示资源，例如 http://www.google.com/  有中文和英文两个资源，只有ETag才能对两个资源进行唯一标识。</p>
+<pre><code class="language-html">ETag: &quot;82e22293907ce725faf67773957acd12&quot;
+</code></pre>
+<p>可以将缓存资源的ETag值放入if-None-Match首部，服务器收到该请求后，判断缓存资源的ETag值和资源最新的ETag值是否一致，如果一致则表示缓存资源有效，返回 304 Not Modified。</p>
+<pre><code class="language-html">If-None-Match: &quot;82e22293907ce725faf67773957acd12&quot;
+</code></pre>
+<p>Last-Modified 首部字段也可以用于缓存验证，它包含在源服务器发送的响应报文中，指示源服务器对资源的最后修改时间。但是它是一种弱校验器，因为只能精确到1秒，所以它通常作为ETag的备用方案。如果响应首部字段里含有这个信息，客户端可以在后续的请求中带上If-Modified-Since来验证缓存。服务器只在所请求的资源在给定的日期时间之后对内容进行过修改的情况才会将资源返回，状态码为200 OK。如果请求的资源从那时起未经修改，那么返回一个带有主体的304 Not Modified响应报文。</p>
+<pre><code class="language-html">Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT
+</code></pre>
+<pre><code class="language-html">If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT
+</code></pre>
+<h4 id="span-idhead51-内容协商span"><span id="head51"> 内容协商</span></h4>
+<p>服务端驱动型<br>
+通过内容协商，返回最合适的内容，例如根据浏览器的默认语言，选择返回中文界面还是英文界面。<br>
+客户端设置特定的HTTP首部字段，比如 Accept、Accept-Charest、Accept-Encoding、Accept-Language，服务器根据这些字段返回特定的资源。不过存在以下问题：<br>
+1.服务器很难知道客户端浏览器的全部信息；<br>
+2.客户端提供的信息相当冗长（HTTP/2协议的首部压缩机制缓解了这个问题），并且存在隐私风险（HTTP指纹识别技术）；<br>
+3.给定的资源需要返回不同的展现形式，共享缓存的效率会降低，而服务器端的实现会越来越复杂。</p>
+<p>代理驱动型<br>
+服务器返回 300 Multiple Choices 或者406 Not Acceptable，客户端从中选出最合适的那个资源。</p>
+<p>在使用内容协商的情况下，只有当缓存服务器中的缓存满足内容协商条件时，才能使用该缓存，否则应该向源服务器请求该资源</p>
+<h4 id="span-idhead52-内容编码span"><span id="head52"> 内容编码</span></h4>
+<p>内容编码将实体主体进行压缩，从而减少传输的数据量。<br>
+常用的内容编码有：gzip、compress、deflate、identity。<br>
+浏览器发送Accept-Encoding首部，其中包含有它所支持的压缩算法，以及各自的优先级。服务器则从中选择一种，使用该算法对响应的消息主体进行压缩，并且发送Content-Encoding 首部来告知浏览器它选择了哪种算法。由于该内容协商过程是基于编码类型来选择资源的展现形式的，响应的Vary首部字段至少要包含Content-Encoding。</p>
+<h4 id="span-idhead53-范围请求span"><span id="head53"> 范围请求</span></h4>
+<p>如果网络出现中断，服务器只发送了一部分数据，范围请求可以使得客户端只请求服务器未发送的那部分数据，从而避免服务器重新发送所有数据。</p>
+<p>Range<br>
+在请求报文中添加Range首部字段指定请求的范围。</p>
+<pre><code class="language-html">GET /z4d4kWk.jpg HTTP/1.1
+Host: i.imgur.com
+Range: bytes=0-1023
+</code></pre>
+<p>请求成功的话，服务器返回响应包含 206 Partial Content状态码。</p>
+<pre><code class="language-html">HTTP/1.1 206 Partial Content
+Content-Range: bytes 0-1023/146515
+Content-Length: 1024
+...
+(binary content)
+</code></pre>
+<p>Accept-Ranges<br>
+响应首部字段Accept-Ranges 用于告知客户端是否能处理范围请求，可以处理使用bytes，否则使用none。</p>
+<pre><code class="language-html">Accept-Ranges: bytes
+</code></pre>
+<p>响应状态码<br>
+1.在请求成功的情况下，服务器会返回206 Partial Content 状态码；<br>
+2.在请求的范围越界的情况下，服务器会返回416 Requested Range Not Satisfiable 状态码；<br>
+3.在不支持范围请求的情况下，服务器会返回 200 OK 状态码。</p>
+<h4 id="span-idhead54-分块传输编码span"><span id="head54"> 分块传输编码</span></h4>
+<p>Chunked Transfer Encoding，可以把数据分割成多块，让浏览器逐步显示页面。</p>
+<h4 id="span-idhead55-多部分对象集合span"><span id="head55"> 多部分对象集合</span></h4>
+<p>一份报文主体内，可以包含多种类型的实体同时发送，每个部分之间用 boundary 字段定义的分隔符进行分割，每个部分都可以有首部字段<br>
+例如，上传多个表单时使用如下方式：</p>
+<pre><code class="language-html">Content-Type: multipart/form-data; boundary=AaB03x
+
+--AaB03x
+Content-Disposition: form-data; name=&quot;submit-name&quot;
+
+Larry
+--AaB03x
+Content-Disposition: form-data; name=&quot;files&quot;; filename=&quot;file1.txt&quot;
+Content-Type: text/plain
+
+... contents of file1.txt ...
+--AaB03x--
+</code></pre>
+<h4 id="span-idhead56-虚拟主机span"><span id="head56"> 虚拟主机</span></h4>
+<p>HTTP/1.1使用虚拟主机技术，使得一台服务器拥有多个域名，并且在逻辑上可以看成多个服务器。</p>
+<h4 id="span-idhead57-通信数据转发span"><span id="head57"> 通信数据转发</span></h4>
+<p>1.代理<br>
+代理服务器接受客户端的请求，并且转发给其他服务器。<br>
+使用代理的主要目的<br>
+a.缓存<br>
+b.负载均衡<br>
+c.网络访问控制<br>
+d.访问日志记录<br>
+代理服务器分为正向代理和反向代理两种<br>
+正向代理，用户可察觉<br>
+<img src="https://PaIn22152.github.io/post-images/1620957008626.png" alt="" loading="lazy"><br>
+反向代理，一般位于内部网络，用户不可察觉<br>
+<img src="https://PaIn22152.github.io/post-images/1620957088520.png" alt="" loading="lazy"></p>
+<p>2.网关<br>
+与代理服务器不同的是，网关服务器会将HTTP转化为其他协议进行通信，从而请求其他非HTTP服务器上的服务。</p>
+<p>3.隧道<br>
+使用SSL（Secure Socket Layer）等加密手段，在客户端和服务器之间建立一条安全的通信线路。</p>
+<h3 id="span-idhead58-httpsspan"><span id="head58"> HTTPS</span></h3>
+<p>HTTP存在以下安全性问题：<br>
+1.使用明文进行通信，内容可能会被窃听；<br>
+2.不验证通信方 的身份，通信方的身份有可能遭遇伪装；<br>
+3.无法证明报文的完整性，报文有可能被篡改。<br>
+为了解决以上安全问题，有了HTTPS协议，HTTPS是基于HTTP协议的基础，通过SSL或TLS（HTTP先和SSL通信，再由SSL和TCP通信，即使用了隧道通信），提供加密处理数据（加密，防窃听）、验证对方身份（认证，防伪装）以及数据完整性保护（防篡改）。<br>
+<img src="https://PaIn22152.github.io/post-images/1620958609511.jpg" alt="" loading="lazy"></p>
+<h4 id="span-idhead59-加密span"><span id="head59"> 加密</span></h4>
+<p>对称密钥加密<br>
+对称密钥加密（Symmetric-Key Encryption），加密和解密使用同一密钥。<br>
+优点：运算速度快；<br>
+缺点：无法安全地将密钥传输给通信方。<br>
+<img src="https://PaIn22152.github.io/post-images/1620958812228.png" alt="" loading="lazy"></p>
+<p>非对称密钥加密<br>
+又称公开密钥加密（Public-Key Encryption），加密和解密使用不同的密钥。<br>
+公钥所有人都可以获得，通信发送方获得接收方的公钥之后，就可以使用公钥进行加密，接收方收到通信内容后，使用私钥解密。<br>
+非对称密钥除了用来加密，还可以用来进行签名。因为私钥无法被其他人获得，因此通信发送方使用其私钥进行签名，再使用发送方的公钥对签名进行解密，就可以判断签名是否正确。<br>
+优点：可以安全地将公钥传输给通信发送方；<br>
+缺点：运算速度慢。<br>
+<img src="https://PaIn22152.github.io/post-images/1620980355839.png" alt="" loading="lazy"></p>
+<p>HTTPS加密方式<br>
+基于两种加密算法的特点，HTTPS采用的加密方式是，利用非对称密钥加密的方式，把对称密钥Secret Key传输给通信方（用对方的公钥加密数据，这样就只能用对方的私钥才能解密数据），然后使用对称密钥加密对数据加密。这样做的目的是，在保证通信安全的前提下，也能保证通信的效率。</p>
+<h4 id="span-idhead60-认证span"><span id="head60"> 认证</span></h4>
+<p>通过使用证书，来对通信方进行认证。<br>
+数字证书认证机构（CA，Certificate Authority）是客户端与服务器都可信赖的第三方机构。<br>
+服务器的运营人员向CA提出公开密钥的申请，CA在盘明提出申请者的身份后，会对已申请的公开密钥做数字签名，然后分配这个已签名的公开密钥，并将该公开密钥放入公开密钥证书后绑定在一起。<br>
+进行HTTPS通信时，服务器会先把证书发送给客户端。客户端取得其中的公开密钥后，先使用数字签名进行验证，验证通过后，就可以通信了。<br>
+<img src="https://PaIn22152.github.io/post-images/1620981089781.png" alt="" loading="lazy"></p>
+<h4 id="span-idhead61-完整性保护span"><span id="head61"> 完整性保护</span></h4>
+<p>SSL提供报文摘要功能进行完整性保护。<br>
+HTTP也提供了MD5报文摘要功能，但是并不安全。例如报文内容被篡改后，同时重新计算MD5的值，通信接收方无法意识到发生了篡改。<br>
+而HTTPS的报文摘要功能之所以安全，是因为它结合了加密和认证这两个操作。试想一下，加密之后的报文，被篡改后，也很难重新计算报文摘要，因为无法轻易获取明文。</p>
+<h4 id="span-idhead62-https的缺点span"><span id="head62"> HTTPS的缺点</span></h4>
+<p>1.因为需要进行加密解密等过程，因此速度回更慢；<br>
+2.需要支付证书授权的高额费用。</p>
+<h3 id="span-idhead63-http20span"><span id="head63"> HTTP/2.0</span></h3>
+<p>HTTP/1.x缺陷<br>
+1.客户端需要使用多个连接才能实现并发和缩短延迟；<br>
+2.不会压缩请求和响应首部，从而导致不必要的网络流量；<br>
+3.不支持有效的资源优先级，导致底层TCP连接的利用率低下。</p>
+<p>二进制分帧层<br>
+HTTP/2.0将报文分成HEADERS帧和DATA帧，他们都是二进制格式。<br>
+<img src="https://PaIn22152.github.io/post-images/1620984737688.png" alt="" loading="lazy"><br>
+在通信过程中，只会有一个TCP连接存在，它承载了任意数量的双向数据流。其中，每一个数据流（Stream）都有一个唯一标识符和可选的优先级信息，用于承载双向信息；消息（Message）是与逻辑请求或响应对应的完整的一系列帧；帧（Frame）是最小的通信单位，来自不同数据流的帧可以交错发送，然后再根据每个帧头的数据流标识符重新组装。<br>
+<img src="https://PaIn22152.github.io/post-images/1620985043578.png" alt="" loading="lazy"></p>
+<p>服务端推送<br>
+HTTP/2.0在客户端请求一个资源时，会把相关的资源一起发送给客户端，客户端就不需要再次发送请求了。例如客户端请求page.html页面，服务端就把 script.js 和 style.css 等与之相关的资源一起发送给客户端。<br>
+<img src="https://PaIn22152.github.io/post-images/1620985222620.png" alt="" loading="lazy"></p>
+<p>首部压缩<br>
+HTTP/1.1的首部带有大量信息，而且每次都要重复发送。<br>
+HTTP/2.0要求客户端和服务器同时维护和更新一个包含之前见过的首部字段表，从而避免重复传输。不仅如此，HTTP/2.0也使用Huffman编码对首部字段进行压缩。<br>
+<img src="https://PaIn22152.github.io/post-images/1620985484551.png" alt="" loading="lazy"></p>
+<h3 id="span-idhead64-get方法和post方法比较span"><span id="head64"> GET方法和POST方法比较</span></h3>
+<p>1.作用<br>
+GET用于获取资源，而POST用于传输实体主体。<br>
+2.参数<br>
+GET和POST的请求都能使用额外的参数，但是GET的参数是以查询字符串出现在URL中，而POST的参数存储在实体主体中。需要注意，因为URL只支持ASCII码，因此GET的参数中如果存在中文等字符，需要先进行编码。例如   中文   会转换为    %E4%B8%AD%E6%96%87   ，而空格会准换为   %20 。POST的参数则支持标准字符集。</p>
+<pre><code class="language-html">GET /test/demo_form.asp?name1=value1&amp;name2=value2 HTTP/1.1
+
+POST /test/demo_form.asp HTTP/1.1
+Host: w3schools.com
+name1=value1&amp;name2=value2
+</code></pre>
+<p>3.安全<br>
+安全的HTTP方法，是指该方法不会改变服务器状态，也就是说它是只读的。<br>
+GET方法是安全的，而POST方法非安全，因为POST的目的是传送实体主体内容，这个内容可能是用户上传的表单数据，上传成功后，服务器可能把这个数据存储到数据库，因此状态也就发生了改变。<br>
+安全的方法有：GET，HEAD，OPTIONS；<br>
+非安全的方法有：POST，PUT，DELETE。<br>
+4.幂等性<br>
+幂等的HTTP方法，是指同样的请求被执行一次与连续多次的效果是一样的，服务器的状态也是一样的。换句话说就是，幂等的方法不应该具有副作用（统计用途除外）。<br>
+所有安全的方法，也都是幂等的方法。<br>
+5.可缓存<br>
+如果要对响应进行缓存，需要满足以下条件：<br>
+a.请求报文的HTTP方法本身是可缓存的，包括GET和HEAD，但是PUT和DELETE是不可缓存的，POST在多数情况下不可缓存；<br>
+b.响应报文的状态码是可缓存的，包括：200，203，204，206，300，301，404，414，501;<br>
+c.响应报文的Cache-Control首部字段没有指定不缓存。<br>
+6.XMLHttpRequest<br>
+XMLHttpRequest 是一个 API，它为客户端提供了在客户端和服务器之间传输数据的功能。它提供了一个通过 URL 来获取数据的简单方式，并且不会使整个页面刷新。这使得网页只更新一部分页面而不会打扰到用户。XMLHttpRequest 在 AJAX 中被大量使用。<br>
+在使用 XMLHttpRequest 的 POST 方法时，浏览器会先发送 Header 再发送 Data。但并不是所有浏览器会这么做，例如火狐就不会。<br>
+而 GET 方法 Header 和 Data 会一起发送。</p>
+<h2 id="span-idhead65restful-apispan"><span id="head65">RESTful api</span></h2>
+<p>网络应用程序，分为前端和后端两部分，且前端设备层出不穷（android，IOS，pc，其他OS），因此必须有一种统一的机制，方便不同的前端设备与后端进行通信。而RESTful API是目前最流行的一种互联网软件架构，它结构清晰，符合标准，易于理解，拓展方便，是一套成熟的互联网API设计理论。<br>
+REST全称Representtational State Transfer，“表现层状态转化”。如果一个架构符合REST原则，就称它为RESTful架构。<br>
+REST的名称“表现层状态转化”中，省略了主语。表现层其实指的是“资源（Resources）”的表现层。所谓资源，就是网络上的一个实体，或者说是一个具体信息。它可以是一段文本、一张图片、一首歌曲、一种服务，总之就是一个具体的存在。你可以使用一个URI指向它，每种资源对应一个特定的URI。要获取这个资源，访问它的URI就可以，因此URI就成了每一个资源的地址或独一无二的标识符。<br>
+资源是一种信息实体，它可以有多种外在表现形式。我们把资源具体出来的形式，叫做它的“表现层（Representation）”。比如，文本可以用txt格式表现，也可以用HTML格式、XML格式、JSON格式表现，甚至可以采用二进制格式；图片可以用JPG格式表现，也可以用PNG格式表现。URI只代表资源的实体，不代表它的形式，它的具体表现形式，应该在HTTP请求的头信息中，用Accept和Content-Type字段指定，这两个字段才是对表现层的描述。<br>
+访问一个网站，就代表了客户端和服务器的一个互动过程，这个过程中，一定就会涉及到数据和状态的变化。HTTP协议是一个无状态协议，这意味着所有的状态都保存在服务器端。因此，如果客户端想要操作服务器，必须通过某种手段，让服务器端发生“状态转化（State Transfer）”。而这种转化是建立在表现层上的，所以就是表现层状态转化。客户端用到的手段，只能是HTTP协议，具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源）、PUT用来更新资源、DELETE用来删除资源。<br>
+综上，总结一下什么事RESTful架构：<br>
+1.每一个URI代表一种资源；<br>
+2.客户端和服务器之间，传递这种资源的某种表现层；<br>
+3.客户端通过四个HTTP动词，对服务器端资源进行操作，实现表现层状态转化。<br>
+<a href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html">RESTful API 设计指南</a></p>
+<h2 id="span-idhead66-其他span"><span id="head66"> 其他</span></h2>
+<h3 id="span-idhead67-地址span"><span id="head67"> 地址</span></h3>
+<p>数据链路中的地址，指的是MAC地址，用来识别同一链路中不同的计算机。<br>
+IP中的地址，指的是IP地址，用来识别TCP/IP网络中互连的主机和路由器。<br>
+传输层类似地址的概念是端口号，是用来识别同一台计算机中进行通信的不同应用程序，因此也被称为程序地址。端口号由其使用的传输层协议决定。</p>
+<h3 id="span-idhead68-网络性能指标span"><span id="head68"> 网络性能指标</span></h3>
+<p>以下是常用的丈量单位<br>
+<img src="https://PaIn22152.github.io/post-images/1620291382969.png" alt="" loading="lazy"><br>
+为什么电信拉的100M光纤，测试峰值只有12M每秒？<br>
+这是因为，网络常用单位是Mbps<br>
+100M光纤 = 100Mbps = 100Mbit/s<br>
+由比特位换算到字节是有进制的，8个比特为等于1个字节<br>
+100M bit/s = (100/8)M 字节/s = 12.5MB/s</p>
+<h3 id="span-idhead69-网络协议span"><span id="head69"> 网络协议</span></h3>
+<p>定义：为计算机网络中进行数据交换而建立的规则、标准或约定的集合。<br>
+三要素：语法、语义、时序。语法用来规定信息格式，数据及控制信息的格式、编码及信号电平等；语义用来说明通信双方应当怎么做，用于协调与差错处理的控制信息。时序定义了何时进行通信，先讲什么后讲什么，讲话的速度等，比如是采用同步传输还是异步传输。</p>
+<h1 id="span-idhead70-思考电脑挂香港vpn在浏览器输入google后整个数据是怎么传输的使用到哪些协议span"><span id="head70"> 思考，电脑挂香港vpn，在浏览器输入google后，整个数据是怎么传输的？使用到哪些协议？</span></h1>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/23ISjbIDu/" class="tag">
+                    学习笔记
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/O2p7xL7Rh/" class="tag">
+                    基础
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/AlCdpyMZJ8/" class="tag">
+                    计算机网络
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/camerax-shi-yong/">
+                  <h3 class="post-title">
+                    CameraX使用
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

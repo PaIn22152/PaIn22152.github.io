@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-Kotlin协程 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-Kotlin协程</h2>
+            <div class="post-date">2024-06-25</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。kotlin协程</p>
+<!-- more -->
+<h3 id="切线程">切线程</h3>
+<p>为什么要切线程？不想卡住当前线程，需要在别的线程去并行执行任务；或者任务必须在UI线程做时，切换到UI线程执行，示例代码：</p>
+<pre><code class="language-kotlin">        CoroutineScope(Dispatchers.IO).launch {
+            //do something
+        }
+        CoroutineScope(EmptyCoroutineContext).launch(Dispatchers.IO) {
+            //do something
+        }
+</code></pre>
+<h3 id="调度器dispatcher">调度器Dispatcher</h3>
+<p>Dispatchers默认提供4种调度器：<img src="https://PaIn22152.github.io/post-images/1719304527973.png" alt="" loading="lazy"><br>
+Default：处理计算密集型任务，线程池里面的线程数量等于CPU核心数，当线程数大于核心数后会影响CPU性能<br>
+IO：处理IO密集型任务（网络IO、磁盘IO，不占用CPU性能），线程池里面的线程数量远大于CPU核心数（固定64），IO工作进行期间CPU闲置<br>
+Default和IO的唯一区别就是线程池大小，按照规则把密集型任务放在Default线程池，把IO密集型任务放在IO线程池，可以有效提高处理性能<br>
+Main：会把任务通过handler传到UI线程处理<br>
+Unconfined：不进行限制，用它启动的代码直接执行，不切线程，挂起函数执行后也不会切回来</p>
+<p>也可以自定义调度器线程池，使用newFixedThreadPoolContext(10,&quot;name&quot;)</p>
+<h3 id="挂起函数">挂起函数</h3>
+<p>在协程里面执行挂起函数，函数会切到挂起函数指定的线程执行，而且执行完成后线程会自动再切回来，执行后面的代码。协程使用挂起函数可以消除回调，简化代码。挂起函数用关键字suspend修饰，挂起函数只能运行在协程中（因为挂起函数挂起的是协程），或者别的挂起函数中。<br>
+示例代码：<br>
+<img src="https://PaIn22152.github.io/post-images/1721635424791.png" alt="" loading="lazy"><br>
+原理：挂起函数可以让开发人员在编码时用线性的方式编码，在编译过程中，kotlin协程将挂起函数前后代码拆分，抽象出一套状态机的机制，来实现线程的来回切换，在挂起函数的调用前后，都会进行一次状态的切换，状态机机制类似于嵌套，为代码如下：<br>
+<img src="https://PaIn22152.github.io/post-images/1721635622645.png" alt="" loading="lazy"></p>
+<h3 id="android中协程的常规使用">Android中协程的常规使用</h3>
+<p>在实际的Android开发中，通常把协程启动在UI线程，在协程内部用挂起函数切换线程执行耗时任务，任务执行完后再切回UI线程。<br>
+通常使用jetpack提供的协程scope，lifecycleScope或者viewmodelScope，使用这两个scope，协程的生命周期和组件的生命周期绑定，在activity或者fragment结束时，会自动取消scope包含的所有协程；此外，这两个scope是用的Dispatcher是Main.immediate，当需要切换到主线程时，会先判断当前线程是否是主线程，如果不是主线程，才会调用handler抛任务，比直接使用Main效率高（Main不做判断，直接调用handler抛任务）。</p>
+<h3 id="launch-async-withcontext和runblocking">launch、async、withContext和runBlocking</h3>
+<p>launch启动协程且并行执行，返回Job对象，Job对象的cancel取消协程，join方法表示等待协程执行结束，是挂起函数<br>
+async启动协程且并行执行，返回Deferred对象，Deferred是Job的子类，新增了一个挂起函数await，表示等待协程执行完成并获取执行后的结果。join和await比较，如果只是流程上的依赖，使用join，如果依赖结果，使用await，常用于多个并行任务执行后等待他们的执行结果。<br>
+withContext启动协程且串行执行，是一个挂起函数，执行结束后才会执行后面的代码<br>
+runBlocking会阻塞当前线程，并在当前线程运行，直到运行完成，他的所用是把挂起函数式的代码转换成阻塞式的代码，这样可以让线程写法的代码调用挂起函数。通常在协程代码和回调式函数的老代码兼容时使用，或者是一些测试代码中。</p>
+<h3 id="协程和回调式api">协程和回调式API</h3>
+<p>runBlocking可以把挂起函数式的代码转换成阻塞加回调的代码<br>
+使用suspendCoroutine或者suspendCancellableCoroutine可以将回调式函数转成挂起函数<br>
+continuation.resume()或者resumeWithExeception返回结果</p>
+<p>retrofit源码中支持kotlin的实现，也是这样实现的</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/1iz2r62_L/" class="tag">
+                    Kotlin协程
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-rxjava3-yuan-li-jie-xi/">
+                  <h3 class="post-title">
+                    扔物线进阶-RxJava3原理解析
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

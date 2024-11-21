@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>扔物线进阶-插件化和热更新 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">扔物线进阶-插件化和热更新</h2>
+            <div class="post-date">2024-07-30</div>
+            
+            <div class="post-content">
+              <p>学习扔物线进阶视频课程笔记。插件化和热更新</p>
+<!-- more -->
+<h2 id="插件化">插件化</h2>
+<h3 id="基本概念">基本概念</h3>
+<p>什么是组件化？<br>
+组件化，又叫模块化，指将Android工程拆分成多个module进行开发</p>
+<p>什么是插件化？<br>
+App的部分功能在打包时并不以传统方式打包进apk文件中，而是以另一种形式二次封装进apk内部，或者放在网络适时下载，然后在需要的时候动态对这些模块进行加载，这种方式叫插件化。这些单独二次封装的功能模块apk或者dex文件，就称为插件，初始安装的apk称为宿主。插件化是组件化的更进一步。具体过程是先下载插件，然后通过classLoader把插件里面的类加载到虚拟机，然后通过反射调用里面的类。</p>
+<p>实现插件化的基础是反射，通过java提供的反射机制，可以让开发者动态加载新的类，或者调用一些被隐藏的方法和属性。</p>
+<h3 id="关于dex">关于dex</h3>
+<p>class：java编译后的字节码文件就是class文件，每个类对应一个class<br>
+dex：Dalvik Executable，是把class文件打包在一起，一个dex可以包含多个class<br>
+odex：Optimized DEX，被优化后的dex，在手机安装apk后，会针对当前系统优化dex里面的指令<br>
+oat：Optimized Android file Type，apk安装时，会将DEX预先编译成本地机器指令，这样在运行阶段就可以直接使用机器码运行，以达到更快运行的目的，代价就是apk在安装时速度会变慢。</p>
+<h3 id="插件化作用">插件化作用</h3>
+<p>最早是用来解决dex文件65535问题<br>
+减少安装包大小<br>
+动态部署功能<br>
+bug热修复</p>
+<p>怎么通过插件化的方式，来实现activity的跳转？<br>
+首先要在宿主apk中提前注册一个壳activity，每次跳转时都是跳同一个activity，加载不同的fragment。或者是使用flutter开发需要动态加载的插件apk，因为flutter开发的应用本身就只有一个activity，可以在宿主中提前注册。</p>
+<h2 id="热更新">热更新</h2>
+<h3 id="基本概念-2">基本概念</h3>
+<p>热更新指不安装新版本软件，直接从网络下载新的功能模块对软件进行布局更新。</p>
+<p>热更新和插件化的区别</p>
+<ol>
+<li>插件化的内容在原APP没有，属于新增，而热更新时会对原APP中的内容做改动</li>
+<li>插件化在代码中有固定的入口，而热更新没有，因为热更新可能改变任何位置的代码</li>
+</ol>
+<p>热更新实现原理：<br>
+有两种，一是使用ClassLoader替换dex文件，二是直接修改字节码</p>
+<p>小Tip，AOSP源码查看，通过GoogleGit获取到源码的git路径，clone到本地后，复制到.android-sdk/source/android-29下面</p>
+<h3 id="关于classloader">关于ClassLoader</h3>
+<p>ClassLoader类加载器，作用是将class文件加载到虚拟机中，然后就可以使用对应的class，虚拟机加载class时是按需加载的。</p>
+<p>loadClass过程<br>
+源码：</p>
+<pre><code class="language-java">    protected Class&lt;?&gt; loadClass(String name, boolean resolve)
+            throws ClassNotFoundException {
+        // 检查类是否已经加载，如果是，直接使用缓存的class
+        Class&lt;?&gt; c = findLoadedClass(name);
+        if (c == null) {
+            try {
+                if (parent != null) {
+                    //如果没有缓存，优先使用父加载器的loadClass
+                    c = parent.loadClass(name, false);
+                } else {
+                    c = findBootstrapClassOrNull(name);
+                }
+            } catch (ClassNotFoundException e) {
+            }
+
+            if (c == null) {
+                // 如果父加载器不能加载这个类时，才会尝试自己加载
+                c = findClass(name);
+            }
+        }
+        return c;
+    }
+</code></pre>
+<p>整个加载类的过程，就是一个带缓存的，从上到下的加载过程（即双亲委托机制）<br>
+对于具体的一个ClassLoader，加载class的过程是，先从自己的缓存中取；如果没有，通过自己的父加载器去加载；如果父加载器也没有，就自己加载。</p>
+<p>Android中dex加载过程：<br>
+BaseDexClassLoader或者他的子类（DexClassLoader、PathClassLoader）的findClass中，会通过他的pathList调用findClass，然后走到dexElements的findClass，这里会将dex加载到一个dexElements数组，所以热更新的原理就是通过放射干预loadClass过程，把补丁dex文件加载出来的Element插入到dexElements数组的前面，这样后面再放进来的同样的类就不会被加载，达到替换的效果。</p>
+<h3 id="手写热更新">手写热更新</h3>
+<p>原理：创建ClassLoader加载插件，获取到Element，并把Element插入到应用ClassLoader的dexElements数组前面。加载过程应该在应用生命周期中尽早发生，通常放在Application的attachBaseContext中，这种方式实现的热更新，需要杀死程序才能让补丁生效。通常是将需要热更新的类打包成class，再用d8工具将class打包成dex，dex作为热更新的插件。<br>
+替换dex的代码实现如图：<br>
+<img src="https://PaIn22152.github.io/post-images/1722334206222.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://PaIn22152.github.io/tag/x6lCK3Gpc/" class="tag">
+                    插件化
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/N3TejtNTvD/" class="tag">
+                    热更新
+                  </a>
+                
+                  <a href="https://PaIn22152.github.io/tag/WJ5Hz0s7Q/" class="tag">
+                    扔物线进阶
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/reng-wu-xian-jin-jie-android-gou-jian-liu-cheng/">
+                  <h3 class="post-title">
+                    扔物线进阶-Android构建流程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

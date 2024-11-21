@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>NMEA-0183格式 | Payne的小站</title>
+<meta name="description" content="克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="shortcut icon" href="https://PaIn22152.github.io/favicon.ico">
+<link rel="stylesheet" href="https://PaIn22152.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://PaIn22152.github.io">
+        <img src="https://PaIn22152.github.io/images/avatar.png" class="site-logo">
+        <h1 class="site-title">Payne的小站</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="site-description">
+      克己、积累、坚持、格局、全力以赴
+对过程的关注要多于对结果的关注
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">NMEA-0183格式</h2>
+            <div class="post-date">2024-09-26</div>
+            
+            <div class="post-content">
+              <h3 id="nmea-0183">NMEA-0183</h3>
+<pre><code>NMEA-0183是美国国家海洋电子协会（National Marine Electronics Association ）为海用电子设备制定的标准格式。已成了GPS导航设备统一的RTCM（Radio Technical Commission for Maritime services）标准协议。
+NMEA-0183 协议采用 ASCII 码来传递 GPS 定位信息，我们称之为帧，帧格式形如：$aaccc,ddd,ddd,…,ddd*hh(CR)(LF)
+1、“$”：帧命令起始位
+2、aaccc：地址域，前两位为识别符（aa），后三位为语句名（ccc）
+3、ddd…ddd：数据
+4、“*”：校验和前缀（也可以作为语句数据结束的标志）
+5、hh：校验和（check sum），$与*之间所有字符 ASCII 码的校验和（各字节做异或运算，得到校验和后，再转换 16 进制格式的 ASCII 字符）
+6、(CR)(LF)：帧结束，回车和换行符
+</code></pre>
+<h3 id="开头标识符">开头标识符：</h3>
+<p>GN：GNSS，全球导航卫星系统<br>
+GP：GPS<br>
+BD：BDS北斗<br>
+GL：Galileo<br>
+GL：GLONASS</p>
+<h3 id="常见nmea-0183语句">常见NMEA-0183语句</h3>
+<p>GPGSA：当前卫星信息<br>
+GPGGA：定位信息<br>
+GPGSV：可见卫星信息<br>
+GPRMC：推荐定位信息<br>
+GPVTG：地面速度信息<br>
+GPGLL：地理定位信息</p>
+<h3 id="gprmc详解">GPRMC详解：</h3>
+<pre><code>$GPRMC,&lt;1&gt;,&lt;2&gt;,&lt;3&gt;,&lt;4&gt;,&lt;5&gt;,&lt;6&gt;,&lt;7&gt;,&lt;8&gt;,&lt;9&gt;,&lt;10&gt;,&lt;11&gt;,&lt;12&gt;*hh
+&lt;1&gt; UTC时间，hhmmss.sss(时分秒.毫秒)格式
+&lt;2&gt; 定位状态，A=有效定位，V=无效定位
+&lt;3&gt; 纬度ddmm.mmmm(度分)格式(前面的0也将被传输)
+&lt;4&gt; 纬度半球N(北半球)或S(南半球)
+&lt;5&gt; 经度dddmm.mmmm(度分)格式(前面的0也将被传输)
+&lt;6&gt; 经度半球E(东经)或W(西经)
+&lt;7&gt; 地面速率(000.0~999.9节，前面的0也将被传输)
+&lt;8&gt; 地面航向(000.0~359.9度，以正北为参考基准，前面的0也将被传输)
+&lt;9&gt; UTC日期，ddmmyy(日月年)格式
+&lt;10&gt; 磁偏角(000.0~180.0度，前面的0也将被传输)
+&lt;11&gt; 磁偏角方向，E(东)或W(西)
+&lt;12&gt; 模式指示(仅NMEA0183 3.00版本输出，A=自主定位，D=差分，E=估算，N=数据无效)
+*后hh为$到*所有字符的异或和
+</code></pre>
+<h3 id="gpgsa详解">GPGSA详解：</h3>
+<pre><code>$GPGSA,A,3,01,20,19,13,,,,,,,,,40.4,24.4,32.2*0A
+字段0：$GPGSA，语句ID，表明该语句为GPS DOP and Active Satellites（GSA）当前卫星信息
+字段1：定位模式，A=自动手动2D/3D，M=手动2D/3D
+字段2：定位类型，1=未定位，2=2D定位，3=3D定位
+字段3：PRN码（伪随机噪声码），第1信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段4：PRN码（伪随机噪声码），第2信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段5：PRN码（伪随机噪声码），第3信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段6：PRN码（伪随机噪声码），第4信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段7：PRN码（伪随机噪声码），第5信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段8：PRN码（伪随机噪声码），第6信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段9：PRN码（伪随机噪声码），第7信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段10：PRN码（伪随机噪声码），第8信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段11：PRN码（伪随机噪声码），第9信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段12：PRN码（伪随机噪声码），第10信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段13：PRN码（伪随机噪声码），第11信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段14：PRN码（伪随机噪声码），第12信道正在使用的卫星PRN码编号（00）（前导位数不足则补0）
+字段15：PDOP综合位置精度因子（0.5 - 99.9）
+字段16：HDOP水平精度因子（0.5 - 99.9）
+字段17：VDOP垂直精度因子（0.5 - 99.9）
+字段18：校验值
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://PaIn22152.github.io/post/smartconfigwebsocketlan-ya-ru-men/">
+                  <h3 class="post-title">
+                    SmartConfig、WebSocket、蓝牙入门
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
